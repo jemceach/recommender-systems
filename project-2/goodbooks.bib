@@ -1,0 +1,39 @@
+%%   Saharon Shelah's bibliography
+%% (public version of listb.bib)
+% generated on:   9 May 2019,  13:12 GMT
+
+
+% Disclaimer:   This bibliography has its
+% own idiosyncrasies.   For example, all titles
+% are enclosed in double braces, thus ensuring that capitalization
+% is maintained.    Also: even unpublished papers will be
+% called "article".
+
+
+@Preamble{"
+ \ifx\documentclass\undefinedcs
+      \def\bf{\fam\bffam\tenbf}\def\rm{\fam0\tenrm}\fi
+                          % f**k-amstex!
+ \def\defaultdefine#1#2{\expandafter\ifx\csname#1\endcsname\relax
+ \expandafter\def\csname#1\endcsname{#2}\fi}
+ \defaultdefine{Bbb}{\bf}   \defaultdefine{frak}{\bf}
+  \defaultdefine{=}{\B}   % doublef**k-amstex!!
+  \defaultdefine{mathfrak}{\frak}
+       \defaultdefine{mathbb}{\bf}
+       \defaultdefine{mathcal}{\mathcal}
+       \defaultdefine{implies}{\Rightarrow}
+      \defaultdefine{beth}{BETH}\defaultdefine{cal}{\bf}
+      \def\Cal#1{{\bf #1}}
+        \defaultdefine{cf}{cf}
+    \defaultdefine{reals}{{\mathbb R}} \defaultdefine{real}{{\mathbb R}}
+   \def\restriction{{|}}  \def\club{CLUB}
+           "}
+
+@article{goodbooks2017,
+    author = {Zajac, Zygmunt},
+    title = {Goodbooks-10k: a new dataset for book recommendations},
+    year = {2017},
+    publisher = {FastML},
+    journal = {FastML},
+    howpublished = {\url{http://fastml.com/goodbooks-10k}},
+},
