@@ -15,6 +15,9 @@ library(tidyr); library(dplyr); library(RCurl); library(jsonlite)
 #formatting
 library(knitr); library(kableExtra); library(prettydoc); library(default)
 
+#recommender 
+library(recommenderlab)
+
 # global options
 ## knit sizing
 options(max.print="75"); opts_knit$set(width=75) 
@@ -26,7 +29,7 @@ opts_chunk$set(echo=F,cache=F, tidy=T,comment=F,message=T,warning=T) #change mes
 default(kable_styling)  <- list(bootstrap_options=c("basic"),position="center",full_width=T, font_size=10)
 
 ## working directory
-try(setwd("~/Github/612-group/project-4"))
+##try(setwd("~/Github/612-group/project-4"))
 ```
 
 
@@ -48,10 +51,10 @@ Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https
 We subsetted the restaurant/consumer data to limit the scope of our system to one city: San Luis Potosi, Mexico. After applying transformations in the following section, we identified 90 unique users and 75 different restaurants to build our recommender systems from. 
 
 ```{r}
-data1<-read.csv("./data/chefmozcuisine.csv") # cusine tags
-data2<-read.csv("./data/geoplaces2.csv") # restaurant name
-data3<-read.csv("./data/rating_final.csv") # user ratings
-data4<-read.csv("./data/userprofile.csv") # user profile
+data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") # cusine tags
+data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") # restaurant name
+data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") # user ratings
+data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") # user profile
 ```
 
 ## Data Tranformations
@@ -95,6 +98,14 @@ ui_matrix; ui_mtx_mu; ui_mtx_na
 
 ```
 
+# Training and Test Subsets
+```{r}
+umat<-as.matrix(ui_matrix)
+umat <- as(umat,"realRatingMatrix")
+
+evalu <- evaluationScheme(umat, method="split", train=0.8, given=5, goodRating=0)
+```
+
 
 # Collaborative Filtering 
 
@@ -102,7 +113,51 @@ Business/User Goal: Serendipity
 
 Recommend relevant items to targeted users that are different then items the user has already rated. 
 
-## Algorithm 1
+## Algorithm 1: User-Based with Method: Cosine
+```{r}
+#Method: Cosine
+
+#non-normalized
+UBCF_N_C <- Recommender(getData(evalu, "train"), "UBCF", 
+      param=list(normalize = NULL, method="Cosine"))
+
+#centered
+UBCF_C_C <- Recommender(getData(evalu, "train"), "UBCF", 
+      param=list(normalize = "center",method="Cosine"))
+
+#Z-score normalization
+UBCF_Z_C <- Recommender(getData(evalu, "train"), "UBCF", 
+      param=list(normalize = "Z-score",method="Cosine"))
+```
+
+```{r}
+#predicted ratings
+p1 <- predict(UBCF_N_C, getData(evalu, "known"), type="ratings")
+
+p2 <- predict(UBCF_C_C, getData(evalu, "known"), type="ratings")
+
+p3 <- predict(UBCF_Z_C, getData(evalu, "known"), type="ratings")
+
+#ceiling and floor values
+p1@data@x[p1@data@x[] < 1] <- 1
+p1@data@x[p1@data@x[] > 3] <- 3
+
+p2@data@x[p2@data@x[] < 1] <- 1
+p2@data@x[p2@data@x[] > 3] <- 3
+
+p3@data@x[p3@data@x[] < 1] <- 1
+p3@data@x[p3@data@x[] > 3] <- 3
+
+#compare the predictions using the different normalize methongs
+error_UCOS <- rbind(
+  UBCF_N_C = calcPredictionAccuracy(p1, getData(evalu, "unknown")),
+  UBCF_C_C = calcPredictionAccuracy(p2, getData(evalu, "unknown")),
+  UBCF_Z_C = calcPredictionAccuracy(p3, getData(evalu, "unknown"))
+)
+error_UCOS
+```
+
+
  
 
 ## Algorithm 2
