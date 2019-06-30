@@ -15,6 +15,9 @@ library(tidyr); library(dplyr); library(RCurl); library(jsonlite)
 #formatting
 library(knitr); library(kableExtra); library(prettydoc); library(default)
 
+#visualization
+library(ggplot2)
+
 #recommender 
 library(recommenderlab)
 
@@ -69,20 +72,25 @@ We cleaned our data using transformations and regular expression unite our user 
 *  Add/reference sources at the end! 
 
 ```{r}
-## select attributes of interest from profile
-user_profile <- data4 %>% select(userID, birth_year,budget,ambience,activity,weight)
+## restaurant dataframe
+restaurant <- data2 %>% select(placeID, name, city,price,franchise, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))%>%filter(grepl("slp|san|s\\.l\\.p",city)) %>% select(-city) 
+restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
 
-## build user & place dataframes
+## user dataframe: select attributes of interest from profile
+user_profile <- data4 %>% select(userID, birth_year,budget,ambience,activity,weight)
 user <- inner_join(data3,user_profile,by='userID') 
-restaurant <- data2 %>% select(placeID, name, city,price) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))%>%filter(grepl("slp|san|s\\.l\\.p",city)) %>% select(-city) 
+user$budget <- factor(user$budget, levels = c("low", "medium", "high")) # set factor
+user <- user %>% mutate(weight = weight * 2.2) # convert kg to lbs
 
 ## change ratings from 0-2 scale to 1-3
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
 user$service_rating[user$service_rating==2]<-3;user$service_rating[user$service_rating==1]<-2;user$service_rating[user$service_rating==0]<-1
 user$food_rating[user$food_rating==2]<-3;user$food_rating[user$food_rating==1]<-2;user$food_rating[user$food_rating==0]<-1;
 
+
 ## create user item matrix
-ui_matrix <- inner_join(user, restaurant, by="placeID") %>% select(userID, placeID, rating) %>% spread(placeID, rating)
+data <- inner_join(user, restaurant, by="placeID") 
+ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
 
 ## build two frames for comparison - mu = mean ratings imputation; na = imputed with 0 
 ui_mtx_mu <- ui_matrix; ui_mtx_na <- ui_matrix 
@@ -96,7 +104,27 @@ ui_mtx_na[is.na(ui_mtx_na)] <- 0
 ## preview matrices (DELETE LATER)
 ui_matrix; ui_mtx_mu; ui_mtx_na
 
+## long matrices
+
+ui_mtx_mu
+
 ```
+## Data Exploration
+
+```{r}
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(data$budget, nrow=1)
+
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Activity") + facet_wrap(data$activity, nrow=1)
+
+ggplot(data, aes(x=birth_year)) + geom_histogram(bins=10, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Birth Year") + facet_wrap(data$rating, nrow=1)
+
+ggplot(data, aes(x=weight)) + geom_histogram(bins=10,color='#000000', fill='#D47A7A') +labs(x="weight (lbs)", title="Raw Ratings Distribution by Activity") + facet_wrap(data$rating, nrow=1)
+
+
+```
+
 
 # Training and Test Subsets
 ```{r}
@@ -184,6 +212,17 @@ Cons:
 *  May fail diversity test 
 
 Add more later :)
+
+```{r}
+library('ordinal')
+library('text2vec')
+```
+
+```{r}
+user_profile
+```
+
+
 
 # Conclusion
 
