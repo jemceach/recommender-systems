@@ -133,14 +133,43 @@ FALSE 1       0      0      0      0      0      0      0      0      0      0
 FALSE    135082 135085 135086 135106 135108
 FALSE 1       0      1      0      0      0
 FALSE  [ reached getOption(&quot;max.print&quot;) -- omitted 89 rows ]</code></pre>
+<pre><code>FALSE    userID 132572 132754 132755 132825 132834 132845 132846 132847 132851
+FALSE 1   U1001      2      2      3      3      2      2      2      2      2
+FALSE    132854 132856 132858 132861 132862 132866 132869 132870 132872 132885
+FALSE 1       2      2      2      2      2      2      2      2      2      2
+FALSE    132937 132951 132954 132955 132958 135025 135026 135027 135028 135030
+FALSE 1       2      2      2      3      3      3      2      2      3      3
+FALSE    135032 135033 135034 135035 135038 135039 135040 135041 135042 135044
+FALSE 1       2      2      3      2      2      2      2      2      2      2
+FALSE    135045 135046 135047 135048 135049 135051 135052 135053 135054 135055
+FALSE 1       2      2      2      2      2      2      2      2      2      3
+FALSE    135057 135058 135059 135060 135062 135063 135064 135065 135066 135069
+FALSE 1       2      2      3      2      2      2      2      2      2      2
+FALSE    135070 135071 135072 135073 135074 135075 135076 135079 135080 135081
+FALSE 1       2      2      2      2      3      3      2      2      2      2
+FALSE    135082 135085 135086 135106 135108
+FALSE 1       2      1      2      2      2
+FALSE  [ reached getOption(&quot;max.print&quot;) -- omitted 89 rows ]</code></pre>
 </div>
+<div id="data-exploration" class="section level2">
+<h2>Data Exploration</h2>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAMAAABNUi8GAAAAsVBMVEUAAAAAADoAAGYAOpAAZrYzMzM6AAA6ADo6AGY6kNtNTU1NTW5NTY5NbqtNjshmAABmADpmtv9uTU1uTW5uTY5ubqtuq+SOTU2OTW6OTY6OyP+QOgCQkDqQkGaQtpCQ27aQ2/+rbk2ryKur5P+2ZgC22/+2//++vr7Ijk3I///bkDrb///kq27k///r6+v/AP//tmb/yI7/25D/27b/29v/5Kv//7b//8j//9v//+T///94RkeJAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAO6klEQVR4nO2cf18TZxZHY6u2RtHVKmrc7UpxXVFYgd0Qmff/wnYSI1KL43xvyP3xcM4fjojeHnOPzyTpByYdQGIm0QIAQxAopIZAITUECqkhUEgNgUJqbIH+Z4DBT27INmfXHd6kOIG2M7xJcQJtZ3iT4gTazvAmxQm0neFNihNoO8ObFCfQdoY3KU6g7QxvUpxA2xnepDiBtjO8SXECbWd4k+IE2s7wJsUJtJ3hTYoTaDvDmxQn0HaGNylOoO0Mb1KcQNsZ3qQ4gbYzvElxAm1neJPiBNrO8I9lGXrACLSZ4R//XRQCvRnDCZRAUw8nUAJNPZxACTT1cAIl0NTDCZRAUw8nUAJNPZxACTT1cAIl0NTDCRRSUzfQEX85TtD6w+sGOvSAEWgzwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUwwmUQFMPJ1ACTT2cQAk09XACJdDUw29qoCfT6YODrls8n+4cXVwINN/wGxro/OlBd/iwO9+bXboQaMLhNzTQdaSLlweXLgSacPgNDrQ/M+fPjrrFi/31pf+1Oz2DfwicqRvoiL/cUKDzJ/f3u5OdVZnry/ozQ/+eOUG9h9cNdOgBGxFod+no/HqCEmi24Tc40O7djOeg6Yff0EDXN/Xzvd3Pr+J3eRWfdPgNDbQ7nE7756A3533Qj2WJDs0K/ydJou6eowWsEKhE3T1HC1ghUIm6e44WsEKgEnX3HC1ghUAl6u45WsAKgUrU3XO0gBUClai752gBKwQqUXfP0QJWCFSi7p6jBawQqETdPUcLWCFQibp7jhawQqASdfccLWCFQCXq7jlawAqBStTdc7SAFQKVqLvnaAErBCpRd8/RAlYIVKLunqMFrBCoRN09RwtYIVCJunuOFrBCoBJ19xwtYIVAJeruOVrACoFK1N1ztIAVApWou+doASsEKlF3z9ECVghUou6eowWsEKhE3T1HC1ghUIm6e44WsEKgEnX3HC1ghUAl6u45WsAKgUrU3XO0gBUClai752gBKwQqUXfP0QJWCFSi7p6jBawQqETdPUcLWCFQibp7jhawQqASdfccLWCFQCXq7jlawAqBStTdc7SAFQKVqLvnaAErBCpRd8/RAlYIVKLunqMFrBCoRN09RwtYIVCJunuOFrBCoBJ19xwtYIVAJeruOVrACoFK1N1ztIAVApWou+doASsEKlF3z9ECVrYXaJPU3XO0gJWPI7bCCXpB3T1HC1jhFi9Rd8/RAlYIVKLunqMFrBCoRN09RwtYIVCJunuOFrBCoBJ19xwtYIVAJeruOVrACoFK1N1ztIAVApWou+doASsEKlF3z9ECVghUou6eowWsEKhE3T1HC1ghUIm6e44WsEKgEnX3HC1ghUAl6u45WsAKgUrU3XO0gBUClai752gBKwQqUXfP0QJWCFSi7p6jBawQqETdPUcLWCFQibp7jhawQqASdfccLWCFQCXq7jlawAqBStTdc7SAFQKVqLvnaAErBCpRd8/RAlYIVKLunqMFrBCoRN09RwtYIVCJunuOFrBCoBJ19xwtYIVAJeruOVrACoFK1N1ztIAVApWou+doASsEKlF3z9ECVghUou6eowWsEKhE3T1HC1ghUIm6e44WsEKgEnX3HC1ghUAl6u45WsAKgUrU3XO0gBUClai752gBKwQqUXfP0QJWCFSi7p6jBawQqETdPUcLWCFQibp7jhawQqASdfccLWCFQCXq7jlawAqBStTdc7SAFQKVqLvnaAErBCpRd8/RAlY2DHT+ZDqddd3i+XTn6OJCoPmoKz606h8G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" /><!-- --></p>
+</div>
+</div>
+<div id="training-and-test-subsets" class="section level1">
+<h1>Training and Test Subsets</h1>
+<pre><code>FALSE Warning in storage.mode(from) &lt;- &quot;double&quot;: NAs introduced by coercion</code></pre>
 </div>
 <div id="collaborative-filtering" class="section level1">
 <h1>Collaborative Filtering</h1>
 <p>Business/User Goal: Serendipity</p>
 <p>Recommend relevant items to targeted users that are different then items the user has already rated.</p>
-<div id="algorithm-1" class="section level2">
-<h2>Algorithm 1</h2>
+<div id="algorithm-1-user-based-with-method-cosine" class="section level2">
+<h2>Algorithm 1: User-Based with Method: Cosine</h2>
+<pre><code>FALSE               RMSE       MSE       MAE
+FALSE UBCF_N_C 1.3072070 1.7087901 1.1065321
+FALSE UBCF_C_C 0.6530245 0.4264410 0.4851501
+FALSE UBCF_Z_C 0.6501091 0.4226419 0.4867543</code></pre>
 </div>
 <div id="algorithm-2" class="section level2">
 <h2>Algorithm 2</h2>
@@ -169,6 +198,18 @@ FALSE  [ reached getOption(&quot;max.print&quot;) -- omitted 89 rows ]</code></p
 <li>May fail diversity test</li>
 </ul>
 <p>Add more later :)</p>
+<pre><code>FALSE Warning: package 'ordinal' was built under R version 3.5.3</code></pre>
+<pre><code>FALSE 
+FALSE Attaching package: 'ordinal'</code></pre>
+<pre><code>FALSE The following object is masked from 'package:dplyr':
+FALSE 
+FALSE     slice</code></pre>
+<pre><code>FALSE Warning: package 'text2vec' was built under R version 3.5.3</code></pre>
+<pre><code>FALSE 
+FALSE Attaching package: 'text2vec'</code></pre>
+<pre><code>FALSE The following object is masked from 'package:recommenderlab':
+FALSE 
+FALSE     normalize</code></pre>
 </div>
 <div id="conclusion" class="section level1">
 <h1>Conclusion</h1>
