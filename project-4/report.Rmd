@@ -101,13 +101,15 @@ We found that 80% of our raters were students students and 76% of our restaurant
 
 The folloing plots show the distribution of our ratings by patron budget and restaurant pricing. We can also see counts of ratings each restaurant received. On average, each venue received 13 ratings. 
 
-```{r}
+```{r, fig.height=2}
 ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#e4d1d1') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(data$budget, nrow=1)
 
 ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b0b0') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
-
+```
+```{r,fig.height=3}
 data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#686256") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
 ```
+
 
 
 # Matrix Building 
