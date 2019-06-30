@@ -10,7 +10,7 @@ output:
 
 ```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
 # data processing
-library(tidyr); library(dplyr); library(RCurl); library(jsonlite)
+library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)
 
 #formatting
 library(knitr); library(kableExtra); library(prettydoc); library(default)
@@ -49,9 +49,7 @@ Tasks:
 
 ## Data Selection
 
-Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https://www.kaggle.com/uciml/restaurant-data-with-consumer-ratings) collection, which contained several datasets pertaining to restaurants and their patrons. The cvs files are stored in our repository for replication of our work.
-
-We subsetted the restaurant/consumer data to limit the scope of our system to one city: San Luis Potosi, Mexico. After applying transformations in the following section, we identified 90 unique users and 75 different restaurants to build our recommender systems from. 
+Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https://www.kaggle.com/uciml/restaurant-data-with-consumer-ratings) collection, which contained several datasets pertaining to restaurants and their patrons. The csv files are stored within our repository in the data folder. 
 
 ```{r}
 data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") # cusine tags
@@ -73,23 +71,50 @@ We cleaned our data using transformations and regular expression unite our user 
 
 ```{r}
 ## restaurant dataframe
-restaurant <- data2 %>% select(placeID, name, city,price,franchise, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))%>%filter(grepl("slp|san|s\\.l\\.p",city)) %>% select(-city) 
+restaurant <- data2 %>% select(placeID, name, city,price,franchise, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))
 restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
+restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi"))
+restaurant$city<-factor(restaurant$city, exclude = NULL)
+
 
 ## user dataframe: select attributes of interest from profile
-user_profile <- data4 %>% select(userID, birth_year,budget,ambience,activity,weight)
+user_profile <- data4 %>% select(userID, birth_year,budget,activity, drink_level)
 user <- inner_join(data3,user_profile,by='userID') 
 user$budget <- factor(user$budget, levels = c("low", "medium", "high")) # set factor
-user <- user %>% mutate(weight = weight * 2.2) # convert kg to lbs
 
 ## change ratings from 0-2 scale to 1-3
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
 user$service_rating[user$service_rating==2]<-3;user$service_rating[user$service_rating==1]<-2;user$service_rating[user$service_rating==0]<-1
 user$food_rating[user$food_rating==2]<-3;user$food_rating[user$food_rating==1]<-2;user$food_rating[user$food_rating==0]<-1;
 
-
-## create user item matrix
+# combine user and restaurant
 data <- inner_join(user, restaurant, by="placeID") 
+
+# subset 
+data <- data %>% filter(city == "san luis potosi", activity=="student")
+```
+
+
+## Data Exploration
+
+We found that 80% of our raters were students students and 76% of our restaurants were located within the Mexican city of San Luis Potosi.  As a result, we subsetted our restaurant/patron data to limit the scope of our system to this specific population. After subsetting our raw data, we identified 78 unique users and 74 restaurants to build our recommender systems from. 
+
+The folloing plots show the distribution of our ratings by patron budget and restaurant pricing. We can also see counts of ratings each restaurant received. On average, each venue received 13 ratings. 
+
+```{r}
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#e4d1d1') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(data$budget, nrow=1)
+
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b0b0') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+
+data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#686256") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
+```
+
+
+# Matrix Building 
+
+```{r}
+## create user item matrix
+
 ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
 
 ## build two frames for comparison - mu = mean ratings imputation; na = imputed with 0 
@@ -103,28 +128,7 @@ ui_mtx_na[is.na(ui_mtx_na)] <- 0
 
 ## preview matrices (DELETE LATER)
 ui_matrix; ui_mtx_mu; ui_mtx_na
-
-## long matrices
-
-ui_mtx_mu
-
 ```
-## Data Exploration
-
-```{r}
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(data$budget, nrow=1)
-
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
-
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Activity") + facet_wrap(data$activity, nrow=1)
-
-ggplot(data, aes(x=birth_year)) + geom_histogram(bins=10, color='#000000', fill='#D47A7A') +labs(title="Raw Ratings Distribution by Birth Year") + facet_wrap(data$rating, nrow=1)
-
-ggplot(data, aes(x=weight)) + geom_histogram(bins=10,color='#000000', fill='#D47A7A') +labs(x="weight (lbs)", title="Raw Ratings Distribution by Activity") + facet_wrap(data$rating, nrow=1)
-
-
-```
-
 
 # Training and Test Subsets
 ```{r}
