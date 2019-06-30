@@ -113,10 +113,8 @@ Business/User Goal: Serendipity
 
 Recommend relevant items to targeted users that are different then items the user has already rated. 
 
-## Algorithm 1: User-Based with Method: Cosine
+## Algorithm 1: User-Based
 ```{r}
-#Method: Cosine
-
 #non-normalized
 UBCF_N_C <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = NULL, method="Cosine"))
@@ -148,7 +146,7 @@ p2@data@x[p2@data@x[] > 3] <- 3
 p3@data@x[p3@data@x[] < 1] <- 1
 p3@data@x[p3@data@x[] > 3] <- 3
 
-#compare the predictions using the different normalize methongs
+#compare the predictions using the different normalize methods
 error_UCOS <- rbind(
   UBCF_N_C = calcPredictionAccuracy(p1, getData(evalu, "unknown")),
   UBCF_C_C = calcPredictionAccuracy(p2, getData(evalu, "unknown")),
@@ -156,9 +154,6 @@ error_UCOS <- rbind(
 )
 error_UCOS
 ```
-
-
- 
 
 ## Algorithm 2
 
