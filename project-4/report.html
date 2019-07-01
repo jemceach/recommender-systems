@@ -14,7 +14,7 @@
 
 <meta name="date" content="2019-07-02" />
 
-<title>Project 4: Accuracy and Beyond in Restaurant Recommender Systems</title>
+<title>Accuracy and Beyond in Restaurant Recommender Systems</title>
 
 <script>$(document).ready(function(){
     if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
@@ -27,6 +27,70 @@
 </script>
 
 
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
 
 
 
@@ -53,7 +117,7 @@ code > span.ot { color: #007020; }
 <div class="col s12 m3">
 <div class="table cover">
 <div class="cover-card table-cell table-middle">
-<span class="author_name">Project 4: Accuracy and Beyond in Restaurant Recommender Systems</span>
+<span class="author_name">Accuracy and Beyond in Restaurant Recommender Systems</span>
 <span class="author_bio mbm">Christina Valore, Juliann McEachern, &amp; Rajwant Mishra</span>
 <span class="author_bio mbm">July 2, 2019</span>
 </div>
@@ -69,94 +133,4095 @@ code > span.ot { color: #007020; }
 <div id="overview" class="section level1">
 <h1>Overview</h1>
 <p>The goal of this assignment is give you practice working with accuracy and other recommender system metrics.</p>
-<p>Tasks:</p>
+<p><strong>Assignment Tasks</strong> (SUMMARIZE OUR PROCESS LATER):</p>
 <ol style="list-style-type: decimal">
 <li>Compare the accuracy of at least two recommender system algorithms against your offline data.</li>
 <li>Compare and report on any change in accuracy before and after you’ve made the change in the algorithms.</li>
 <li>Include at least one business or user experience goal such as increased serendipity, novelty, or diversity.</li>
-<li>Textual conclusion</li>
+<li>Textual conclusion.</li>
 </ol>
+<p><strong>GROUP NOTES</strong> (DELETE LATER):</p>
+<ul>
+<li>3 Matrices are defined. 1 has null values, 1 is imputed with the mean, 1 is imputed with 0. We do not have to use all of these. Just a starting place.</li>
+<li>Dataset includes many interesting categorical features. We could try 2 user-item algorthims and a hybrid approach.</li>
+<li>Lets try to do our best to minimize code chunks, add explanitory text for readers and within code chunks for us to follow.</li>
+<li>Add/reference sources at the end!</li>
+<li>Set important code chunks to <code>echo=T</code> if you want the reader to see the process.</li>
+</ul>
 <div id="data-selection" class="section level2">
 <h2>Data Selection</h2>
 <p>Our data was sourced from Kaggle’s <a href="https://www.kaggle.com/uciml/restaurant-data-with-consumer-ratings">Restaurant Data with Consumer Ratings</a> collection, which contained several datasets pertaining to restaurants and their patrons. The csv files are stored within our repository in the data folder.</p>
 </div>
 <div id="data-tranformations" class="section level2">
 <h2>Data Tranformations</h2>
-<p>We cleaned our data using transformations and regular expression unite our user and restaurant data into a user item matrix.</p>
-<p><strong>GROUP NOTES</strong> (DELETE LATER):</p>
-<ul>
-<li>3 Matrices are defined. 1 has null values, 1 is imputed with the mean, 1 is imputed with 0.</li>
-<li>Dataset includes many interesting categorical features. We could try 2 user-item algorthims and a hybrid approach.</li>
-<li>Lets try to do our best to minimize code chunks, add explanitory text for readers/within code chunks for us to follow.</li>
-<li>Add/reference sources at the end!</li>
-</ul>
+<p>We cleaned our data using transformations and regular expression unite our user and restaurant data. The output of which can be previewed below:</p>
+<table class="table" style="font-size: 10px; ">
+<caption style="font-size: initial !important;">
+User-Item Dataframe
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+userID
+</th>
+<th style="text-align:right;">
+placeID
+</th>
+<th style="text-align:right;">
+rating
+</th>
+<th style="text-align:right;">
+food_rating
+</th>
+<th style="text-align:right;">
+service_rating
+</th>
+<th style="text-align:left;">
+budget
+</th>
+<th style="text-align:left;">
+drink_level
+</th>
+<th style="text-align:left;">
+name
+</th>
+<th style="text-align:left;">
+price
+</th>
+<th style="text-align:left;">
+franchise
+</th>
+<th style="text-align:left;">
+alcohol
+</th>
+<th style="text-align:left;">
+smoking_area
+</th>
+<th style="text-align:left;">
+Rcuisine
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+U1077
+</td>
+<td style="text-align:right;">
+135085
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+medium
+</td>
+<td style="text-align:left;">
+social drinker
+</td>
+<td style="text-align:left;">
+tortas locas hipocampo
+</td>
+<td style="text-align:left;">
+mediumprice
+</td>
+<td style="text-align:left;">
+f
+</td>
+<td style="text-align:left;">
+nonalcoholic
+</td>
+<td style="text-align:left;">
+nonsmoking
+</td>
+<td style="text-align:left;">
+Fast_Food
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1077
+</td>
+<td style="text-align:right;">
+132825
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+medium
+</td>
+<td style="text-align:left;">
+social drinker
+</td>
+<td style="text-align:left;">
+puesto de tacos
+</td>
+<td style="text-align:left;">
+lowprice
+</td>
+<td style="text-align:left;">
+f
+</td>
+<td style="text-align:left;">
+nonalcoholic
+</td>
+<td style="text-align:left;">
+nonsmoking
+</td>
+<td style="text-align:left;">
+Mexican
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1077
+</td>
+<td style="text-align:right;">
+135060
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+medium
+</td>
+<td style="text-align:left;">
+social drinker
+</td>
+<td style="text-align:left;">
+restaurante marisco sam
+</td>
+<td style="text-align:left;">
+mediumprice
+</td>
+<td style="text-align:left;">
+f
+</td>
+<td style="text-align:left;">
+nonalcoholic
+</td>
+<td style="text-align:left;">
+nonsmoking
+</td>
+<td style="text-align:left;">
+Seafood
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1015
+</td>
+<td style="text-align:right;">
+135071
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+medium
+</td>
+<td style="text-align:left;">
+social drinker
+</td>
+<td style="text-align:left;">
+restaurante la cantina
+</td>
+<td style="text-align:left;">
+mediumprice
+</td>
+<td style="text-align:left;">
+f
+</td>
+<td style="text-align:left;">
+fullbar
+</td>
+<td style="text-align:left;">
+smoking
+</td>
+<td style="text-align:left;">
+Bar, Bar_Pub_Brewery
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1108
+</td>
+<td style="text-align:right;">
+135075
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+medium
+</td>
+<td style="text-align:left;">
+abstemious
+</td>
+<td style="text-align:left;">
+mariscos el pescador
+</td>
+<td style="text-align:left;">
+mediumprice
+</td>
+<td style="text-align:left;">
+f
+</td>
+<td style="text-align:left;">
+nonalcoholic
+</td>
+<td style="text-align:left;">
+nonsmoking
+</td>
+<td style="text-align:left;">
+Seafood
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1108
+</td>
+<td style="text-align:right;">
+132572
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+medium
+</td>
+<td style="text-align:left;">
+abstemious
+</td>
+<td style="text-align:left;">
+cafe chaires
+</td>
+<td style="text-align:left;">
+lowprice
+</td>
+<td style="text-align:left;">
+f
+</td>
+<td style="text-align:left;">
+nonalcoholic
+</td>
+<td style="text-align:left;">
+nonsmoking
+</td>
+<td style="text-align:left;">
+Cafeteria
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="data-exploration" class="section level2">
 <h2>Data Exploration</h2>
 <p>We found that 80% of our raters were students students and 76% of our restaurants were located within the Mexican city of San Luis Potosi. As a result, we subsetted our restaurant/patron data to limit the scope of our system to this specific population. After subsetting our raw data, we identified 78 unique users and 56 restaurants to build our recommender systems from.</p>
-<p>The folloing plots show the distribution of our ratings by patron budget and restaurant pricing. We can also see counts of ratings each restaurant received. On average, each venue received 13 ratings.</p>
-<p><img src="data:image/png;base64,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" /><!-- --><img src="data:image/png;base64,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" /><!-- --> <img src="data:image/png;base64,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" /><!-- --></p>
+<p>The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant’s categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings.</p>
+<p><img src="data:image/png;base64,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" width="100%" /><img src="data:image/png;base64,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" width="100%" /> <img src="data:image/png;base64,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" width="100%" /> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAGwCAMAAABB3CfxAAABxVBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZpAAZrYzMzM6AAA6ADo6AGY6OgA6OmY6ZmY6ZpA6ZrY6kLY6kNtNTU1NTW5NTY5Nbo5NbqtNjo5NjqtNjshmAABmADpmOgBmOmZmkJBmkLZmkNtmtpBmtrZmtttmtv9oYlZuTU1uTW5uTY5ubm5ubo5ubqtujo5uq6tuq8huq+SOTU2OTW6OTY6Obk2Obm6ObquOjk2Ojo6OjsiOq+SOyMiOyOSOyP+QOgCQZgCQZjqQZmaQkDqQkGaQkLaQtpCQttuQ27aQ2/+rbk2rbm6rbo6rjk2rjm6rjo6rjqurq26rq46rq8irq+SryKur5Mir5P+2ZgC2Zjq2kDq2kGa2tpC2ttu229u22/+2/7a2//+5sLDIjk3Ijm7Iq27Iq47Iq6vIyI7IyKvIyOTIyP/I5KvI5OTI5P/I/8jI/+TI///bkDrbkGbbtmbbtpDb25Db27bb29vb2//b/7bb/9vb///kq27kq47kyI7k0dHk5Kvk5Mjk5OTk5P/k/8jk/+Tk///r6+vw7+//tmb/yI7/yKv/25D/27b/29v/5Kv/5Mj/5OT//7b//8j//9v//+T///9qbmnWAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAgAElEQVR4nO1di58lR1W+mxAnE9Dg3l0HZl2fhDUh7M5kUcHNrCiCmSBios6KaAyDGPHFLKAoO9GQyMgMGwb27u2/13r1q+qcvl3dVd3Vd77v94Ps1O37nXp891TVqUfPMgBIGLOxMwAATYBAgaQBgQJJAwIFkgYECiQNCBRIGhAokDQgUCBp+Ar0/kzj59+gP3/4K2/6ZqH6lcd//aHZ7MmP1T5/fPepB/QfNh5dM7mbPdGYC8rKyqxRPDIz8hk7V0wtUY8CzegqUE4C95ulseIrDzc1+YernwcXKGllVdYoqMzIZziBWvmgHgWa4S1QXeWP/2p2uenzDpSZEtiH/zPL/v367DlfkgKrBeBhpU1pSIHStdShci48OgpUtLKs+vevm27s8Wdns0sfEw0lvIb44DuiC73067laHt/dkP+7P3vijeonX/2Q/Ff+FUVu/vFw86kH1a+KfxkD6o/iu9Uc5Ci1kpsS/9qcXfo1weRa0QQfeKOe1XrWctMlu2IQj4q/vq+eEf/4r+vGmFtLJiOP80drBSjyVjUDFOgo0J/ck22k+8pLr+i6n82eM01qerjnaq3+5ObsqQeVT2a1r0g8vpt7mO9ZgnmQG6j+IR1gkYMChUALU/m/NjLXSnZaFqG0V8taYVqzSlv3JNfDzcsVgX7geuWhei3dt+hqBSjyVjcD5OgzBn18V/7iv7u5IRrrw2K2IP5hOjzhKtWftVZXXqf8ZLYhxm+zjUrH9+jaRmmoLtDCgGlf890yB9b3qqYeXbv0hez9u7lALSuzj8lC1T12LWtl2SQebj4nxwgi/fTSK5UxqGDIvj0rnXS1lvKMFKOB0kKZt7oZIEdHgV4StSl9iEp64s2Hm0/+6t9m5g/5n+999Q82Z3WBGhkWn8i/lVjaCdQY0O2bf7fMgfW9qqlT5aCLtq9ZMan3jNgqWS2yVpYt//bDZz4n/Og9I2rzk3yzylytpTIjFYHmj5d5q5sBcnTq4r+z+ays+VPjJmRryf8++4b53EyTNyyVZeQnrQRaGDBDOPNRJQf171VNqV5Zm3KsSIcoS1IXaD1rRdkUhC5Pn/i7a8/J4aU1i39cDnMrtVRmpCLQ/PFK3upmAINuY9BT2aPV5PHd67pDk5+LLvAX/uhv/uuaK1Dqk1Kg5ejw28++YX/VGGgt0NKUJdCalTYCLcqWmUfvidnRhvxms0BNLZUZaRZo3Qxg0HGSZOZItSH9f/y+GOLrTlGmq97zXt6X6TYpP6EEWsyvH10TSdZXjYF6+1o5kMifLk1ZXXzNStnF2/bqWVNlyzTvb94V08CnvpLrkhdotZasMWj5C6vlrTQDGHQUqJKQmKJ8IRND/CfePJ394oPs8VdEM0uXIOr7gQzfqJ5ZhVdKgeafVFVQ+L8yQnk5q3+1MFBv3zIHRQZLgeamrElSzUo5SbKzWmStLJvhf/IZkXjpQxt5oL4WAnBrqVIb+aPl42XeLDOAQdc4qJrkmh72ch4jkW1QBmbkn+qJD1wvWz3/pKqCIg5arPHIhq59tTBQb98yBwXKWfyskqec1LVSxKmcrJqslWUzNTBTqpOuTgvUxI4IgZpIQzUjl60C2GEmLDNZ6CpQUZ8yDHndrGmrKLOcsz66Ptt4oILfX1B95rc3Z89+v5wkFZ9U2kh9xdC//9nNYpW89tXcgNW+ZQ5yFAOCSiZkMPw3KnOjqpWHJlBvZ7XMWlE2jdPZRj6QVU/KZ77PCFTVUpmR/NFqAYq8WWYAjQuzm0kv6qSJlPM2Ni6AQB9u/pzwvPeSnH6knLc0cAEEmvLoLuW8pYELINCkR3cp5y0JXASBAhMGBAokDQgUSBoQKJA0IFAgaXgK9P9qsP4MnR6ZfiSz06ZvaRYCna7ZadNDoMPRr6eC0qg0CHS6ZqdND4EOR7+eCkqj0iDQ6ZqdNj0EOhz9eioojUqDQKdrdtr0EOhw9OupoDQqDQKdrtlp00Ogw9Gvp4LSqDQIdLpmp00/BYF+nET8Qg+VDvr+ZscV6I8IQKAXgx4CDU+TmNlp00Og4WkSMzttegg0PE1iZqdND4GGp0nM7LTpIdDwNImZnTZ96gKVoAUaLksAUAIeFPQRzEKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zUKgEdNB398sBBoxHfT9zQ4i0PMb86tHWbbYnW+dQKCg9zE7hEAXu3vZ8dbJcl/8ZxsCBb2P2SEEev7iSbZ46WBx+yg7f/4IAgW9h9kBBWr+IxKeFpAf4AJbYDis6OKvHJxt5QKVkL8OeNALTJ+QB5WTpFuvVjwoBAr6pAQqIAagGIOC3t/sEAKVblNM35f7O5jFg97T7BACzc7mKgCKOCjovc0OIlAK0jgEeoHpIdDwNImZnTY9BBqeJjGz06aHQMPTJGZ22vQQaHiaxMxOm34SAiURv9BDpYO+v9lxBfo/BCDQi0EPgYanSczstOkh0PA0iZmdNj0EGp4mMbPTpodAw9MkZnba9BBoeJrEzE6bHgINT5OY2WnTQ6DhaRIzO216CDQ8TWJmp00PgYanSczstOkh0PA0iZmdNj0EGp4mMbPTpodAw9MkZnba9BBoeJrEzE6bHgINT5OY2WnTQ6DhaRIzO216CDQ8TWJmp00PgYanSczstOkh0PA0iZmdNj0EGp4mMbPTpodAw9MkZnba9KkLVIIWaLgsAUAJeFDQRzALgUZMB31/sxBoxHTQ9zcLgUZMB31/s2209P4b2cNnXoFAUzM7bfpwAm0hTggU9BBouEIPlQ76/mYZTX7wD2dPvPlwczabXZb/f1mI9OEznxf/ei7LHl2bXfr8B9+EQMc2O236fgLd3JBCFGq8L3QqPKgU6OZTD+Sfj65dFh89AYGObnba9D0FKrT5kweZ6t8LgT6n/jyV2rwPgY5vdtr0/QSqh52noou/VAhUpon/uy8cqRgDQKCjm502fX+BPrp26ZWqB4VAEzM7bfr+Aj2VSjx1PKjq4k/RxY9vdtr0AQQqHejmpVfkZKkiUEySUjE7bfoAY9B7YgT6x0Kd92YbFYGqMNPnINDxzU6bvpdAV0J1/xDouGanTR9NoLLnf3x3w0mHQEEfway/QLP7s9nM1ScECvoYZjsIlAEECvoIZiHQiOmg728WAo2YDvr+ZiHQiOmg728WAo2YDvr+ZiHQiOmg72+WVg/9nuzmKxUgUNBHMMsI9EcUINC0zE6bHgINT5OY2WnTjypQdVqE3JQHgYLeyywEGjEd9P3NxhCoXKzXMEv2y/35lYMsW+zOt04gUND7mI0h0MKD5jjcy862Tpb7e9nxNgQKeh+zHQXqdSZpcfso/8/580cQKOg9zHYT6OlsxY56defDzDx1/uKfyC7+/MWTbPHSgUh4WkCZIQXKCh0ADFYI9N6qm0XqG5rPb+xJdYpe3ghUQv464EEvMP2oXXx9DGpcZ+lBIVDQjyvQx3erAl38jlImxqCg9zcbR6BWBPRQdfHL/R3M4kHvaTaOQB9dm1UmSTIAevUIcVDQdzAbyYOuhjQOgV5gegg0PE1iZqdNH1egBBq6eAgU9F3NxhGokekvN9wdLo1DoBeYPgGBUhfkQKCg9zIbV6Do4kGfskDvwYOCPo5Aex6aM5OkSxiDgj6KQLsAYSbQRzBLq2eoY8ck4hd6qHTQ9zfLCJRybSt2atYFqo59XF4l0K8RgEAvBv24AlXvUZK32UOgoO9lNo5A257qhEAvLj0EGp4mMbPTpp9wF89M0cIVeqh00Pc3G0mgvSZJzDJBuEIPlQ76/mY7CfShfi93k0BXQhqHQC8wfUSByl1K5nWzEOiIZqdNH1Ggp/JM8T3bhdYE+vjuZfJlShAo6P3MdhGohLvXsybQexuZfToeAgV9B7MdBSo9ZINA+4WZINCLQB9VoFQACQIFfQSznQT6cNOZwweNg0KgF4A+okBJfVqz+FPEQUEfwmwXgeoLahtn8ashjUOgF5g+8izeBQQK+ghmIdCI6aDvb3Y0gSozpEA7HdkDLhTgQYOkg76/WQg0Yjro+5tlBDrQoTkI9OLS9xJoF8QXKLeRebDDoYk18bTp19CDeqVDoInT9xMopZyvQaBpNfG06SHQ5Ooa9B3MQqDD1TXoO5iFQIera9B3MAuBDlfXoO9gNkmBcuEkT4GOHn4CfX+znQR6Sr0eIaBA6XUsf4GO7VlB399sF4HKd9Dcd87DQaCxaNaTPnIX774oCQKNRbOe9JEFCg/qX9eg72C2m0AfbrrXz0OgsWjWkz6yB11xcQMECvowZrsKdMXVNxAo6MOY7SJQ+QI5eFD/ugZ9B7NdBCrPHWMM6l/XoO9gtpNASUCgsWjWkx4C5dK5ldTodQ36DmYvokAZmuh1DfoOZtdCoIxH9NxzEr2uQd/B7FoIlH6cS4dAk6DvJ9BxD81xAuVcIgQ6QfpeAu2CAQTqkw6BJk4PgUKgSdNDoBBo0vQpCfRsPr96lGWL3fnWCQQKeh+zQwj0/Pmj7Hg7W+7vyf9AoKD3MDuEQI1IF7ePlFYhUNC3NzuUQIXrPH/xJFu8dCD+eFpAJnIX2NJC9Ev/OHOJJO7HvahoEuj5jSsH2dlWLlAJ+euAB73A9Il5UKHM0oNCoKBPTaDZ4R7GoKD3NzuEQE3fvtzfwSwe9J5mhxBodjyfizEo4qCg9zc7iEApSOMQ6AWmh0BZgWJHfQr0ECgrUIYmel2DvoNZCLRMD+5Zp60gCDQ1gQYfm05bQRDoRAS62rGup4Ig0KkIdKVjXU8FQaAQaNCmnBg9BAqBJk0PgUKgSdNDoKHCTHiJyJhmIdDV6ZxAV3rWaSsIAvV+TxKnIMaVjSTQwTwrBDqWQKnkJs9KPz6aQIfyrBAoBAqBjm0WAoVAIdCxBOo5lIVAh6SHQIMFCSDQEc1CoKsFygUJINABzEKgqwVKJ0Ogg5iFQCFQCHRNBerZ9cduyonRQ6AjraRCoEHNQqDhBcpEt4IvgUKgEGgngTI0lGO9wEeeINCJCLS7Z4VAIdAhBNrZs0KgMQUqwV1gSwuUfXsTQ+N9Py5HTz8e6t5c3Kc7EAbwoD7pHTwoR+/nKeFBg5q9iALlptkQ6JD0EGgwegh0RLMQ6Op0CHREsxDo6vRAAuVGFpxwmehT56gUBAqBDnEcf11WUiHQqQjUx7NCoBComx5ZoFw6BKr+hEBXpkOgQ6ZDoBBoJ6UMlQ6BetNz02kINEY6BBqMHgKNkQ6BTkWgfnFQNhjglQ6BQqC90jssVHH0QzliCBQChUAhUIreU0E+QhxAoOjiIdDuQhxAoAw9BLr+AmVmJT5KGU+go3tWCDS6QBkaH6WMKNCxx6YQ6JoKNITjbrrQxydaFfAwNQTanZ5rYobGRykdBBqKnhMoQ8M4bgi0jYIi0zO+gzPr6YNYek8h+tKHEShnFgKtKmgU+pEct/dZVY4+kEA7e1YIFALt1C+EcNAQaL2uR6GfukBpmlBDXwi0Wtej0EOgEGjbuh6FfuoC5bp4pivnzHp1/Q3rAxBoaPqpC9QvPbbjhkCD00OgIR33oAJd7M63TiDQvmbXU6BM+pACXe7vZcfbEGhfsz6Du/ilimx2SIEubh9l588fQaBRzK5nqQYV6PmLJ9nipQPxr6cFZAr96+NvkvVKH4sepQppNiBWCvRsKxeoRGPwK3R6GntvQd/B7IACLT0oBAr6BAXqjkHHKvSamJ02fXoCXe7vWLP4sQq9JmanTZ+eQN046FiFXhOz06ZPUKA1jFnoNTE7bXoIdDj69VRQGpUGgU7X7LTpIdDh6NdTQWlUGgQ6XbPTpodAh6NfTwWlUWmjCbSOp+OmR6Yfyey06X3N9gYECvqYZnsDAgV9TLO9AYGCPqbZ3uglUACIDQgUSBoQKJA0IFAgaUCgQNKII9AfH4xBE8jqWJh49iMhikCX+1cOuI9ep5O/eEQk8jSeVmn+tOBZ2vHA1WWcOo7UxZ8xlb3cv0qWQh4s8aDxtMryB8Jyfx6C3rO0Y4Gryzh13Eugi935fI/6QLQYWdnLVz/B/MrKc3ktaKTdbSK9oYkJfjb3zAcNz/vQsOlNpWWyQ1VCk1n7+bM971rImLZqSO+FXgI93MvOqELI63JIrfz0G+Tjr+uvtKWR6Yvd9i6X4W/MPfEB93x2vCPFVR7caqZpTGdKSzzPVUITvf28yPWeZy2wbcWk90YPgWp3SJVOXvbAeDOqzOKnunVyZjcwT3P+4olwWsd246ifPPE4zU/m/kz+dbadLW6/ZeeTLe3y9eO58E3V1uFoGujJ0jY9T1RCIz1daWfzq361wLQV24a90Uegb6vsE22mff2hrRWtIKfMclh6OP+lT7WlEen/JjrVQ6u/Mj/5tvxU7pf7sobPn//W/p5wLtsrn8/pj8XXlq8erKJpoqdK2/i8Wwmr6KlKM+VpWwtcW/Ft2BvdBSrlxo2NZH+3/OK33qt9QCsoH5aeWX0kRyMnJIeS4tCyzbgOhp/J/XJ/W1PZU1KutIb+3XrTczTN9G5peR6yErjHBbvQJlFpnrXAtRWXHgKdBarlRo+NRP3Nb+6WLbbYNQUmFFQMSysuiKHRVHuqfdwBP+M6aH4u96LFRCcoPOKxPVqjnzf05zfq03iOpomeLi35PFcJzOOCXXgF4nk1LCF6QC6bTFux6SHQWaBGbtTYSJb8TnGdk6wC5R24zievoVptEDT5Q3JC8r+3bRchSAjPxPEzuReuQP6CapmsjsgoH0oNSwmapnSutNzzdCWwjy8+I39Ce+oWI8psm1qwCuuOZen0/ugs0OahVE0MYlil68ZRkA596NId18aaLo2GMyFR0FNR0mPN9yj+BndrD0EaRnbV7K+gaUznSss9T1cC87jIpJwISYWSZt3wJctDthVbx2HQY5LEOCw1GKuMddTEVPSBotewFZSHPsigjkWTw5qQKBozwX7Z8VgmVEJGGlh3W3v6xwcmekI835B9arbWlM6VlnmeqAT28cO9/DdGtJX8oJ1ZrrBNdRwCnQSqf5S0w9r6YX2ss/zSjR01CBU/YdsFNcSLbJo8fduZkDSEE+hRb1PubX8o1x81vfs8k33OrTal86V1nucqgXlcza+1Qp3H95hxLJlNpq3YsFYodBGo6VzcIZYa6m+dnP/WQTX5/MZNFSA+tCYGXzxyQx/v8jT5b9iekEjQoebXmVAJn3vCRcgO4IwekZGRmyZPY6e3KK3Nw1UCa1b9ulyF5vF5e1xK85BtpT6g6zggPAWqZgx6bG31MKK3MGNuN555Q1am0wJf33ZCH6paWJoGf/vfVDhB+I56x8znnqcvFOry71GRG46GCqx3KK0HfdXK8h/+tZZ3do2F5qHaSqW7dRwafgKtjGassbVM4yY2SqHustzipQOri9HrKBwNH58X2XIUqtug1jHzuRcJX36HjmRzCpVZf9kazXyTyaX8wE3nS0s/31QJTO7ppRETGHUU2mDWbSv1BbeOg8O3i1e/dWJsvdz/6P4ON9QvevnK43P9dptqF5Ov8xE0qqYdf1s6RNcD6dic1feoCDQ1M5BjTS6STS2fKotiVF3rIc9v3BKOmaBRHzi550tLPs9UQlPuucU1WTmU96TNkm2V07h1HBi+AlW/PSpQLudBZABdQffy1YRPfOrKX9bDfqrFpIQIGjVksh1WZXJKzVS4ODwZsRZNw0SyyeXT19Wysx26Wezeeo+pnFvvUb0FU1rqeaYS+NyLIX/DBIZcdaDNUm2lnybrODB8BXqmO1Pnx5Qd3pGrIPZAk8byPVnbYqBfq4i3lMRVUpVG+MliyFQzu/ymdueE285XZugINDEz2FFUFj2/fLp/9Z/1QKH+0fEd1U+4laM/qKUzpWWfZyqBy70KlTK7CtT4m1IoaZZsq4yt49Dw9qC3j+gxjai43bae/nB+9Uh6vuMXrfWgj+47FNJP0nEkOW5g3Lnp9z9t5ZQLfJ/tKInXZ06yw/sLpoWFVA5Vn/dWZf+1rISPEBvgVOCGGIJTpW14ng+mEbk/VrP2xT9R0ds//YYaXNibcBizTFuxdRwaXgIVTfXyq8SMwfSE7RUqnt4mBtY0AbfDUfZIqtFcD8RO18j++suyMWU8+1ZtW4rqsKkpqhp6qd/FTm0PkwzQ3BSyI+NLC+cDprrY55lgGpV7/d4gIbkXiGX/q0dyeOFuwuHNUm3F13FYeAn07QPZc8zn9rGNvCdkdhFb0KHgY2r7ONlmynWQ6ymiR2IWMJh5FhWBNmeBjm9VJvZqhKk6PGJjR/4TldIwyzNy3mUCNDd3t98ts1Gmi6avfMCUln+em49TuTf5X8jaoSfeZ/VtKc1mmbZiV7/CwjtQL5vrnT+vp3kFa4ut3T94z/2Q9irsUtrCVaiuUrff5wPot5QXPK5Gvv9RB7bF89R6fRF2evs1TaZkSgRouHSutPzz/GZXIveGSG0pqSQra2bjUW3S2myWaCuujmOgvUDNGtsZfRiodbB2+SU2pKytVCOF+ZEZbtibuT3S1w/03MPu96kItJx/mRlGdv57tVzmCnU6vKwMjJ7/tlmfUTE2Ir7EpdOlbXqe2Z7P5L44JVWbbOo9ZWQfwpllwv9cHcdAa4HmPyZ7z4HpBNoGa8XP7qrzU1URbvLZ/MgMN+zNrI5TnxqlTrERHkKqkJwfZRWF1vtlMwN2zwpsZ/TCNpHOlLaJh9uez+Xe5LDqQCt7yojtALTZ5Zdot8rVcQy0Eajej5SPUerdu9Ft6/5dDIHcn6qOcFOWqSMz+hMmAKSnuu42EHdHuYycaPfjzo8yYvna9JDkDFjH2Nz4EpnOlpbnyZw+SuTeOHcy96LPl+NtK+yq95S59cmYFUr8XSr8T9ZxLLQQqD4Oyy29NXbYVRRDINLTFFUsd9dqyAnZp5nQCj3slUJULWGvchE7ysVzeRTAmmEU36optOgh3Rmw7ETuEINnPp0oLfu8GVrV+yiV+ytaKGTu5deqx5sqe8paZFO7VOFM3LZi6jga2njQxe0/u+Iu4Z3f0As57BSgjuoQyPEQJsKtbP2LkYUO5fHbDKmTOntqIuHIn9hRrupYTHYl/zF97cKyGqas9pA37ZGjHG24yuLSydLyz5sBX32Xv869WjNhcm+D2VNGmtVtpedTVltxdRwNrcagxzvHV+y1tMP5y6oBG6YAVTQNgSRMhKqsjnysS2+g3CNP/GghWt8gd5TrMZr8DYinrRkGl/28h7SXbc1o444dY+PSqdKyz5MDviL3aqq2OvcK9J4yymzRVtTclKzjiGglUJHb40JgGmd5LLRdsKFpCKQvjlET5ooFEy1Y7L7gjJj2yA2apRDrBsgd5X9/o5iEtqlrroeUo5A9YrTBpXOl5Z8nB3xl7n2E4u4po81W2oqI4ZF1HBErBGpWbEX91I+bmNmFEhw1pLfQPATaM//dfqf6CzAjwGNL/OxWxooQK7Nsbkf5+Y1t6pQOC7KHPDa09miDS8+Y0jY8b/Rih3+8cp+HDew9ZbTZWltZ9UzXcVQ0C1RkVq13Sw0e1xpZ7pURv6bWwQZ2CFS5OKam9Jz52JlMk/MmTojcjnLpIrx8ANFDFj7ZGm1w6SqJKC3/vFk/Is5Yk7kvrlP62Un9YRk2WOxuvVMbnLBmubbi6jgqVnXxol2kJNyd3Td0XbiC44kyMrTLHFE0Ltv+QFQSuX+MEKIZJFA7ynWG/Ib5bg9ZjEJu1ftlLl2CKi37PLufk8l9fo5Dz19LyLCBu0bHZ5NpK/bHHhMrx6C6XZzld4OFu02wmcjSs/zNv8AcUZTTU7taVQdPj39sIcrR61V+VtZFodaua24UwqVzpSWfV8tVJtjbTqHVwc9ZfagsZkBOZvhsckcg+B97RKyeJKmf0+J1YuHcisSsJrppl9m4COeIYv6FuR1C0aEP+qijnSoa4JgOTBf8frFm+3l+FEKnc6Uln3/38MpBMX+hBnxO7vnbo+Y7lNq4bGpyp63IOo6PFrN4rh0PfYNhNSK1gphf2NHy/lduD7dZziIOQMoYQ7weiR6FUOnNpaV5DrUPrU2bGq4J5+/K2svoXQVc9iVc+ZN1HB9twky+nqYNdEH9zqzqOrLCTuqkF72cdbwtPfxilxmeBAA1CqHSV5WW5hEKteYvTXerc7dH5ffkOLv9+Ow73HwdR8dIb/ko+iyfM6umjuoK1Rvf6aOIu9GXO4hRCJG+urQ0z+HVb9lyZqM77O1R3CS0KfvOY2wdR8egAi1WnstqbrkNij3Rq6eozHIWMfwfA96lLXDoXtusV9h/5gxbGtwzMwlthrVLgK3j2IgrULOh01RasfJcnGjM2p5ZZU/06ikqs5w1xH7F1fAvbQF7b2N+TbgdR9J26GtH94h7cqhc1pqqvkugqY5jI6pAzYZOM9cvI9OVE41twZ7ozfTKNr2cFatHYl6mQ6NDaRXOtp1vldeE1+NIKg5ouWfhfU3YwL0nxx1m1JvKrU6+jiMjchevN3SqiWS1eOyJRhb0iV7jIeiN7wLnn4kyg+depsPAv7QKP2hzTbgSqh5h1t2zfJQ7F0++MKbSVFZbNddxZMQV6PLV1/K1/Lq0PA6AZqaOqFBecQUWMUWNh/zGa3cgyIAubdGjtuShrgk3S+PEdVPyHMcnuXGpEvrP7ChtsS2l1lbj1HGBuAL96TeuvKb3Otjdg5dCD82pZus3zF+BFRfFwbPWEVaytMXJnnY8zDXh6g4e6ropZZM6F29eGGObFaUy21KqbTVWHReIPYs/u/IaPaymP8EAAAhtSURBVLZur9DySg37gBD7mpHYMCbPWht2S1vd6NmKh7kmXB9nIa6bUuc4iFPT5QtjbLNyV4rdVOPVsUFEgeYHzF6jC9dKobIiG+pohHpjj5mu+hrd8u2jTvRFCXrzjDN7VLM4YZPYjkq/lIe9DmdM7ykRR6DqKh/mgJkX9AF15kw8fS9oXAS88dr3ZA95CVW+eaa61Xsv36lE+G33hTFNbTVOHdcQRaDqSNcOecDMF0tOody9oPGQD+pC3HhtWr5tYJG7JpzaPKMmO2c75nvkZpusMqVqaqvh69hFDIHmB9KIA2b+4BTK3QsaDfokme/uAR2BtOfpHi3fdE24zpbDIbeQsiOH/HkzVmhsq8HrmEAEgZYH0oLsM3E3yJqjNNSQLB7Kk2Ttdw8UF3zY8/S85VcPFJquCedumxJJn54T+76IF8mwbTVKHVOIINDKgbQgsBVq9i8Oc3dVjvIkWfv19OVucb7DmjAXLb/qZE/TpejcbVMqXiqffffdlc9zbTVKHZOI0cX7HkhbhfqKX74+PejacOUkmfM2JvY7+3NnI1F+21TLlm+4JpzdAMfuuyOfp9tqlDqmEWWS5HsgzQvFUZqdQfeC8Kf+GMgJs72RqLhtirjIm0DjNeHs+4vJfXfL15nnybYaqY4pxAozxfvZNRyliQr21B8DPWG2NxIVt021IeKvCWffX0ztu8vjTszzRFuNVccEIgXqIyq06ShNVHAnyVjYG4nUXOnMZ2WG22bCvr9Y261P44q4E7cp0W2r0erYRayVpBjHRAyajtJEBXGSjAM1wTaXBXmF+JnlNu79xcxdmEXcid4wR7TVaHXsILRAvXZKdkTbozTB0fpXR02Yi8uCeiuUfX8xexcmE3dqwGh1bCOwQD13SnZEy6M044GYMFcuC+qrUPb9xU3vQ6TiTk3OJJU6DivQfKk3s860XDRQE2bfy4JyOHdXcBfQyBe7+rwPsXQmKbdVWIEWS73WmZYLBekryfchelwW1HBNOHcBjdSbz/sQS2eSdFuFHoOaehjl+EoaUG9f4yPc7S4Loq8Jb7ptSumNMsttbymcSdptFVCglZ2SUcpc3N2WNMxbZrkqaHt6jromnLttqvp+mfppImmLuyw9d6pp6zOgQCs7JaOUuXjhXOujQKOAfMusgcdlQeQ14fRtU9z7ZfJ0+rL0vNtPXJ8BBVp2JcHLrLZa5PweR4GGh5yoHBUH0HqBuCacvG2Ku1y9THe3t5TX5t1JXJ9BBNrQlQRBHlTJ+dsfBRoaaqKyLVX1Vp9wG30pekbeNsVdrl5JrzZK7LYKjgACbehKQkEHEePxB0I5Udnxv2umBHMpukpxDrUxl6sz6QO0VWD0F2hTVxIK+t7vePxhsNz/pHJhlbfMKlRv/2kTcWQuRVcfUUvp9DYrKn2ItgqM3gJlupKgMPd+p94nyVsAdCf7dvUka/FG1rYRx4b76Kg9UNw2Kzd9iLYKjb4CbXp/Ryg03PudGMwZ6+ItswrlAmSb2WPTpegZfdsUt83KTh+irYKjfxfvvZPXG8y932mBvwWgWIBso8/mS9GZ26a4bVZOevy2Co4AkyTfnbwdkLY4m14zK2EWIFfqU27l8LwU3YDbZuWkD9BWgREizOS9k9cH7NHFZNDwmlmde70AuVKf+gBn5ABQ1LaKgSCBeo+dvL7gji6mg4bXzBa5b9O55wfkIgeAIrZVFIRZSYqzf37Mu/tbg3/N7OHWiUfuiwPIsQNAEc86xEA/gcbdPz/m3f1twc+MZSS09cvKK/eETyYANAx6CTT2/vkR7+5vD3pmfLj1w/2P7u+0zn3Xe8LXHn0EWtk/Hwcj3t3vAWpmLN3nYpc50E6i4z3ha48+AjVbEGNufxvt7n4fEDNjeQH3XN4g2z73SRxRSw/9xqBybh1r+5uOL411d78XyDdbbvtqDgql0Fmglf3z4be/mVeoKP85zt39fnBnxod3oNAg6CrQgDcNu1AT4NTjS6tgfKhPAaBQF10FGuimYRr6FSppx5eaoC5EPoHcQsBfoEPsyZY2ko8vscgvRJ7UkmKq8BboIHuy5Qgu/fgSB7+bs/PDqmmfBRwNvgIdak+29KHJx5dc+N+cnQ/mkz4LOCI8BTrEnmztUiY5gvO7Obt2WDVGMGQd4CfQQfbPG5cywRGc383Z9mFVgIJvFx9/T3bU+EBc+N6cPZHDqqPCe5IUc0+2GcFN1qX43pw9jcOq48I/zBRvT3Z+4fRkXYrnzdkTOaw6LjoE6mPtyS6Okk/XpXjdnD2dw6pjostKUqQ92cUI7tZ0XYrPzdmTOKw6OmK/L94DCb37pDta35yt3gcHca5EQgJN6N0nXbHYbZt3vVnrBSh0FRISaELvPvGH2r3qsbhgNmtBoauQkkDTefeJN7RDbDd0VvfPtz9Od8GRlECTefeJFw5Ft+6ze1XfPz/dzVrDIi2BThEqOublENX989PdrDUsINC+kLurd7wcorl/foKbtUYABNobatTsc754Pv/I9DbCjAUItDf0+bi2DlFPp25O4bBqEoBAe0I6xDstIw+V6dTNKRxWTQEQaD/o3avtFOo/nQIg0J4wu1fvtBlU+k+nAAi0O/x3r3pOp4AMAu2ODrtX/aZTgAQE2hHddq9OcyF3TECgHeG/e1WdVoVCPQGBdoT37lVzWnWCh1VHBQTaEd67Vyd8WnVMQKBd0X73qpru4wB8N0CgndF292rhYyd7WnVMQKDd0W73avne4+meVh0REGhslNeNoH/vAAg0NtbisOp4gEBjYw0Oq44JCDQ6pnxYdXxAoPEx3cOqCQACHQCTPKyaCCBQIGlAoEDSgECBpAGBAkkDAgWSBgQKJA0IFEgaECiQNCBQIGlAoEDSgECBpPH//4DIGRwZnT4AAAAASUVORK5CYII=" width="100%" /></p>
 </div>
-</div>
-<div id="matrix-building" class="section level1">
-<h1>Matrix Building</h1>
-<pre><code>FALSE    userID 132572 132754 132755 132825 132834 132845 132846 132851 132854
-FALSE 1   U1001     NA     NA     NA      3     NA     NA     NA     NA     NA
-FALSE    132856 132858 132861 132862 132866 132869 132870 132872 132885 132937
-FALSE 1      NA     NA     NA     NA     NA     NA     NA     NA     NA     NA
-FALSE    132951 132954 132955 132958 135025 135026 135027 135028 135030 135032
-FALSE 1      NA     NA     NA     NA      3     NA     NA     NA     NA     NA
-FALSE    135034 135035 135039 135041 135042 135044 135046 135048 135049 135052
-FALSE 1      NA     NA      2     NA     NA     NA     NA     NA     NA     NA
-FALSE    135053 135054 135055 135057 135058 135059 135060 135069 135071 135072
-FALSE 1      NA     NA     NA     NA     NA     NA     NA     NA     NA     NA
-FALSE    135073 135074 135075 135079 135085 135086 135106
-FALSE 1      NA     NA     NA     NA      1     NA     NA
-FALSE  [ reached getOption(&quot;max.print&quot;) -- omitted 77 rows ]</code></pre>
-<pre><code>FALSE    userID 132572 132754 132755 132825 132834 132845 132846 132851 132854
-FALSE 1   U1001      2      2      3      3      2      2      3      2      2
-FALSE    132856 132858 132861 132862 132866 132869 132870 132872 132885 132937
-FALSE 1       2      2      2      2      2      2      2      2      2      2
-FALSE    132951 132954 132955 132958 135025 135026 135027 135028 135030 135032
-FALSE 1       2      2      3      2      3      2      2      2      3      2
-FALSE    135034 135035 135039 135041 135042 135044 135046 135048 135049 135052
-FALSE 1       3      2      2      2      2      2      2      2      2      2
-FALSE    135053 135054 135055 135057 135058 135059 135060 135069 135071 135072
-FALSE 1       2      2      3      2      2      3      2      2      2      2
-FALSE    135073 135074 135075 135079 135085 135086 135106
-FALSE 1       3      3      3      2      1      2      2
-FALSE  [ reached getOption(&quot;max.print&quot;) -- omitted 77 rows ]</code></pre>
-<pre><code>FALSE    userID 132572 132754 132755 132825 132834 132845 132846 132851 132854
-FALSE 1   U1001      0      0      0      3      0      0      0      0      0
-FALSE    132856 132858 132861 132862 132866 132869 132870 132872 132885 132937
-FALSE 1       0      0      0      0      0      0      0      0      0      0
-FALSE    132951 132954 132955 132958 135025 135026 135027 135028 135030 135032
-FALSE 1       0      0      0      0      3      0      0      0      0      0
-FALSE    135034 135035 135039 135041 135042 135044 135046 135048 135049 135052
-FALSE 1       0      0      2      0      0      0      0      0      0      0
-FALSE    135053 135054 135055 135057 135058 135059 135060 135069 135071 135072
-FALSE 1       0      0      0      0      0      0      0      0      0      0
-FALSE    135073 135074 135075 135079 135085 135086 135106
-FALSE 1       0      0      0      0      1      0      0
-FALSE  [ reached getOption(&quot;max.print&quot;) -- omitted 77 rows ]</code></pre>
-</div>
-<div id="training-and-test-subsets" class="section level1">
-<h1>Training and Test Subsets</h1>
-<pre><code>FALSE Warning in storage.mode(from) &lt;- &quot;double&quot;: NAs introduced by coercion</code></pre>
 </div>
 <div id="collaborative-filtering" class="section level1">
 <h1>Collaborative Filtering</h1>
-<p>Business/User Goal: Serendipity</p>
-<p>Recommend relevant items to targeted users that are different then items the user has already rated.</p>
-<div id="algorithm-1-user-based" class="section level2">
-<h2>Algorithm 1: User-Based</h2>
-<pre><code>FALSE           RMSE       MSE       MAE
-FALSE ub_n 1.7150530 2.9414067 1.6427304
-FALSE ub_c 0.8424275 0.7096842 0.7379252
-FALSE ub_z 0.8418857 0.7087715 0.7374367</code></pre>
+<p><strong>ADD TEXT EXPLINATION OF BUSINESS/USER GOALS: Serendipity? Goal to be recommending relevant items to targeted users that are different then items the user has already rated?</strong></p>
+<div id="matrix-building" class="section level2">
+<h2>Matrix Building</h2>
+<p>We further transformed our data into a user-item matrix to build our recommender systems.</p>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table" style="font-size: 10px; ">
+<caption style="font-size: initial !important;">
+User Matrix Preview (Ratings Preserved as NA)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+132572
+</th>
+<th style="text-align:right;">
+132754
+</th>
+<th style="text-align:right;">
+132755
+</th>
+<th style="text-align:right;">
+132825
+</th>
+<th style="text-align:right;">
+132834
+</th>
+<th style="text-align:right;">
+132845
+</th>
+<th style="text-align:right;">
+132846
+</th>
+<th style="text-align:right;">
+132851
+</th>
+<th style="text-align:right;">
+132854
+</th>
+<th style="text-align:right;">
+132856
+</th>
+<th style="text-align:right;">
+132858
+</th>
+<th style="text-align:right;">
+132861
+</th>
+<th style="text-align:right;">
+132862
+</th>
+<th style="text-align:right;">
+132866
+</th>
+<th style="text-align:right;">
+132869
+</th>
+<th style="text-align:right;">
+132870
+</th>
+<th style="text-align:right;">
+132872
+</th>
+<th style="text-align:right;">
+132885
+</th>
+<th style="text-align:right;">
+132937
+</th>
+<th style="text-align:right;">
+132951
+</th>
+<th style="text-align:right;">
+132954
+</th>
+<th style="text-align:right;">
+132955
+</th>
+<th style="text-align:right;">
+132958
+</th>
+<th style="text-align:right;">
+135025
+</th>
+<th style="text-align:right;">
+135026
+</th>
+<th style="text-align:right;">
+135027
+</th>
+<th style="text-align:right;">
+135028
+</th>
+<th style="text-align:right;">
+135030
+</th>
+<th style="text-align:right;">
+135032
+</th>
+<th style="text-align:right;">
+135034
+</th>
+<th style="text-align:right;">
+135035
+</th>
+<th style="text-align:right;">
+135039
+</th>
+<th style="text-align:right;">
+135041
+</th>
+<th style="text-align:right;">
+135042
+</th>
+<th style="text-align:right;">
+135044
+</th>
+<th style="text-align:right;">
+135046
+</th>
+<th style="text-align:right;">
+135048
+</th>
+<th style="text-align:right;">
+135049
+</th>
+<th style="text-align:right;">
+135052
+</th>
+<th style="text-align:right;">
+135053
+</th>
+<th style="text-align:right;">
+135054
+</th>
+<th style="text-align:right;">
+135055
+</th>
+<th style="text-align:right;">
+135057
+</th>
+<th style="text-align:right;">
+135058
+</th>
+<th style="text-align:right;">
+135059
+</th>
+<th style="text-align:right;">
+135060
+</th>
+<th style="text-align:right;">
+135069
+</th>
+<th style="text-align:right;">
+135071
+</th>
+<th style="text-align:right;">
+135072
+</th>
+<th style="text-align:right;">
+135073
+</th>
+<th style="text-align:right;">
+135074
+</th>
+<th style="text-align:right;">
+135075
+</th>
+<th style="text-align:right;">
+135079
+</th>
+<th style="text-align:right;">
+135085
+</th>
+<th style="text-align:right;">
+135086
+</th>
+<th style="text-align:right;">
+135106
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+U1001
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1002
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1003
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1005
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1006
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1007
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="algorithm-2" class="section level2">
-<h2>Algorithm 2</h2>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table" style="font-size: 10px; ">
+<caption style="font-size: initial !important;">
+User Matrix Preview (NA=Mean Rating)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+132572
+</th>
+<th style="text-align:right;">
+132754
+</th>
+<th style="text-align:right;">
+132755
+</th>
+<th style="text-align:right;">
+132825
+</th>
+<th style="text-align:right;">
+132834
+</th>
+<th style="text-align:right;">
+132845
+</th>
+<th style="text-align:right;">
+132846
+</th>
+<th style="text-align:right;">
+132851
+</th>
+<th style="text-align:right;">
+132854
+</th>
+<th style="text-align:right;">
+132856
+</th>
+<th style="text-align:right;">
+132858
+</th>
+<th style="text-align:right;">
+132861
+</th>
+<th style="text-align:right;">
+132862
+</th>
+<th style="text-align:right;">
+132866
+</th>
+<th style="text-align:right;">
+132869
+</th>
+<th style="text-align:right;">
+132870
+</th>
+<th style="text-align:right;">
+132872
+</th>
+<th style="text-align:right;">
+132885
+</th>
+<th style="text-align:right;">
+132937
+</th>
+<th style="text-align:right;">
+132951
+</th>
+<th style="text-align:right;">
+132954
+</th>
+<th style="text-align:right;">
+132955
+</th>
+<th style="text-align:right;">
+132958
+</th>
+<th style="text-align:right;">
+135025
+</th>
+<th style="text-align:right;">
+135026
+</th>
+<th style="text-align:right;">
+135027
+</th>
+<th style="text-align:right;">
+135028
+</th>
+<th style="text-align:right;">
+135030
+</th>
+<th style="text-align:right;">
+135032
+</th>
+<th style="text-align:right;">
+135034
+</th>
+<th style="text-align:right;">
+135035
+</th>
+<th style="text-align:right;">
+135039
+</th>
+<th style="text-align:right;">
+135041
+</th>
+<th style="text-align:right;">
+135042
+</th>
+<th style="text-align:right;">
+135044
+</th>
+<th style="text-align:right;">
+135046
+</th>
+<th style="text-align:right;">
+135048
+</th>
+<th style="text-align:right;">
+135049
+</th>
+<th style="text-align:right;">
+135052
+</th>
+<th style="text-align:right;">
+135053
+</th>
+<th style="text-align:right;">
+135054
+</th>
+<th style="text-align:right;">
+135055
+</th>
+<th style="text-align:right;">
+135057
+</th>
+<th style="text-align:right;">
+135058
+</th>
+<th style="text-align:right;">
+135059
+</th>
+<th style="text-align:right;">
+135060
+</th>
+<th style="text-align:right;">
+135069
+</th>
+<th style="text-align:right;">
+135071
+</th>
+<th style="text-align:right;">
+135072
+</th>
+<th style="text-align:right;">
+135073
+</th>
+<th style="text-align:right;">
+135074
+</th>
+<th style="text-align:right;">
+135075
+</th>
+<th style="text-align:right;">
+135079
+</th>
+<th style="text-align:right;">
+135085
+</th>
+<th style="text-align:right;">
+135086
+</th>
+<th style="text-align:right;">
+135106
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+U1001
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1002
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1003
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1005
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1006
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1007
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table" style="font-size: 10px; ">
+<caption style="font-size: initial !important;">
+User Matrix Preview (NA=0)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+132572
+</th>
+<th style="text-align:right;">
+132754
+</th>
+<th style="text-align:right;">
+132755
+</th>
+<th style="text-align:right;">
+132825
+</th>
+<th style="text-align:right;">
+132834
+</th>
+<th style="text-align:right;">
+132845
+</th>
+<th style="text-align:right;">
+132846
+</th>
+<th style="text-align:right;">
+132851
+</th>
+<th style="text-align:right;">
+132854
+</th>
+<th style="text-align:right;">
+132856
+</th>
+<th style="text-align:right;">
+132858
+</th>
+<th style="text-align:right;">
+132861
+</th>
+<th style="text-align:right;">
+132862
+</th>
+<th style="text-align:right;">
+132866
+</th>
+<th style="text-align:right;">
+132869
+</th>
+<th style="text-align:right;">
+132870
+</th>
+<th style="text-align:right;">
+132872
+</th>
+<th style="text-align:right;">
+132885
+</th>
+<th style="text-align:right;">
+132937
+</th>
+<th style="text-align:right;">
+132951
+</th>
+<th style="text-align:right;">
+132954
+</th>
+<th style="text-align:right;">
+132955
+</th>
+<th style="text-align:right;">
+132958
+</th>
+<th style="text-align:right;">
+135025
+</th>
+<th style="text-align:right;">
+135026
+</th>
+<th style="text-align:right;">
+135027
+</th>
+<th style="text-align:right;">
+135028
+</th>
+<th style="text-align:right;">
+135030
+</th>
+<th style="text-align:right;">
+135032
+</th>
+<th style="text-align:right;">
+135034
+</th>
+<th style="text-align:right;">
+135035
+</th>
+<th style="text-align:right;">
+135039
+</th>
+<th style="text-align:right;">
+135041
+</th>
+<th style="text-align:right;">
+135042
+</th>
+<th style="text-align:right;">
+135044
+</th>
+<th style="text-align:right;">
+135046
+</th>
+<th style="text-align:right;">
+135048
+</th>
+<th style="text-align:right;">
+135049
+</th>
+<th style="text-align:right;">
+135052
+</th>
+<th style="text-align:right;">
+135053
+</th>
+<th style="text-align:right;">
+135054
+</th>
+<th style="text-align:right;">
+135055
+</th>
+<th style="text-align:right;">
+135057
+</th>
+<th style="text-align:right;">
+135058
+</th>
+<th style="text-align:right;">
+135059
+</th>
+<th style="text-align:right;">
+135060
+</th>
+<th style="text-align:right;">
+135069
+</th>
+<th style="text-align:right;">
+135071
+</th>
+<th style="text-align:right;">
+135072
+</th>
+<th style="text-align:right;">
+135073
+</th>
+<th style="text-align:right;">
+135074
+</th>
+<th style="text-align:right;">
+135075
+</th>
+<th style="text-align:right;">
+135079
+</th>
+<th style="text-align:right;">
+135085
+</th>
+<th style="text-align:right;">
+135086
+</th>
+<th style="text-align:right;">
+135106
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+U1001
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1002
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1003
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1005
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1006
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+U1007
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="training-and-test-subsets" class="section level2">
+<h2>Training and Test Subsets</h2>
+<p>Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the <code>recommenderlab</code> package. 90% of data was retained for training and 10% for testing purposes.</p>
+</div>
+<div id="algorithm-1-user-based-christina" class="section level2">
+<h2>Algorithm 1: User-Based (Christina)</h2>
+<p>ADD TEXT ETC.</p>
+<div id="process" class="section level3">
+<h3>Process</h3>
+<p>Text</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># non-normalized</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2">ub_n &lt;-<span class="st"> </span><span class="kw">Recommender</span>(<span class="kw">getData</span>(evalu, <span class="st">&quot;train&quot;</span>), <span class="st">&quot;UBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">normalize =</span> <span class="ot">NULL</span>, </a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">    <span class="dt">method =</span> <span class="st">&quot;Cosine&quot;</span>))</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co"># centered</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6">ub_c &lt;-<span class="st"> </span><span class="kw">Recommender</span>(<span class="kw">getData</span>(evalu, <span class="st">&quot;train&quot;</span>), <span class="st">&quot;UBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">normalize =</span> <span class="st">&quot;center&quot;</span>, </a>
+<a class="sourceLine" id="cb1-7" data-line-number="7">    <span class="dt">method =</span> <span class="st">&quot;Cosine&quot;</span>))</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co"># Z-score normalization</span></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10">ub_z &lt;-<span class="st"> </span><span class="kw">Recommender</span>(<span class="kw">getData</span>(evalu, <span class="st">&quot;train&quot;</span>), <span class="st">&quot;UBCF&quot;</span>, <span class="dt">param =</span> <span class="kw">list</span>(<span class="dt">normalize =</span> <span class="st">&quot;Z-score&quot;</span>, </a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">    <span class="dt">method =</span> <span class="st">&quot;Cosine&quot;</span>))</a></code></pre></div>
+</div>
+<div id="predictions" class="section level3">
+<h3>Predictions</h3>
+Text
+<table class="table" style="font-size: 10px; ">
+<caption style="font-size: initial !important;">
+Prediction Comparisons
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+RMSE
+</th>
+<th style="text-align:right;">
+MSE
+</th>
+<th style="text-align:right;">
+MAE
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ub_n
+</td>
+<td style="text-align:right;">
+1.3024192
+</td>
+<td style="text-align:right;">
+1.6962957
+</td>
+<td style="text-align:right;">
+1.0466825
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ub_c
+</td>
+<td style="text-align:right;">
+0.7882086
+</td>
+<td style="text-align:right;">
+0.6212728
+</td>
+<td style="text-align:right;">
+0.7000245
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ub_z
+</td>
+<td style="text-align:right;">
+0.8006893
+</td>
+<td style="text-align:right;">
+0.6411034
+</td>
+<td style="text-align:right;">
+0.7051656
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="algorithm-2-raj" class="section level2">
+<h2>Algorithm 2 (Raj)</h2>
 </div>
 <div id="compare" class="section level2">
 <h2>Compare</h2>
@@ -182,8 +4247,14 @@ FALSE ub_z 0.8418857 0.7087715 0.7374367</code></pre>
 <li>May fail diversity test</li>
 </ul>
 <p>Add more later :)</p>
-<img src="data:image/png;base64,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" /><!-- -->
-<table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;">
+<div id="tfidf" class="section level2">
+<h2>TFIDF</h2>
+<p>We concatenated terms describing our restaurant and ran several evaluations of term frequency-inverse document frequency (TF-IDF). We modified our initial data transformations to ensure the proper terms were evaluated properly. For example, in our initial run “beer” and “wine” were calculated at the same frequency. These terms were initial stored as beer-wine, but were separated by our <code>textmineR</code> package functions.</p>
+<p>We combined similar text-strings without spacing or punctuation to ensure their appropriate relevancies and concatenated these restaurant features strings as “tags” for natual language processing evaluation. The statistics of our most important words can be viewed below.</p>
+<table class="table" style="font-size: 10px; ">
+<caption style="font-size: initial !important;">
+Top TF-IDF Result
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -344,6 +4415,7 @@ cafeteria
 </tbody>
 </table>
 </div>
+</div>
 <div id="conclusion" class="section level1">
 <h1>Conclusion</h1>
 <p><strong>As part of your textual conclusion, discuss one or more additional experiments that could be performed and/or metrics that could be evaluated only if online evaluation was possible. Also, briefly propose how you would design a reasonable online evaluation environment.</strong></p>
@@ -352,7 +4424,7 @@ cafeteria
 <div id="references" class="section level1">
 <h1>References:</h1>
 <p><a href="https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/"><strong>Building Recommenders</strong>:</a> Overview of Recommender Algorithms</p>
-<p><a href="https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf"><strong>recommenderlab: A Framework for Developing and Testing Recommendation Algorithms</strong>:</a></p>
+<p><a href="https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf"><strong>recommenderlab</strong>:</a>A Framework for Developing and Testing Recommendation Algorithms</p>
 </div>
 </article>
 </div>
