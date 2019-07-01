@@ -23,7 +23,7 @@ library(recommenderlab); library(textmineR)
 
 # global options
 ## knit sizing
-options(max.print="75"); opts_knit$set(width=75) 
+options(max.print="100"); opts_knit$set(width=75) 
 
 ## augment chunk output
 opts_chunk$set(echo=F,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
@@ -115,7 +115,7 @@ We found that 80% of our raters were students students and 76% of our restaurant
 The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant's categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings. 
 
 ```{r, fig.height=2, out.width = '100%'}
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#e4d1d1') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(data$budget, nrow=1)
+data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#e4d1d1') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(~budget, nrow=1)
 
 ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b0b0') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
