@@ -92,7 +92,7 @@ restaurant <- inner_join(restaurant, cuisine, by="placeID")
 ##select attributes of interest from profile
 user_profile <- data4 %>% select(userID, budget,activity, drink_level)
 user <- inner_join(data3,user_profile,by='userID') 
-user$budget <- factor(user$budget, levels = c("low", "medium", "high")) # set factor
+user$budget <- factor(user$budget, levels = c("low"="lowbudgetbudget", "medium"="mediumbudget", "high"="highbudget")) # set factor
 
 ## change ratings from 0-2 scale to 1-3
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
@@ -122,11 +122,11 @@ ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b
 ```{r,fig.height=3, out.width = '100%'}
 data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#686256") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
 ```
+
 ```{r, fig.height=4.5, out.width = '100%'}
 # Cuisine bar plot. May or may not include. 
 data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#686256")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))+ scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
 ```
-
 
 # Collaborative Filtering 
 
@@ -266,6 +266,15 @@ preview <- tf_mat
 rownames(preview) <- NULL 
 preview %>% arrange(idf) %>% head(10) %>% kable(caption="Top TF-IDF Result") %>% kable_styling() 
 ```
+
+```{r}
+similarity_users <- similarity(ratingMat[1:50,], 
+                               method = "cosine", 
+                               which = "users")
+
+image(as.matrix(similarity_users), main = "User similarity")
+```
+
 
 
 # Conclusion
