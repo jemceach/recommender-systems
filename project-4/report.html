@@ -155,7 +155,7 @@ code > span.ot { color: #007020; }
 <div id="data-tranformations" class="section level2">
 <h2>Data Tranformations</h2>
 <p>We cleaned our data using transformations and regular expression unite our user and restaurant data. The output of which can be previewed below:</p>
-<table class="table" style="font-size: 10px; ">
+<table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 User-Item Dataframe
 </caption>
@@ -187,9 +187,6 @@ name
 </th>
 <th style="text-align:left;">
 price
-</th>
-<th style="text-align:left;">
-franchise
 </th>
 <th style="text-align:left;">
 alcohol
@@ -232,9 +229,6 @@ tortas locas hipocampo
 mediumprice
 </td>
 <td style="text-align:left;">
-f
-</td>
-<td style="text-align:left;">
 nonalcoholic
 </td>
 <td style="text-align:left;">
@@ -271,9 +265,6 @@ puesto de tacos
 </td>
 <td style="text-align:left;">
 lowprice
-</td>
-<td style="text-align:left;">
-f
 </td>
 <td style="text-align:left;">
 nonalcoholic
@@ -314,9 +305,6 @@ restaurante marisco sam
 mediumprice
 </td>
 <td style="text-align:left;">
-f
-</td>
-<td style="text-align:left;">
 nonalcoholic
 </td>
 <td style="text-align:left;">
@@ -353,9 +341,6 @@ restaurante la cantina
 </td>
 <td style="text-align:left;">
 mediumprice
-</td>
-<td style="text-align:left;">
-f
 </td>
 <td style="text-align:left;">
 fullbar
@@ -396,9 +381,6 @@ mariscos el pescador
 mediumprice
 </td>
 <td style="text-align:left;">
-f
-</td>
-<td style="text-align:left;">
 nonalcoholic
 </td>
 <td style="text-align:left;">
@@ -437,9 +419,6 @@ cafe chaires
 lowprice
 </td>
 <td style="text-align:left;">
-f
-</td>
-<td style="text-align:left;">
 nonalcoholic
 </td>
 <td style="text-align:left;">
@@ -466,7 +445,7 @@ Cafeteria
 <h2>Matrix Building</h2>
 <p>We further transformed our data into a user-item matrix to build our recommender systems.</p>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
-<table class="table" style="font-size: 10px; ">
+<table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 User Matrix Preview (Ratings Preserved as NA)
 </caption>
@@ -1687,7 +1666,7 @@ NA
 </table>
 </div>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
-<table class="table" style="font-size: 10px; ">
+<table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 User Matrix Preview (NA=Mean Rating)
 </caption>
@@ -2908,7 +2887,7 @@ NA
 </table>
 </div>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
-<table class="table" style="font-size: 10px; ">
+<table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 User Matrix Preview (NA=0)
 </caption>
@@ -4154,7 +4133,7 @@ NA
 <div id="predictions" class="section level3">
 <h3>Predictions</h3>
 Text
-<table class="table" style="font-size: 10px; ">
+<table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 Prediction Comparisons
 </caption>
@@ -4179,13 +4158,13 @@ MAE
 ub_n
 </td>
 <td style="text-align:right;">
-1.3024192
+1.3233967
 </td>
 <td style="text-align:right;">
-1.6962957
+1.7513787
 </td>
 <td style="text-align:right;">
-1.0466825
+1.1066481
 </td>
 </tr>
 <tr>
@@ -4193,13 +4172,13 @@ ub_n
 ub_c
 </td>
 <td style="text-align:right;">
-0.7882086
+0.6438421
 </td>
 <td style="text-align:right;">
-0.6212728
+0.4145327
 </td>
 <td style="text-align:right;">
-0.7000245
+0.5151335
 </td>
 </tr>
 <tr>
@@ -4207,13 +4186,13 @@ ub_c
 ub_z
 </td>
 <td style="text-align:right;">
-0.8006893
+0.6520610
 </td>
 <td style="text-align:right;">
-0.6411034
+0.4251835
 </td>
 <td style="text-align:right;">
-0.7051656
+0.5226242
 </td>
 </tr>
 </tbody>
@@ -4251,7 +4230,7 @@ ub_z
 <h2>TFIDF</h2>
 <p>We concatenated terms describing our restaurant and ran several evaluations of term frequency-inverse document frequency (TF-IDF). We modified our initial data transformations to ensure the proper terms were evaluated properly. For example, in our initial run “beer” and “wine” were calculated at the same frequency. These terms were initial stored as beer-wine, but were separated by our <code>textmineR</code> package functions.</p>
 <p>We combined similar text-strings without spacing or punctuation to ensure their appropriate relevancies and concatenated these restaurant features strings as “tags” for natual language processing evaluation. The statistics of our most important words can be viewed below.</p>
-<table class="table" style="font-size: 10px; ">
+<table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 Top TF-IDF Result
 </caption>

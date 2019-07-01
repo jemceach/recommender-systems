@@ -29,8 +29,8 @@ options(max.print="75"); opts_knit$set(width=75)
 opts_chunk$set(echo=F,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
 
 ## set table style for consistency
-default(kable_styling)  <- list(position="left",full_width=T, font_size=10)
-
+default(kable) <- list(format="html")
+default(kable_styling)  <- list(bootstrap_options = "hover",full_width=T, font_size=10)
 default(scroll_box) <- list(width = "100%")
 
 ## working directory
@@ -75,7 +75,7 @@ We cleaned our data using transformations and regular expression unite our user 
 ```{r}
 ## restaurant dataframe
 cuisine <- aggregate(Rcuisine ~., data1, toString)
-restaurant <- data2 %>% select(placeID, name, city,price,franchise, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))
+restaurant <- data2 %>% select(placeID, name, city,price, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))
 restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
 restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi"))
 restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="nonsmoking", "not permitted"="nonsmoking", "section"="smoking", "permitted"="smoking", "only at bar"="smoking"))
