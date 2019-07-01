@@ -19,7 +19,7 @@ library(knitr); library(kableExtra); library(prettydoc); library(default)
 library(ggplot2)
 
 #recommender 
-library(recommenderlab)
+library(recommenderlab); library(textmineR)
 
 # global options
 ## knit sizing
@@ -71,11 +71,15 @@ We cleaned our data using transformations and regular expression unite our user 
 
 ```{r}
 ## restaurant dataframe
+cuisine <- aggregate(Rcuisine ~., data1, toString)
 restaurant <- data2 %>% select(placeID, name, city,price,franchise, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))
 restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
 restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi"))
+restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="nonsmoking", "not permitted"="nonsmoking", "section"="smoking", "permitted"="smoking", "only at bar"="smoking"))
+restaurant$price = revalue(restaurant$price, c("low"="lowprice", "medium"="mediumprice", "high" ="highprice"))
+restaurant$alcohol = revalue(restaurant$alcohol, c("No_Alcohol_Served"="nonalcoholic", "Full_Bar"="fullbar", "Wine-Beer" ="winebeer"))
 restaurant$city<-factor(restaurant$city, exclude = NULL)
-
+restaurant <- inner_join(restaurant, cuisine, by="placeID")
 
 ## user dataframe: select attributes of interest from profile
 user_profile <- data4 %>% select(userID, birth_year,budget,activity, drink_level)
@@ -97,7 +101,7 @@ data <- data %>% filter(city == "san luis potosi", activity=="student")
 
 ## Data Exploration
 
-We found that 80% of our raters were students students and 76% of our restaurants were located within the Mexican city of San Luis Potosi.  As a result, we subsetted our restaurant/patron data to limit the scope of our system to this specific population. After subsetting our raw data, we identified 78 unique users and 74 restaurants to build our recommender systems from. 
+We found that 80% of our raters were students students and 76% of our restaurants were located within the Mexican city of San Luis Potosi.  As a result, we subsetted our restaurant/patron data to limit the scope of our system to this specific population. After subsetting our raw data, we identified 78 unique users and 56 restaurants to build our recommender systems from. 
 
 The folloing plots show the distribution of our ratings by patron budget and restaurant pricing. We can also see counts of ratings each restaurant received. On average, each venue received 13 ratings. 
 
@@ -111,9 +115,7 @@ data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% grou
 ```
 
 
-
 # Matrix Building 
-
 ```{r}
 ## create user item matrix
 
@@ -122,7 +124,7 @@ ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating
 ## build two frames for comparison - mu = mean ratings imputation; na = imputed with 0 
 ui_mtx_mu <- ui_matrix; ui_mtx_na <- ui_matrix 
 
-for(i in c(2:75)){
+for(i in c(2:57)){
   ui_mtx_mu[is.na(ui_mtx_mu[,i]), i] <- round(mean(ui_mtx_mu[,i], na.rm = TRUE))
 }
 
@@ -141,7 +143,7 @@ umat<-as.matrix(ui_matrix)
 umat <- as(umat,"realRatingMatrix")
 
 # evaluation method using training set of 
-evalu <- evaluationScheme(umat, method="split", train=0.9, given=5, goodRating=0)
+evalu <- evaluationScheme(umat, method="split", train=0.9, given=4, goodRating=0)
 ```
 
 
@@ -220,13 +222,22 @@ Cons:
 Add more later :)
 
 ```{r}
-library('ordinal')
-library('text2vec')
+data %>% select(Rcuisine) %>% group_by(Rcuisine) %>% add_tally() %>% ggplot(aes(x=reorder(Rcuisine, -n))) + geom_bar(stat="count")+coord_flip()
+
+terms<- data %>% select(placeID, alcohol,smoking_area,price,Rcuisine) %>% group_by(placeID) %>% distinct() %>% mutate(alcohol=as.character(alcohol), smoking_area=as.character(smoking_area), price=as.character(price), Rcuisine=as.character(Rcuisine))
+terms$tags <- paste(terms$alcohol, terms$smoking_area, terms$price, terms$Rcuisine, sep=" ")
+
+
+dtm <- CreateDtm(doc_vec = terms$tags, doc_names = terms$placeID)
+tf_mat <- TermDocFreq(dtm = dtm)
+rownames(tf_mat) <- NULL 
+tf_mat %>% arrange(idf) %>% head(10) %>% kable() %>% kable_styling() 
 ```
 
 ```{r}
-user_profile
+
 ```
+
 
 
 
