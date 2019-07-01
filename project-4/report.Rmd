@@ -1,5 +1,5 @@
 ---
-title: "Project 4: Accuracy and Beyond in Restaurant Recommender Systems"
+title: "Accuracy and Beyond in Restaurant Recommender Systems"
 author: "Christina Valore, Juliann McEachern, & Rajwant Mishra"
 date: "July 2, 2019"
 output:
@@ -29,7 +29,9 @@ options(max.print="75"); opts_knit$set(width=75)
 opts_chunk$set(echo=F,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
 
 ## set table style for consistency
-default(kable_styling)  <- list(bootstrap_options=c("basic"),position="center",full_width=T, font_size=10)
+default(kable) <- list(format="html")
+default(kable_styling)  <- list(bootstrap_options = "hover",full_width=T, font_size=10)
+default(scroll_box) <- list(width = "100%")
 
 ## working directory
 ##try(setwd("~/Github/612-group/project-4"))
@@ -40,12 +42,20 @@ default(kable_styling)  <- list(bootstrap_options=c("basic"),position="center",f
 
 The goal of this assignment is give you practice working with accuracy and other recommender system metrics. 
 
-Tasks:
+**Assignment Tasks** (SUMMARIZE OUR PROCESS LATER):
 
 1. Compare the accuracy of at least two recommender system algorithms against your offline data. 
 2. Compare and report on any change in accuracy before and after you've made the change in the algorithms. 
 3. Include at least one business or user experience goal such as increased serendipity, novelty, or diversity. 
-4. Textual conclusion
+4. Textual conclusion.
+
+**GROUP NOTES** (DELETE LATER):
+
+*  3 Matrices are defined. 1 has null values, 1 is imputed with the mean, 1 is imputed with 0. We do not have to use all of these. Just a starting place. 
+*  Dataset includes many interesting categorical features. We could try 2 user-item algorthims and a hybrid approach.
+*  Lets try to do our best to minimize code chunks, add explanitory text for readers and within code chunks for us to follow.
+*  Add/reference sources at the end! 
+*  Set important code chunks to `echo=T` if you want the reader to see the process.
 
 ## Data Selection
 
@@ -60,19 +70,12 @@ data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/pro
 
 ## Data Tranformations
 
-We cleaned our data using transformations and regular expression unite our user and restaurant data into a user item matrix. 
-
-**GROUP NOTES** (DELETE LATER):
-
-*  3 Matrices are defined. 1 has null values, 1 is imputed with the mean, 1 is imputed with 0. 
-*  Dataset includes many interesting categorical features. We could try 2 user-item algorthims and a hybrid approach.
-*  Lets try to do our best to minimize code chunks, add explanitory text for readers/within code chunks for us to follow.
-*  Add/reference sources at the end! 
+We cleaned our data using transformations and regular expression unite our user and restaurant data. The output of which can be previewed below: 
 
 ```{r}
 ## restaurant dataframe
 cuisine <- aggregate(Rcuisine ~., data1, toString)
-restaurant <- data2 %>% select(placeID, name, city,price,franchise, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))
+restaurant <- data2 %>% select(placeID, name, city,price, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city))
 restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
 restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi"))
 restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="nonsmoking", "not permitted"="nonsmoking", "section"="smoking", "permitted"="smoking", "only at bar"="smoking"))
@@ -82,7 +85,7 @@ restaurant$city<-factor(restaurant$city, exclude = NULL)
 restaurant <- inner_join(restaurant, cuisine, by="placeID")
 
 ## user dataframe: select attributes of interest from profile
-user_profile <- data4 %>% select(userID, birth_year,budget,activity, drink_level)
+user_profile <- data4 %>% select(userID, budget,activity, drink_level)
 user <- inner_join(data3,user_profile,by='userID') 
 user$budget <- factor(user$budget, levels = c("low", "medium", "high")) # set factor
 
@@ -95,7 +98,9 @@ user$food_rating[user$food_rating==2]<-3;user$food_rating[user$food_rating==1]<-
 data <- inner_join(user, restaurant, by="placeID") 
 
 # subset 
-data <- data %>% filter(city == "san luis potosi", activity=="student")
+data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
+
+data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling() 
 ```
 
 
@@ -103,58 +108,71 @@ data <- data %>% filter(city == "san luis potosi", activity=="student")
 
 We found that 80% of our raters were students students and 76% of our restaurants were located within the Mexican city of San Luis Potosi.  As a result, we subsetted our restaurant/patron data to limit the scope of our system to this specific population. After subsetting our raw data, we identified 78 unique users and 56 restaurants to build our recommender systems from. 
 
-The folloing plots show the distribution of our ratings by patron budget and restaurant pricing. We can also see counts of ratings each restaurant received. On average, each venue received 13 ratings. 
+The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant's categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings. 
 
-```{r, fig.height=2}
+```{r, fig.height=2, out.width = '100%'}
 ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#e4d1d1') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(data$budget, nrow=1)
 
 ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b0b0') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
-```{r,fig.height=3}
+```{r,fig.height=3, out.width = '100%'}
 data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#686256") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
 ```
-
-
-# Matrix Building 
-```{r}
-## create user item matrix
-
-ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
-
-## build two frames for comparison - mu = mean ratings imputation; na = imputed with 0 
-ui_mtx_mu <- ui_matrix; ui_mtx_na <- ui_matrix 
-
-for(i in c(2:57)){
-  ui_mtx_mu[is.na(ui_mtx_mu[,i]), i] <- round(mean(ui_mtx_mu[,i], na.rm = TRUE))
-}
-
-ui_mtx_na[is.na(ui_mtx_na)] <- 0
-
-## preview matrices (DELETE LATER)
-ui_matrix; ui_mtx_mu; ui_mtx_na
-```
-
-# Training and Test Subsets
-```{r}
-#create user item matrix
-umat<-as.matrix(ui_matrix)
-
-#create a real rating matrix
-umat <- as(umat,"realRatingMatrix")
-
-# evaluation method using training set of 
-evalu <- evaluationScheme(umat, method="split", train=0.9, given=4, goodRating=0)
+```{r, fig.height=4.5, out.width = '100%'}
+# Cuisine bar plot. May or may not include. 
+data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#686256")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))+ scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
 ```
 
 
 # Collaborative Filtering 
 
-Business/User Goal: Serendipity
+**ADD TEXT EXPLINATION OF BUSINESS/USER GOALS: Serendipity? Goal to be recommending relevant items to targeted users that are different then items the user has already rated?**
 
-Recommend relevant items to targeted users that are different then items the user has already rated. 
+## Matrix Building 
 
-## Algorithm 1: User-Based
+We further transformed our data into a user-item matrix to build our recommender systems.
+
 ```{r}
+# create user item matrix
+ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
+rownames(ui_matrix)<-ui_matrix$userID # set row names to userid
+ui_matrix<-ui_matrix %>% select(-userID) %>% as.matrix()# remove userid from columns
+umat <- as(ui_matrix,"realRatingMatrix") # save real ratings for algo 
+
+
+
+##### built two other frames for comparison - mu = mean ratings imputation; na = imputed with 0 
+ui_mtx_mu <- ui_matrix; ui_mtx_na <- ui_matrix 
+
+for(i in c(1:56)){
+  ui_mtx_mu[is.na(ui_mtx_mu[,i]), i] <- round(mean(ui_mtx_mu[,i], na.rm = TRUE))
+}
+
+ui_mtx_na[is.na(ui_mtx_na)] <- 0
+
+## preview matrices (DELETE UNUSED LATER)
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (Ratings Preserved as NA)") %>% kable_styling()%>% scroll_box()
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (NA=Mean Rating)") %>% kable_styling()%>% scroll_box()
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (NA=0)") %>% kable_styling()%>% scroll_box()
+```
+
+## Training and Test Subsets
+
+Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
+
+```{r}
+# evaluation method using training set of 
+evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=0)
+```
+
+
+## Algorithm 1: User-Based (Christina)
+
+ADD TEXT ETC. 
+
+### Process 
+Text
+```{r, echo=T}
 #non-normalized
 ub_n <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = NULL, method="Cosine"))
@@ -168,6 +186,8 @@ ub_z <- Recommender(getData(evalu, "train"), "UBCF",
       param=list(normalize = "Z-score",method="Cosine"))
 ```
 
+### Predictions 
+Text
 ```{r}
 #predicted ratings
 p1 <- predict(ub_n, getData(evalu,"known"),type="ratings")
@@ -190,10 +210,10 @@ error_UCOS <- rbind(
   ub_c = calcPredictionAccuracy(p2, getData(evalu, "unknown")),
   ub_z = calcPredictionAccuracy(p3, getData(evalu, "unknown"))
 )
-error_UCOS
+error_UCOS %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
 
-## Algorithm 2
+## Algorithm 2 (Raj)
 
 
 ## Compare 
@@ -221,24 +241,27 @@ Cons:
 
 Add more later :)
 
-```{r}
-data %>% select(Rcuisine) %>% group_by(Rcuisine) %>% add_tally() %>% ggplot(aes(x=reorder(Rcuisine, -n))) + geom_bar(stat="count")+coord_flip()
 
+## TFIDF
+
+We concatenated terms describing our restaurant and ran several evaluations of term frequency-inverse document frequency (TF-IDF). We modified our initial data transformations to ensure the proper terms were evaluated properly. For example, in our initial run "beer" and "wine" were calculated at the same frequency. These terms were initial stored as beer-wine, but were separated by our `textmineR` package functions. 
+
+We combined similar text-strings without spacing or punctuation to ensure their appropriate relevancies and concatenated these restaurant features strings as "tags" for natual language processing evaluation. The statistics of our most important words can be viewed below. 
+
+```{r}
+# select terms
 terms<- data %>% select(placeID, alcohol,smoking_area,price,Rcuisine) %>% group_by(placeID) %>% distinct() %>% mutate(alcohol=as.character(alcohol), smoking_area=as.character(smoking_area), price=as.character(price), Rcuisine=as.character(Rcuisine))
 terms$tags <- paste(terms$alcohol, terms$smoking_area, terms$price, terms$Rcuisine, sep=" ")
 
-
+# tf-idf
 dtm <- CreateDtm(doc_vec = terms$tags, doc_names = terms$placeID)
 tf_mat <- TermDocFreq(dtm = dtm)
-rownames(tf_mat) <- NULL 
-tf_mat %>% arrange(idf) %>% head(10) %>% kable() %>% kable_styling() 
+
+# preview output
+preview <- tf_mat
+rownames(preview) <- NULL 
+preview %>% arrange(idf) %>% head(10) %>% kable(caption="Top TF-IDF Result") %>% kable_styling() 
 ```
-
-```{r}
-
-```
-
-
 
 
 # Conclusion
@@ -252,5 +275,4 @@ Also: Compare content algorith outcomes to hybrid approach.
 
 [**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
 
-[**recommenderlab: A Framework for Developing and
-Testing Recommendation Algorithms**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) 
+[**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf)A Framework for Developing and Testing Recommendation Algorithms 
