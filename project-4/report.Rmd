@@ -148,37 +148,31 @@ data %>%select(placeID) %>% mutate(placeID = as.factor(placeID)) %>% group_by(pl
 data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
 ```
 
-# Collaborative Filtering 
-
-**ADD TEXT EXPLINATION OF BUSINESS/USER GOALS: Serendipity? Goal to be recommending relevant items to targeted users that are different then items the user has already rated?**
-
 ## Matrix Building 
 
-We further transformed our data into a user-item matrix to build our recommender systems.
+Our final transformations converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
 
-```{r}
+```{r build-matrix}
 # create user item matrix
 ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
 rownames(ui_matrix)<-ui_matrix$userID # set row names to userid
 ui_matrix<-ui_matrix %>% select(-userID) %>% as.matrix()# remove userid from columns
 umat <- as(ui_matrix,"realRatingMatrix") # save real ratings for algo 
-
-
-
-##### built two other frames for comparison - mu = mean ratings imputation; na = imputed with 0 
-ui_mtx_mu <- ui_matrix; ui_mtx_na <- ui_matrix 
-
-for(i in c(1:56)){
-  ui_mtx_mu[is.na(ui_mtx_mu[,i]), i] <- round(mean(ui_mtx_mu[,i], na.rm = TRUE))
-}
-
-ui_mtx_na[is.na(ui_mtx_na)] <- 0
-
-## preview matrices (DELETE UNUSED LATER)
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (Ratings Preserved as NA)") %>% kable_styling()%>% scroll_box()
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (NA=Mean Rating)") %>% kable_styling()%>% scroll_box()
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (NA=0)") %>% kable_styling()%>% scroll_box()
 ```
+
+The output of which can be previewed below: 
+```{r view-matrix, echo=F}
+## preview matrices 
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (Ratings Preserved as NA)") %>% kable_styling()
+```
+
+
+
+# Collaborative Filtering 
+
+**ADD TEXT EXPLINATION OF BUSINESS/USER GOALS: Serendipity? Goal to be recommending relevant items to targeted users that are different then items the user has already rated?**
+
+
 
 ## Training and Test Subsets
 
