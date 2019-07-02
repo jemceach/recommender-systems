@@ -18,8 +18,11 @@ library(knitr); library(kableExtra); library(prettydoc); library(default)
 #visualization
 library(ggplot2)
 
-#recommender 
-library(recommenderlab); library(textmineR)
+#collaborative recommender 
+library(recommenderlab); 
+
+#hybrid recommender
+library(gbm);library(rsample);library(Metrics);library(caret);library(textmineR)
 
 # global options
 ## knit sizing
@@ -90,9 +93,14 @@ restaurant <- inner_join(restaurant, cuisine, by="placeID")
 
 # user dataframe: 
 ##select attributes of interest from profile
-user_profile <- data4 %>% select(userID, budget,activity, drink_level)
+user_profile <- data4 %>% select(userID, budget,activity, drink_level, smoker)
 user <- inner_join(data3,user_profile,by='userID') 
-user$budget <- factor(user$budget, levels = c("low"="lowbudgetbudget", "medium"="mediumbudget", "high"="highbudget")) # set factor
+## set factors
+user$budget <- revalue(user$budget, c("low"="lowbudget", "medium"="mediumbudget","high"="highbudget"))
+user$budget <- factor(user$budget, levels = c("lowbudget", "mediumbudget", "highbudget"))
+user$smoker <- revalue(user$smoker, c("false"="nonsmoker", "true"="smoker")) 
+user$smoker <- factor(user$smoker, levels = c("nonsmoker", "smoker"))
+
 
 ## change ratings from 0-2 scale to 1-3
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
@@ -266,14 +274,92 @@ preview <- tf_mat
 rownames(preview) <- NULL 
 preview %>% arrange(idf) %>% head(10) %>% kable(caption="Top TF-IDF Result") %>% kable_styling() 
 ```
+## Gradient Boosted Model (GBM)
+
+Algorithm to predict an individuals ratings using decision trees.
+
+### Build GBM Model 
+
+Our GBM model measures the relative influence of our select restaurant and and user characteristics to make user-rating predictions. gbm & resample packages.
 
 ```{r}
-similarity_users <- similarity(ratingMat[1:50,], 
-                               method = "cosine", 
-                               which = "users")
 
-image(as.matrix(similarity_users), main = "User similarity")
+
+
+# Build Model
+## subset data for model
+PatronDataModel <- data %>% select(userID, placeID,rating, budget, price,drink_level,alcohol,smoking_area,smoker, Rcuisine)
+
+## factor data
+PatronDataModel$Rcuisine<-as.factor(PatronDataModel$Rcuisine)
+
+## train test spit
+PatronSplit <- initial_split(PatronDataModel, prop = .9)
+PatronTrain <- training(PatronSplit)
+PatronTest  <- testing(PatronSplit)
+
+## fit model
+patron_fit_1 <- gbm::gbm(rating ~., 
+             data = PatronDataModel, 
+             distribution = "gaussian", #gaussian algo (squared error)
+             verbose = F, #change to true to view output
+             shrinkage = 0.01, # step size reduction
+             interaction.depth = 3, # tree depth for two way interactions
+             n.minobsinnode = 5, # min observations
+             n.trees = 500, #number of trees to fit/iterate
+             cv.folds = 10 #cv folds
+             )
+
+show.gbm(patron_fit_1)
+
+## summarize model
+summary.gbm(patron_fit_1, plotit = F) %>% kable() %>%kable_styling()
 ```
+### GBM Predictions 
+
+```{r}
+## optimal number of boosting iterations
+perf_gbm1 = gbm.perf(patron_fit_1, method = "cv", plot.it = F)
+
+## predict
+patron_prediction_1 <- stats::predict(
+                          object = patron_fit_1, # fit prediction
+                          newdata = PatronTest, # test data 
+                          n.trees = perf_gbm1) # optimal n of iterations
+
+## Prediction summary
+predictions <- as.factor(round(patron_prediction_1))
+predictions %>% summary() %>% kable(caption="Predicted Rating Counts",row.names = c(1,2,3), col.names = "n") %>% kable_styling() %>% column_spec(1,bold = T)
+```
+### Evaluation
+
+RMSE/MSE/MAE/RMSLE evaulation. Turn into loop. Metrics package.
+
+```{r}
+#calculate/view RMSE/MSE/MAE/RMSLE
+rmse_fit1 <- Metrics::rmse(actual = PatronTest$rating, predicted = patron_prediction_1)
+mse_fit1 <- Metrics::mse(actual = PatronTest$rating, predicted = patron_prediction_1)
+mae_fit1 <- Metrics::mae(actual = PatronTest$rating, predicted = patron_prediction_1)
+rmsle_fit1 <- Metrics::rmsle(actual = PatronTest$rating, predicted = patron_prediction_1)
+
+print(paste0("RMSE: ", rmse_fit1))
+print(paste0("MSE: ", mse_fit1))
+print(paste0("MAE: ", mae_fit1))
+print(paste0("RMSLE: ", rmsle_fit1))
+
+```
+
+#### Confusion Matrix
+
+Evaluation of precision and accuracy. Caret package. 
+
+```{r}
+PatronTest$rating<-as.factor(PatronTest$rating)
+eval_cm <- confusionMatrix(predictions,PatronTest$rating)
+eval_cm$byClass %>% kable() %>% kable_styling()
+```
+
+
 
 
 
