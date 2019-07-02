@@ -564,13 +564,13 @@ getDivesity(ratings_test_unknown,fsvd10_predict,"Funk SVD")
 
 ## Compare 
 
-We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.
-*Diversity Check with SVD of k = 10 * 
+We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.<br>
+*Diversity Check with SVD of k = 10 * <br>
 <b>Diversity Error [  SVD with Z-score  ]:=>  0.028 </b><br>
 <b>Diversity Error [  Funck SVD k= 10 ]:=>  0.0301 </b><br>
 <b>Diversity Error [  SVD k-10  ]:=>  0.0312</b><br>
-
-*RMSE Check with SVD of k = 10 * 
+<br>
+*RMSE Check with SVD of k = 10 * <br>
 <b>RMSE  [  SVD with Z-score  ]:=>  0.94</b><br>
 <b>RMSE  [  Funck SVD k= 10 ]:=>  0.65</b><br>
 <b>RMSE  [  SVD k-10  ]:=>  0.68</b><br>
