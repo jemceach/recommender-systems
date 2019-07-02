@@ -9,20 +9,18 @@ output:
 ---
  
 ```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
-# data processing install.packages("rsample")
+#dependencies
+## data processing packages
 library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)
 
-#formatting
+##formatting packages
 library(knitr); library(kableExtra); library(prettydoc); library(default)
 
-#visualization
+##visualization packages
 library(ggplot2)
 
-#collaborative recommender 
-library(recommenderlab); 
-
-#hybrid recommender
-library(gbm);library(rsample);library(Metrics);library(caret);library(textmineR)
+##recommender packages
+library(recommenderlab); library(gbm);library(rsample);library(Metrics);library(caret);library(textmineR)
 
 # global options
 ## knit sizing
