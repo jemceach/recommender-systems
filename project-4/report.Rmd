@@ -78,76 +78,37 @@ We cleaned our data using transformations and regular expression unite our user 
 ```{r}
 # restaurant dataframe
 
-cuisine <- aggregate(Rcuisine ~., data1, toString) # concat cuisine types into tags
-
-
+## concatenate restaurant tags 
+cuisine <- aggregate(Rcuisine ~., data1, toString) 
 
 ## merge & transform
-
 restaurant <- data2 %>% select(placeID, name, city,price, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city)) 
-
-restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
-
 restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi")) # rename cities for analysis
 
-
-
-## change for TFIDF analysis
-
-restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="nonsmoking", "not permitted"="nonsmoking", "section"="smoking", "permitted"="smoking", "only at bar"="smoking")) 
-
-restaurant$price = revalue(restaurant$price, c("low"="lowprice", "medium"="mediumprice", "high" ="highprice"))
-
-restaurant$alcohol = revalue(restaurant$alcohol, c("No_Alcohol_Served"="nonalcoholic", "Full_Bar"="fullbar", "Wine-Beer" ="winebeer"))
-
-restaurant$city<-factor(restaurant$city, exclude = NULL)
-
+## revalue factors
+restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="no", "not permitted"="no", "section"="yes", "permitted"="yes", "only at bar"="yes")) 
+restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high"))
+restaurant$alcohol = revalue(restaurant$alcohol, c("No_Alcohol_Served"="no", "Full_Bar"="yes", "Wine-Beer" ="yes"))
 restaurant <- inner_join(restaurant, cuisine, by="placeID")
-
-
 
 # user dataframe: 
 
 ##select attributes of interest from profile
-
-user_profile <- data4 %>% select(userID, budget,activity, drink_level, smoker)
-
-user <- inner_join(data3,user_profile,by='userID') 
+user_profile <- data4 %>% select(userID, budget,activity, smoker)
+user <- inner_join(data3,user_profile,by='userID') %>% select(-service_rating, -food_rating)
 
 ## set factors
-
-user$budget <- revalue(user$budget, c("low"="lowbudget", "medium"="mediumbudget","high"="highbudget"))
-
-user$budget <- factor(user$budget, levels = c("lowbudget", "mediumbudget", "highbudget"))
-
-user$smoker <- revalue(user$smoker, c("false"="nonsmoker", "true"="smoker")) 
-
-user$smoker <- factor(user$smoker, levels = c("nonsmoker", "smoker"))
-
-
-
-
+user$budget <- factor(user$budget, levels = c("low", "medium", "high"))
+user$smoker <- revalue(user$smoker, c("false"="no", "true"="yes")) 
+user$smoker <- factor(user$smoker, levels = c("no", "yes"))
 
 ## change ratings from 0-2 scale to 1-3
-
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
-
-user$service_rating[user$service_rating==2]<-3;user$service_rating[user$service_rating==1]<-2;user$service_rating[user$service_rating==0]<-1
-
-user$food_rating[user$food_rating==2]<-3;user$food_rating[user$food_rating==1]<-2;user$food_rating[user$food_rating==0]<-1;
-
-
 
 # combine user / restaurant data &  subset 
 
 data <- inner_join(user, restaurant, by="placeID") 
-
-
-
 data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
-
-
-
 data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling() 
 ```
 
@@ -348,6 +309,7 @@ fit_accuracy<-round(eval_cm$overall[1],4)
 
 # view metrics
 results <- cbind(fit_rmse, fit_mse,fit_mae,fit_rmsle,fit_accuracy)
+rownames(results) <- c()
 results %>% kable(caption="Model Evaluation Metrics") %>% kable_styling()
 
 ### Note: Output shows NA (not meaningful for factors) if chunk is rerun without clearing global environment

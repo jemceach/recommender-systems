@@ -4181,13 +4181,13 @@ MAE
 ub_n
 </td>
 <td style="text-align:right;">
-1.1796730
+1.7119346
 </td>
 <td style="text-align:right;">
-1.3916285
+2.9307200
 </td>
 <td style="text-align:right;">
-0.9593610
+1.5986667
 </td>
 </tr>
 <tr>
@@ -4195,13 +4195,13 @@ ub_n
 ub_c
 </td>
 <td style="text-align:right;">
-0.7176070
+0.6825683
 </td>
 <td style="text-align:right;">
-0.5149599
+0.4658995
 </td>
 <td style="text-align:right;">
-0.5227857
+0.4093494
 </td>
 </tr>
 <tr>
@@ -4209,13 +4209,13 @@ ub_c
 ub_z
 </td>
 <td style="text-align:right;">
-0.7057833
+0.6851883
 </td>
 <td style="text-align:right;">
-0.4981301
+0.4694830
 </td>
 <td style="text-align:right;">
-0.4963911
+0.4143751
 </td>
 </tr>
 </tbody>
@@ -4245,7 +4245,7 @@ FALSE     n.trees = 500, interaction.depth = 3, n.minobsinnode = 5,
 FALSE     shrinkage = 0.01, cv.folds = 10, verbose = F)
 FALSE A gradient boosted model with gaussian loss function.
 FALSE 500 iterations were performed.
-FALSE The best cross-validation iteration was 155.
+FALSE The best cross-validation iteration was 226.
 FALSE There were 6 predictors of which 4 had non-zero influence.</code></pre>
 <table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <thead>
@@ -4269,7 +4269,7 @@ userID
 userID
 </td>
 <td style="text-align:right;">
-85.1728354
+85.3450756
 </td>
 </tr>
 <tr>
@@ -4280,7 +4280,7 @@ Rcuisine
 Rcuisine
 </td>
 <td style="text-align:right;">
-14.2995177
+14.2356567
 </td>
 </tr>
 <tr>
@@ -4291,18 +4291,7 @@ placeID
 placeID
 </td>
 <td style="text-align:right;">
-0.2004000
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-price
-</td>
-<td style="text-align:left;">
-price
-</td>
-<td style="text-align:right;">
-0.1710574
+0.1597830
 </td>
 </tr>
 <tr>
@@ -4313,7 +4302,7 @@ smoking_area
 smoking_area
 </td>
 <td style="text-align:right;">
-0.1080853
+0.1086703
 </td>
 </tr>
 <tr>
@@ -4324,7 +4313,18 @@ alcohol
 alcohol
 </td>
 <td style="text-align:right;">
-0.0481043
+0.1029580
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+price
+</td>
+<td style="text-align:left;">
+price
+</td>
+<td style="text-align:right;">
+0.0478564
 </td>
 </tr>
 </tbody>
@@ -4339,8 +4339,6 @@ Model Evaluation Metrics
 </caption>
 <thead>
 <tr>
-<th style="text-align:left;">
-</th>
 <th style="text-align:right;">
 fit_rmse
 </th>
@@ -4360,23 +4358,20 @@ fit_accuracy
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-Accuracy
+<td style="text-align:right;">
+0.4863244
 </td>
 <td style="text-align:right;">
-0.5667925
+0.2365114
 </td>
 <td style="text-align:right;">
-0.3212537
+0.3787273
 </td>
 <td style="text-align:right;">
-0.4725402
+0.1724969
 </td>
 <td style="text-align:right;">
-0.1914765
-</td>
-<td style="text-align:right;">
-0.6226
+0.6981
 </td>
 </tr>
 </tbody>
@@ -4431,37 +4426,37 @@ Balanced Accuracy
 Class: 1
 </td>
 <td style="text-align:right;">
-0.2500
+0.3636
 </td>
 <td style="text-align:right;">
-0.9778
+1.0000
 </td>
 <td style="text-align:right;">
-0.6667
+1.0000
 </td>
 <td style="text-align:right;">
-0.8800
+0.8571
 </td>
 <td style="text-align:right;">
-0.6667
-</td>
-<td style="text-align:right;">
-0.2500
+1.0000
 </td>
 <td style="text-align:right;">
 0.3636
 </td>
 <td style="text-align:right;">
-0.1509
+0.5333
 </td>
 <td style="text-align:right;">
-0.0377
+0.2075
 </td>
 <td style="text-align:right;">
-0.0566
+0.0755
 </td>
 <td style="text-align:right;">
-0.6139
+0.0755
+</td>
+<td style="text-align:right;">
+0.6818
 </td>
 </tr>
 <tr>
@@ -4469,37 +4464,37 @@ Class: 1
 Class: 2
 </td>
 <td style="text-align:right;">
-0.8333
+0.9500
 </td>
 <td style="text-align:right;">
-0.5143
+0.5455
 </td>
 <td style="text-align:right;">
-0.4687
+0.5588
 </td>
 <td style="text-align:right;">
-0.8571
+0.9474
 </td>
 <td style="text-align:right;">
-0.4688
+0.5588
 </td>
 <td style="text-align:right;">
-0.8333
+0.9500
 </td>
 <td style="text-align:right;">
-0.6000
+0.7037
 </td>
 <td style="text-align:right;">
-0.3396
+0.3774
 </td>
 <td style="text-align:right;">
-0.2830
+0.3585
 </td>
 <td style="text-align:right;">
-0.6038
+0.6415
 </td>
 <td style="text-align:right;">
-0.6738
+0.7477
 </td>
 </tr>
 <tr>
@@ -4507,37 +4502,37 @@ Class: 2
 Class: 3
 </td>
 <td style="text-align:right;">
-0.5926
+0.6364
 </td>
 <td style="text-align:right;">
-0.9231
+0.9677
 </td>
 <td style="text-align:right;">
-0.8889
+0.9333
 </td>
 <td style="text-align:right;">
-0.6857
+0.7895
 </td>
 <td style="text-align:right;">
-0.8889
+0.9333
 </td>
 <td style="text-align:right;">
-0.5926
+0.6364
 </td>
 <td style="text-align:right;">
-0.7111
+0.7568
 </td>
 <td style="text-align:right;">
-0.5094
+0.4151
 </td>
 <td style="text-align:right;">
-0.3019
+0.2642
 </td>
 <td style="text-align:right;">
-0.3396
+0.2830
 </td>
 <td style="text-align:right;">
-0.7578
+0.8021
 </td>
 </tr>
 </tbody>
@@ -4567,7 +4562,7 @@ Class: 3
 <h1>References:</h1>
 <p><a href="https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/"><strong>Building Recommenders</strong>:</a> Overview of Recommender Algorithms</p>
 <p><a href="https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf"><strong>recommenderlab</strong>:</a> A Framework for Developing and Testing Recommendation Algorithms</p>
-<p><a href="http://uc-r.github.io/gbm_regression"><em>UC Business Analytics R Programming Guide</em>:</a> Gradient Boosting Machines</p>
+<p><a href="http://uc-r.github.io/gbm_regression"><strong>UC Business Analytics R Programming Guide</strong>:</a> Gradient Boosting Machines</p>
 </div>
 </article>
 </div>
