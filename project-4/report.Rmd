@@ -70,54 +70,57 @@ The goal of this assignment is give you practice working with accuracy and other
 
 Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https://www.kaggle.com/uciml/restaurant-data-with-consumer-ratings) collection, which contained several datasets pertaining to restaurants and their patrons. The csv files are stored within our repository in the data folder. 
 
-```{r}
-data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") # cusine tags
-data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") # restaurant name
-data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") # user ratings
-data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") # user profile
+```{r load-data}
+# cusine tags
+data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") 
+
+# restaurant name
+data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") 
+
+# user ratings
+data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") 
+
+# user profile
+data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") 
 ```
 
 ## Data Tranformations
 
 We cleaned our data using transformations and regular expression unite our user and restaurant data. The output of which can be previewed below: 
 
-```{r}
+```{r tidy-data}
 # restaurant dataframe
-
 ## concatenate restaurant tags 
 cuisine <- aggregate(Rcuisine ~., data1, toString) 
-
 ## merge & transform
 restaurant <- data2 %>% select(placeID, name, city,price, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city)) 
-restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi")) # rename cities for analysis
-
-## revalue factors
+## set/revalue factors 
+restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi")) 
 restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="no", "not permitted"="no", "section"="yes", "permitted"="yes", "only at bar"="yes")) 
 restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high"))
 restaurant$alcohol = revalue(restaurant$alcohol, c("No_Alcohol_Served"="no", "Full_Bar"="yes", "Wine-Beer" ="yes"))
 restaurant <- inner_join(restaurant, cuisine, by="placeID")
 
 # user dataframe: 
-
 ##select attributes of interest from profile
 user_profile <- data4 %>% select(userID, budget,activity, smoker)
 user <- inner_join(data3,user_profile,by='userID') %>% select(-service_rating, -food_rating)
-
-## set factors
+## set/revalue factors
 user$budget <- factor(user$budget, levels = c("low", "medium", "high"))
 user$smoker <- revalue(user$smoker, c("false"="no", "true"="yes")) 
 user$smoker <- factor(user$smoker, levels = c("no", "yes"))
-
 ## change ratings from 0-2 scale to 1-3
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
 
-# combine user / restaurant data &  subset 
-
+# combine user / restaurant data & subset 
 data <- inner_join(user, restaurant, by="placeID") 
 data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
-data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling() 
 ```
 
+```{r data-preview, echo=F}
+#view output
+data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling()
+```
 
 ## Data Exploration
 
@@ -125,19 +128,30 @@ We found that 80% of our raters were students students and 76% of our restaurant
 
 The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant's categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings. 
 
-```{r, fig.height=2, out.width = '100%'}
-data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#e4d1d1') +labs(title="Raw Ratings Distribution by Patron Budget") + facet_wrap(~budget, nrow=1)
+### Visualizations {.tabset}
 
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b0b0') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+#### Ratings by Budget
+
+```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
+data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
 ```
 
-```{r,fig.height=3, out.width = '100%'}
-data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#686256") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
+#### Ratings by Price
+
+```{r price-plot, fig.height=2, out.width = '100%', echo=F}
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
 
-```{r, fig.height=4.5, out.width = '100%'}
-# Cuisine bar plot. May or may not include. 
-data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#686256")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))+ scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
+#### Ratings by Restaurant
+
+```{r restaurant-plot,fig.height=3, out.width = '100%', echo=F}
+data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
+```
+
+#### Ratings by Cuisine
+
+```{r cuisine-plot, fig.height=4.5, out.width = '100%', echo=F}
+data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
 ```
 
 # Collaborative Filtering 
