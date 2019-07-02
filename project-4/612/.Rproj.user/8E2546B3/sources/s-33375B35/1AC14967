@@ -5,14 +5,14 @@
     "dirty" : false,
     "encoding" : "ISO8859-1",
     "folds" : "",
-    "hash" : "297372450",
+    "hash" : "0",
     "id" : "1AC14967",
-    "lastKnownWriteTime" : 1562089943,
-    "last_content_update" : 1562089943368,
+    "lastKnownWriteTime" : 1562092176,
+    "last_content_update" : 1562092176535,
     "path" : "~/GitHub/SPRING2019TIDYVERSE/612-group/project-4/report.Rmd",
     "project_path" : null,
     "properties" : {
-        "cursorPosition" : "24,62",
+        "cursorPosition" : "9,1",
         "scrollLine" : "6"
     },
     "relative_order" : 3,
