@@ -4,8 +4,8 @@ author: "Christina Valore, Juliann McEachern, & Rajwant Mishra"
 date: "July 2, 2019"
 output: 
   html_document:
-    theme: united
-    highlight: tango
+    theme: flatly
+    highlight: pygments
     toc: true
     toc_depth: 2
     toc_float: true
@@ -46,25 +46,9 @@ default(scroll_box) <- list(width = "100%")
 ##try(setwd("~/Github/612-group/project-4"))
 ```
 
+# Getting Started
 
-# Overview
-
-The goal of this assignment is give you practice working with accuracy and other recommender system metrics. 
-
-**Assignment Tasks** (SUMMARIZE OUR PROCESS LATER):
-
-1. Compare the accuracy of at least two recommender system algorithms against your offline data. 
-2. Compare and report on any change in accuracy before and after you've made the change in the algorithms. 
-3. Include at least one business or user experience goal such as increased serendipity, novelty, or diversity. 
-4. Textual conclusion.
-
-**GROUP NOTES** (DELETE LATER):
-
-*  3 Matrices are defined. 1 has null values, 1 is imputed with the mean, 1 is imputed with 0. We do not have to use all of these. Just a starting place. 
-*  Dataset includes many interesting categorical features. We could try 2 user-item algorthims and a hybrid approach.
-*  Lets try to do our best to minimize code chunks, add explanitory text for readers and within code chunks for us to follow.
-*  Add/reference sources at the end! 
-*  Set important code chunks to `echo=T` if you want the reader to see the process.
+In this assignment, we practiced working with accuracy and other recommender system metrics. We compared the performance of serveral algorithms and analyzed the diversity of our recommendations.
 
 ## Data Selection
 
@@ -73,20 +57,17 @@ Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https
 ```{r load-data}
 # cusine tags
 data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") 
-
 # restaurant name
 data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") 
-
 # user ratings
 data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") 
-
 # user profile
 data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") 
 ```
 
 ## Data Tranformations
 
-We cleaned our data using transformations and regular expression unite our user and restaurant data. The output of which can be previewed below: 
+We cleaned our data using transformations and regular expression unite our user and restaurant data. 
 
 ```{r tidy-data}
 # restaurant dataframe
@@ -117,6 +98,8 @@ data <- inner_join(user, restaurant, by="placeID")
 data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
 ```
 
+The output of which can be previewed below: 
+
 ```{r data-preview, echo=F}
 #view output
 data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling()
@@ -128,73 +111,63 @@ We found that 80% of our raters were students students and 76% of our restaurant
 
 The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant's categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings. 
 
-### Visualizations {.tabset}
+## Data Visualizations {.tabset}
 
-#### Ratings by Budget
+We found that most of our restaurants received high ratings of 3. Most ratings came from users with low-medium budgets and that the majority of our restaurants were in the middle bracket for price. We had a wide spread in the number of ratings each restaurant received, with the fewest being 3 and the most being 32 ratings from our users. There were 32 unique cuisine tags assigned to our restaurants. Mexican cuisine was the most popular and those restaurants received 108 total ratings.
+
+### Raw Ratings
+
+```{r ratings-plot, fig.height=2, out.width = '100%', echo=F}
+data %>%  group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Raw Ratings Distribution") 
+```
+
+### Ratings by Budget
 
 ```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
-data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
+data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
 ```
 
-#### Ratings by Price
+### Ratings by Price
 
 ```{r price-plot, fig.height=2, out.width = '100%', echo=F}
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
 
-#### Ratings by Restaurant
+### Ratings by Restaurant
 
 ```{r restaurant-plot,fig.height=3, out.width = '100%', echo=F}
-data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
+data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#c8dad3", "#93b5b3", "#63707e"))
 ```
 
-#### Ratings by Cuisine
+### Ratings by Cuisine
 
 ```{r cuisine-plot, fig.height=4.5, out.width = '100%', echo=F}
-data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
+data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#c8dad3", "#93b5b3", "#63707e"))
 ```
-
-# Collaborative Filtering 
-
-**ADD TEXT EXPLINATION OF BUSINESS/USER GOALS: Serendipity? Goal to be recommending relevant items to targeted users that are different then items the user has already rated?**
 
 ## Matrix Building 
 
-We further transformed our data into a user-item matrix to build our recommender systems.
+We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
 
-```{r}
+```{r build-matrix, echo=F}
 # create user item matrix
 ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
 rownames(ui_matrix)<-ui_matrix$userID # set row names to userid
 ui_matrix<-ui_matrix %>% select(-userID) %>% as.matrix()# remove userid from columns
 umat <- as(ui_matrix,"realRatingMatrix") # save real ratings for algo 
 
-
-
-##### built two other frames for comparison - mu = mean ratings imputation; na = imputed with 0 
-ui_mtx_mu <- ui_matrix; ui_mtx_na <- ui_matrix 
-
-for(i in c(1:56)){
-  ui_mtx_mu[is.na(ui_mtx_mu[,i]), i] <- round(mean(ui_mtx_mu[,i], na.rm = TRUE))
-}
-
-ui_mtx_na[is.na(ui_mtx_na)] <- 0
-
-## preview matrices (DELETE UNUSED LATER)
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (Ratings Preserved as NA)") %>% kable_styling()%>% scroll_box()
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (NA=Mean Rating)") %>% kable_styling()%>% scroll_box()
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (NA=0)") %>% kable_styling()%>% scroll_box()
+# preview matrices 
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="Preview of User-Item Matrix") %>% kable_styling() %>% scroll_box()
 ```
 
 ## Training and Test Subsets
 
-Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
+Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
 
 ```{r}
 # evaluation method with 90% of data for train and 10% for test
 evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=1)
 ```
-
 
 ## Algorithm 1: User-Based vs. Item Based 
 
@@ -204,6 +177,7 @@ For the first comparison, I chose to used the recommenderlab package to compare 
 Here we are training our recommender with the train data set for both the UBCF and IBCF approaches. 
 ```{r, echo=T}
 #User-based collaborative filtering recommender
+
 ub_c <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "center",method="Cosine"))
 
@@ -236,16 +210,17 @@ error <- rbind(
 error %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
 
-## Algorithm 2 (Raj)
-## SVD/FSVD/ALS (Raj)
+
+# Algorithm 2: SVD
 
 We will try to use *Singular Value Decomposition* *(SVD)* , Funk SVD *(FSVD)* and *Alternating Least Squares (ALS)*  with latent features starting with 10 and then increasing and decresing it to find better RMSE of our predictor. 
 
-### SVD Data Preparation 
+## SVD Data Preparation 
+
 We have three type of data from evaluationScheme: 
-+ "train" returns the training data for the run, 
-+ "known" returns the known ratings used for prediction for the test data, and 
-+ "unknown" returns the ratings used for evaluation for the test data.
++ `train` returns the training data for the run, 
++ `known` returns the known ratings used for prediction for the test data, and 
++ `unknown` returns the ratings used for evaluation for the test data.
 
 ```{r echo=FALSE}
 
