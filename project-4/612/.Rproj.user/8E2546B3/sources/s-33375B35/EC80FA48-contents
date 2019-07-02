@@ -328,13 +328,13 @@ Result = rbind(
   FSVD_Train_10 = fsvd10_train,
   FSVD_Test_10 = fsvd10_test
 )
-
-print("View the unknon Evalutation matrix")
-as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown") %>% kable_styling()%>% scroll_box()
-
-
-print("View the Predicted matrix ")
-as.data.frame.array(as(ratings_test_unknown_predict, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
+# Working Code commented to save dispaly space
+# print("View the unknon Evalutation matrix")
+# as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown") %>% kable_styling()%>% scroll_box()
+# 
+# 
+# print("View the Predicted matrix ")
+# as.data.frame.array(as(ratings_test_unknown_predict, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
 
 kable(Result,caption=" Result of Funk SVD") 
 ```
