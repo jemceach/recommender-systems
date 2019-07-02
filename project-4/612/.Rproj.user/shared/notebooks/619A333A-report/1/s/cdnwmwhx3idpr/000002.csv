@@ -1,0 +1,2 @@
+"0","# Cuisine bar plot. May or may not include. "
+"0","data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat=""count"",color=""#686256"")+labs(title=""Restaurant Cuisine Tag Counts with Ratings"") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))+ scale_fill_manual(values=c(""#f0efef"", ""#e4d1d1"", ""#b9b0b0""))"
