@@ -4,8 +4,8 @@ author: "Christina Valore, Juliann McEachern, & Rajwant Mishra"
 date: "July 2, 2019"
 output: 
   html_document:
-    theme: united
-    highlight: tango
+    theme: flatly
+    highlight: pygments
     toc: true
     toc_depth: 2
     toc_float: true
@@ -46,10 +46,9 @@ default(scroll_box) <- list(width = "100%")
 ##try(setwd("~/Github/612-group/project-4"))
 ```
 
+# Getting Started
 
-# Overview
-
-In this assignment, we practiced working with accuracy and other recommender system metrics. We compared the performance of serveral algorithms and analyzed the diversity of our recommendations..
+In this assignment, we practiced working with accuracy and other recommender system metrics. We compared the performance of serveral algorithms and analyzed the diversity of our recommendations.
 
 ## Data Selection
 
@@ -119,36 +118,36 @@ We found that most of our restaurants received high ratings of 3. Most ratings c
 ### Raw Ratings
 
 ```{r ratings-plot, fig.height=2, out.width = '100%', echo=F}
-data %>%  group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Budget") 
+data %>%  group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Raw Ratings Distribution") 
 ```
 
 ### Ratings by Budget
 
 ```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
-data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
+data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
 ```
 
 ### Ratings by Price
 
 ```{r price-plot, fig.height=2, out.width = '100%', echo=F}
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
 
 ### Ratings by Restaurant
 
 ```{r restaurant-plot,fig.height=3, out.width = '100%', echo=F}
-data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
+data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#c8dad3", "#93b5b3", "#63707e"))
 ```
 
 ### Ratings by Cuisine
 
 ```{r cuisine-plot, fig.height=4.5, out.width = '100%', echo=F}
-data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
+data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#c8dad3", "#93b5b3", "#63707e"))
 ```
 
 ## Matrix Building 
 
-Our final transformations converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
+We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
 
 ```{r build-matrix, echo=F}
 # create user item matrix
@@ -158,21 +157,12 @@ ui_matrix<-ui_matrix %>% select(-userID) %>% as.matrix()# remove userid from col
 umat <- as(ui_matrix,"realRatingMatrix") # save real ratings for algo 
 
 # preview matrices 
-as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (Ratings Preserved as NA)") %>% kable_styling()
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="Preview of User-Item Matrix") %>% kable_styling() %>% scroll_box()
 ```
-
-
-
-
-# Collaborative Filtering 
-
-**ADD TEXT EXPLINATION OF BUSINESS/USER GOALS: Serendipity? Goal to be recommending relevant items to targeted users that are different then items the user has already rated?**
-
-
 
 ## Training and Test Subsets
 
-Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
+Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
 
 ```{r}
 # evaluation method using training set of 
@@ -180,13 +170,11 @@ evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=0
 ```
 
 
-## Algorithm 1: User-Based (Christina)
+# Algorithm 1: Cosine Similarity
 
-ADD TEXT ETC. 
+ADD TEXT/HEADERS ETC. 
 
-### Process 
-Text
-```{r, echo=T}
+```{r}
 #non-normalized
 ub_n <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = NULL, method="Cosine"))
@@ -200,7 +188,7 @@ ub_z <- Recommender(getData(evalu, "train"), "UBCF",
       param=list(normalize = "Z-score",method="Cosine"))
 ```
 
-### Predictions 
+## Predictions 
 Text
 ```{r}
 #predicted ratings
@@ -227,16 +215,17 @@ error_UCOS <- rbind(
 error_UCOS %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
 
-## Algorithm 2 (Raj)
-## SVD/FSVD/ALS (Raj)
+
+# Algorithm 2: SVD
 
 We will try to use *Singular Value Decomposition* *(SVD)* , Funk SVD *(FSVD)* and *Alternating Least Squares (ALS)*  with latent features starting with 10 and then increasing and decresing it to find better RMSE of our predictor. 
 
-### SVD Data Preparation 
+## SVD Data Preparation 
+
 We have three type of data from evaluationScheme: 
-+ "train" returns the training data for the run, 
-+ "known" returns the known ratings used for prediction for the test data, and 
-+ "unknown" returns the ratings used for evaluation for the test data.
++ `train` returns the training data for the run, 
++ `known` returns the known ratings used for prediction for the test data, and 
++ `unknown` returns the ratings used for evaluation for the test data.
 
 ```{r echo=FALSE}
 
