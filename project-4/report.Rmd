@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
-# data processing
+# data processing install.packages("rsample")
 library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)
 
 #formatting
