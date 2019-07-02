@@ -12,12 +12,13 @@ output:
 ```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
 # data processing
 library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)
+library(DATA606)
 #formatting
 library(knitr); library(kableExtra); library(prettydoc); library(default)
 
 #visualization
 library(ggplot2)
-
+# install.packages("default")
 #recommender 
 library(recommenderlab); library(textmineR)
 
@@ -258,7 +259,7 @@ After normalization with Z-score out data looks very much centered arround 0 and
 scatter.smooth(getRatings(ratings_train))
 scatter.smooth(getRatings(normalize(ratings_train,method="Z-score")))
 #  Z-score normalization reduces the variance to a range of roughly
-# −3 to +3 standard deviations. It is interesting to see that there is a pronounced peak of
+# ???3 to +3 standard deviations. It is interesting to see that there is a pronounced peak of
 # ratings between zero and two
 hist(getRatings(normalize(ratings_train,method="Z-score")))
 ```
@@ -479,7 +480,7 @@ kable(error,caption = "For K 5 6 10 in group of 4")
 
 ### Diversity
 
-Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item’s content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
+Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
 
 In our Diversity test, we are using predicted rating of the Hotel from the USER and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
 
