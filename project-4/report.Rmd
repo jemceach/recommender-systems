@@ -2,10 +2,15 @@
 title: "Accuracy and Beyond in Restaurant Recommender Systems"
 author: "Christina Valore, Juliann McEachern, & Rajwant Mishra"
 date: "July 2, 2019"
-output:
-  prettydoc::html_pretty:
-    theme: leonids 
-    highlight: github
+output: 
+  html_document:
+    theme: united
+    highlight: tango
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    df_print: paged
+    code_folding: hide
 ---
  
 ```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
@@ -30,7 +35,7 @@ library(diveRsity)
 options(max.print="100"); opts_knit$set(width=75) 
 
 ## augment chunk output
-opts_chunk$set(echo=F,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
+opts_chunk$set(echo=T,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
 
 ## set table style for consistency
 default(kable) <- list(format="html")
