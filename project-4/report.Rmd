@@ -49,22 +49,7 @@ default(scroll_box) <- list(width = "100%")
 
 # Overview
 
-The goal of this assignment is give you practice working with accuracy and other recommender system metrics. 
-
-**Assignment Tasks** (SUMMARIZE OUR PROCESS LATER):
-
-1. Compare the accuracy of at least two recommender system algorithms against your offline data. 
-2. Compare and report on any change in accuracy before and after you've made the change in the algorithms. 
-3. Include at least one business or user experience goal such as increased serendipity, novelty, or diversity. 
-4. Textual conclusion.
-
-**GROUP NOTES** (DELETE LATER):
-
-*  3 Matrices are defined. 1 has null values, 1 is imputed with the mean, 1 is imputed with 0. We do not have to use all of these. Just a starting place. 
-*  Dataset includes many interesting categorical features. We could try 2 user-item algorthims and a hybrid approach.
-*  Lets try to do our best to minimize code chunks, add explanitory text for readers and within code chunks for us to follow.
-*  Add/reference sources at the end! 
-*  Set important code chunks to `echo=T` if you want the reader to see the process.
+In this assignment, we practiced working with accuracy and other recommender system metrics. We compared the performance of serveral algorithms and analyzed the diversity of our recommendations..
 
 ## Data Selection
 
@@ -73,20 +58,17 @@ Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https
 ```{r load-data}
 # cusine tags
 data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") 
-
 # restaurant name
 data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") 
-
 # user ratings
 data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") 
-
 # user profile
 data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") 
 ```
 
 ## Data Tranformations
 
-We cleaned our data using transformations and regular expression unite our user and restaurant data. The output of which can be previewed below: 
+We cleaned our data using transformations and regular expression unite our user and restaurant data. 
 
 ```{r tidy-data}
 # restaurant dataframe
@@ -117,6 +99,8 @@ data <- inner_join(user, restaurant, by="placeID")
 data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
 ```
 
+The output of which can be previewed below: 
+
 ```{r data-preview, echo=F}
 #view output
 data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling()
@@ -128,27 +112,37 @@ We found that 80% of our raters were students students and 76% of our restaurant
 
 The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant's categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings. 
 
-### Visualizations {.tabset}
+## Data Visualizations {.tabset}
 
-#### Ratings by Budget
+We found that most of our restaurants received high ratings of 3. Most ratings came from users with low-medium budgets and that the majority of our restaurants were in the middle bracket for price. We had a wide spread in the number of ratings each restaurant received, with the fewest being 3 and the most being 32 ratings from our users. There were 32 unique cuisine tags assigned to our restaurants. Mexican cuisine was the most popular and those restaurants received 108 total ratings.
+
+### Raw Ratings
 
 ```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
-data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
+data %>%  group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Budget") 
 ```
 
-#### Ratings by Price
+### Ratings by Budget
+
+```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
+data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
+```
+
+### Ratings by Price
 
 ```{r price-plot, fig.height=2, out.width = '100%', echo=F}
-ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
 
-#### Ratings by Restaurant
+### Ratings by Restaurant
 
 ```{r restaurant-plot,fig.height=3, out.width = '100%', echo=F}
 data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
+
+data %>%select(placeID) %>% mutate(placeID = as.factor(placeID)) %>% group_by(placeID) %>% count() %>% arrange(freq)
 ```
 
-#### Ratings by Cuisine
+### Ratings by Cuisine
 
 ```{r cuisine-plot, fig.height=4.5, out.width = '100%', echo=F}
 data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
