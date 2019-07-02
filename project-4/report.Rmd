@@ -77,38 +77,76 @@ We cleaned our data using transformations and regular expression unite our user 
 
 ```{r}
 # restaurant dataframe
+
 cuisine <- aggregate(Rcuisine ~., data1, toString) # concat cuisine types into tags
 
+
+
 ## merge & transform
+
 restaurant <- data2 %>% select(placeID, name, city,price, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city)) 
+
 restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high")) # set factor
+
 restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi")) # rename cities for analysis
 
+
+
 ## change for TFIDF analysis
+
 restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="nonsmoking", "not permitted"="nonsmoking", "section"="smoking", "permitted"="smoking", "only at bar"="smoking")) 
+
 restaurant$price = revalue(restaurant$price, c("low"="lowprice", "medium"="mediumprice", "high" ="highprice"))
+
 restaurant$alcohol = revalue(restaurant$alcohol, c("No_Alcohol_Served"="nonalcoholic", "Full_Bar"="fullbar", "Wine-Beer" ="winebeer"))
+
 restaurant$city<-factor(restaurant$city, exclude = NULL)
+
 restaurant <- inner_join(restaurant, cuisine, by="placeID")
 
+
+
 # user dataframe: 
+
 ##select attributes of interest from profile
-user <- data4 %>% select(userID, budget,activity, drink_level, smoker) %>% inner_join(data3,user_profile,by='userID') 
+
+user_profile <- data4 %>% select(userID, budget,activity, drink_level, smoker)
+
+user <- inner_join(data3,user_profile,by='userID') 
+
 ## set factors
+
+user$budget <- revalue(user$budget, c("low"="lowbudget", "medium"="mediumbudget","high"="highbudget"))
+
 user$budget <- factor(user$budget, levels = c("lowbudget", "mediumbudget", "highbudget"))
+
 user$smoker <- revalue(user$smoker, c("false"="nonsmoker", "true"="smoker")) 
+
 user$smoker <- factor(user$smoker, levels = c("nonsmoker", "smoker"))
 
 
+
+
+
 ## change ratings from 0-2 scale to 1-3
+
 user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
+
 user$service_rating[user$service_rating==2]<-3;user$service_rating[user$service_rating==1]<-2;user$service_rating[user$service_rating==0]<-1
+
 user$food_rating[user$food_rating==2]<-3;user$food_rating[user$food_rating==1]<-2;user$food_rating[user$food_rating==0]<-1;
 
+
+
 # combine user / restaurant data &  subset 
+
 data <- inner_join(user, restaurant, by="placeID") 
 
+
+
 data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
+
+
 
 data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling() 
 ```
@@ -125,6 +163,7 @@ data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) +
 
 ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#b9b0b0') +labs(title="Raw Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
 ```
+
 ```{r,fig.height=3, out.width = '100%'}
 data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#686256") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#f0efef", "#e4d1d1", "#b9b0b0"))
 ```
@@ -231,62 +270,24 @@ Compare algorithms.
 
 # Hybrid Recommender System (Juliann)
 
-Create content and collaborative hybrid. Datasets are rich with categorical features of user & item. Reference later for [hybrid model algorithms](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af). 
+Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  We wanted to also try to incorporate a hybrid recommender to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
+
+Reference later for [hybrid model algorithms](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af). 
 
 
-Content Process: 
-
-*  Calculate restaurant similarity using cuisine tags/price to build a vector-space representation.
-*  Evaluate cosine similarity matrix 
-*  Try new machine learning techniques (e.g. Naive Bayes, support vector machines, decision trees, etc) 
-
-Pros:
-
-*  Novelty: Relevant recommendations not based on popularity.
-
-Cons:
-
-*  Over-specialisation
-*  May fail diversity test 
-
-Add more later :)
-
-
-## TFIDF
-
-We concatenated terms describing our restaurant and ran several evaluations of term frequency-inverse document frequency (TF-IDF). We modified our initial data transformations to ensure the proper terms were evaluated properly. For example, in our initial run "beer" and "wine" were calculated at the same frequency. These terms were initial stored as beer-wine, but were separated by our `textmineR` package functions. 
-
-We combined similar text-strings without spacing or punctuation to ensure their appropriate relevancies and concatenated these restaurant features strings as "tags" for natual language processing evaluation. The statistics of our most important words can be viewed below. 
-
-```{r}
-# select terms
-terms<- data %>% select(placeID, alcohol,smoking_area,price,Rcuisine) %>% group_by(placeID) %>% distinct() %>% mutate(alcohol=as.character(alcohol), smoking_area=as.character(smoking_area), price=as.character(price), Rcuisine=as.character(Rcuisine))
-terms$tags <- paste(terms$alcohol, terms$smoking_area, terms$price, terms$Rcuisine, sep=" ")
-
-# tf-idf
-dtm <- CreateDtm(doc_vec = terms$tags, doc_names = terms$placeID)
-tf_mat <- TermDocFreq(dtm = dtm)
-
-# preview output
-preview <- tf_mat
-rownames(preview) <- NULL 
-preview %>% arrange(idf) %>% head(10) %>% kable(caption="Top TF-IDF Result") %>% kable_styling() 
-```
 ## Gradient Boosted Model (GBM)
 
-Algorithm to predict an individuals ratings using decision trees.
+The gradient boosted technique evaluates our data from decision trees. Using an iterative process, the algoritm improves the fit of our inputted variables when creating our predictive model.  We used the `gbm`, `resample`, `Metrics` & `caret` packages to build and evaluate the model.
 
 ### Build GBM Model 
 
-Our GBM model measures the relative influence of our select restaurant and and user characteristics to make user-rating predictions. gbm & resample packages.
+Our GBM model measures the relative influence of our select restaurant and  user characteristics to make user-rating predictions. We found that type of cuisine from our tags had significant importance on our model.
 
 ```{r}
-
-
-
 # Build Model
+
 ## subset data for model
-PatronDataModel <- data %>% select(userID, placeID,rating, budget, price,drink_level,alcohol,smoking_area,smoker, Rcuisine)
+PatronDataModel <- data %>% select(userID, placeID,rating, price,alcohol,smoking_area, Rcuisine)
 
 ## factor data
 PatronDataModel$Rcuisine<-as.factor(PatronDataModel$Rcuisine)
@@ -312,10 +313,9 @@ show.gbm(patron_fit_1)
 
 ## summarize model
 summary.gbm(patron_fit_1, plotit = F) %>% kable() %>%kable_styling()
-```
-### GBM Predictions 
 
-```{r}
+# Predictions
+
 ## optimal number of boosting iterations
 perf_gbm1 = gbm.perf(patron_fit_1, method = "cv", plot.it = F)
 
@@ -324,40 +324,53 @@ patron_prediction_1 <- stats::predict(
                           object = patron_fit_1, # fit prediction
                           newdata = PatronTest, # test data 
                           n.trees = perf_gbm1) # optimal n of iterations
-
-## Prediction summary
-predictions <- as.factor(round(patron_prediction_1))
-predictions %>% summary() %>% kable(caption="Predicted Rating Counts",row.names = c(1,2,3), col.names = "n") %>% kable_styling() %>% column_spec(1,bold = T)
 ```
+
+
 ### Evaluation
 
-RMSE/MSE/MAE/RMSLE evaulation. Turn into loop. Metrics package.
+We evaluated GBM model using standard RMSE, MSE, MEA, and RMSLE calculations. We also used a confusion matrix to calculate the accuracy of our predictions. 
 
 ```{r}
-#calculate/view RMSE/MSE/MAE/RMSLE
-rmse_fit1 <- Metrics::rmse(actual = PatronTest$rating, predicted = patron_prediction_1)
-mse_fit1 <- Metrics::mse(actual = PatronTest$rating, predicted = patron_prediction_1)
-mae_fit1 <- Metrics::mae(actual = PatronTest$rating, predicted = patron_prediction_1)
-rmsle_fit1 <- Metrics::rmsle(actual = PatronTest$rating, predicted = patron_prediction_1)
+# Metrics
+fit_rmse <- Metrics::rmse(actual = PatronTest$rating, predicted =patron_prediction_1)
+fit_mse <- Metrics::mse(actual = PatronTest$rating, predicted =patron_prediction_1)
+fit_mae <- Metrics::mae(actual = PatronTest$rating, predicted =patron_prediction_1)
+fit_rmsle <- Metrics::rmsle(actual = PatronTest$rating, predicted =patron_prediction_1)
 
-print(paste0("RMSE: ", rmse_fit1))
-print(paste0("MSE: ", mse_fit1))
-print(paste0("MAE: ", mae_fit1))
-print(paste0("RMSLE: ", rmsle_fit1))
-
-```
-
-#### Confusion Matrix
-
-Evaluation of precision and accuracy. Caret package. 
-
-```{r}
+#set factors
 PatronTest$rating<-as.factor(PatronTest$rating)
-eval_cm <- confusionMatrix(predictions,PatronTest$rating)
-eval_cm$byClass %>% kable() %>% kable_styling()
+fit_predict <- as.factor(round(patron_prediction_1))
+
+#confusion matrix
+eval_cm <- confusionMatrix(fit_predict, PatronTest$rating)
+fit_accuracy<-round(eval_cm$overall[1],4)
+
+# view metrics
+results <- cbind(fit_rmse, fit_mse,fit_mae,fit_rmsle,fit_accuracy)
+results %>% kable(caption="Model Evaluation Metrics") %>% kable_styling()
+
+### Note: Output shows NA (not meaningful for factors) if chunk is rerun without clearing global environment
 ```
 
+The confusion matrix from the `caret` package also allowed us to look at the accuracy and percision by each of our predicted rating as a unique class.  
 
+```{r}
+eval_cm$byClass %>% round(4) %>% kable(caption = "Confusion Matrix Evaluation by Rating") %>% kable_styling()
+```
+
+### Analysis 
+
+Pros:
+
+*  Novelty: Relevant recommendations not based on popularity.
+
+Cons:
+
+*  Over-specialisation
+*  May fail diversity test 
+
+Add more later :)
 
 
 
@@ -374,4 +387,4 @@ Also: Compare content algorith outcomes to hybrid approach.
 
 [**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
 
-[*UC Business Analytics R Programming Guide*:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
+[**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
