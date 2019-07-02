@@ -191,56 +191,49 @@ as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview
 Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
 
 ```{r}
-# evaluation method using training set of 
-evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=0)
+# evaluation method with 90% of data for train and 10% for test
+evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=1)
 ```
 
 
-## Algorithm 1: User-Based (Christina)
+## Algorithm 1: User-Based vs. Item Based 
 
-ADD TEXT ETC. 
+For the first comparison, I chose to used the recommenderlab package to compare the two collaborative filtering approaches: user-based and item-based. For data normalization I chose center, as I ran tests previously against other normalization techniques and the center approach did the best. Additionally, cosine similarity was used as the method of the system. 
 
 ### Process 
-Text
+Here we are training our recommender with the train data set for both the UBCF and IBCF approaches. 
 ```{r, echo=T}
-#non-normalized
-ub_n <- Recommender(getData(evalu, "train"), "UBCF", 
-      param=list(normalize = NULL, method="Cosine"))
-
-#centered
+#User-based collaborative filtering recommender
 ub_c <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "center",method="Cosine"))
 
-#Z-score normalization
-ub_z <- Recommender(getData(evalu, "train"), "UBCF", 
-      param=list(normalize = "Z-score",method="Cosine"))
+#Item-based collaborative filtering recommender
+ib_c <- Recommender(getData(evalu, "train"), "IBCF", 
+      param=list(normalize = "center",method="Cosine"))
 ```
 
 ### Predictions 
-Text
+
+After training our model, we are now ready for predictions using our test data. We then wanted to ensure our predictions remained inside the 1-3 rating scale, so we set ceilings/floors for any values that fell outside. Finally, we built a table to compare the error terms for both models. We found that the more memory intense approach, user-based collaborative filtering, faired better in tetms of error metrics!
+
 ```{r}
-#predicted ratings
-p1 <- predict(ub_n, getData(evalu,"known"),type="ratings")
-p2 <- predict(ub_c, getData(evalu,"known"),type="ratings")
-p3 <- predict(ub_z, getData(evalu,"known"),type="ratings")
+#predicted ratings on the test data set for the UBCF and IBCF recommender
+p_ub <- predict(ub_c, getData(evalu,"known"),type="ratings")
+p_ib<- predict(ib_c, getData(evalu,"known"),type="ratings")
 
-#ceiling and floor values
-p1@data@x[p1@data@x[] < 1] <- 1
-p1@data@x[p1@data@x[] > 3] <- 3
+#setting ceiling/floor values to ensure all are inside rating scale
+p_ub@data@x[p_ub@data@x[] < 1] <- 1
+p_ub@data@x[p_ub@data@x[] > 3] <- 3
 
-p2@data@x[p2@data@x[] < 1] <- 1
-p2@data@x[p2@data@x[] > 3] <- 3
+p_ib@data@x[p_ib@data@x[] < 1] <- 1
+p_ib@data@x[p_ib@data@x[] > 3] <- 3
 
-p3@data@x[p3@data@x[] < 1] <- 1
-p3@data@x[p3@data@x[] > 3] <- 3
-
-#compare the predictions using the different normalize methods
-error_UCOS <- rbind(
-  ub_n = calcPredictionAccuracy(p1, getData(evalu, "unknown")),
-  ub_c = calcPredictionAccuracy(p2, getData(evalu, "unknown")),
-  ub_z = calcPredictionAccuracy(p3, getData(evalu, "unknown"))
+#compare the predictions for user-based and item-based
+error <- rbind(
+  ub_c = calcPredictionAccuracy(p_ub, getData(evalu, "unknown")),
+  ib_c = calcPredictionAccuracy(p_ib, getData(evalu, "unknown"))
 )
-error_UCOS %>% kable(caption="Prediction Comparisons") %>% kable_styling()
+error %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
 
 ## Algorithm 2 (Raj)
@@ -510,7 +503,7 @@ kable(error,caption = "For K 5 6 10 in group of 4")
 
 Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
 
-In our Diversity test, we are using predicted rating of the Hotel from the USER and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
+In our Diversity test, we are using predicted rating of the Hotel from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
 
 
 ```{r echo=TRUE}
