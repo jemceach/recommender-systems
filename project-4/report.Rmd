@@ -70,11 +70,18 @@ The goal of this assignment is give you practice working with accuracy and other
 
 Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https://www.kaggle.com/uciml/restaurant-data-with-consumer-ratings) collection, which contained several datasets pertaining to restaurants and their patrons. The csv files are stored within our repository in the data folder. 
 
-```{r}
-data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") # cusine tags
-data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") # restaurant name
-data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") # user ratings
-data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") # user profile
+```{r load-data}
+# cusine tags
+data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") 
+
+# restaurant name
+data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") 
+
+# user ratings
+data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") 
+
+# user profile
+data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") 
 ```
 
 ## Data Tranformations
