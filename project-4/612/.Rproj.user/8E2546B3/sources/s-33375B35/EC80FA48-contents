@@ -9,20 +9,21 @@ output:
 ---
  
 ```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
-# data processing install.packages("rsample")
+#dependencies
+## data processing packages
 library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)
 
-#formatting
+##formatting packages
 library(knitr); library(kableExtra); library(prettydoc); library(default)
 
-#visualization
+##visualization packages
 library(ggplot2)
 
-#collaborative recommender 
-library(recommenderlab); 
-
-#hybrid recommender
-library(gbm);library(rsample);library(Metrics);library(caret);library(textmineR)
+##recommender packages
+library(recommenderlab); library(gbm);library(rsample);library(Metrics);library(caret);library(textmineR)
+# Used in Diversity calcualtion 
+library(lsa)
+library(diveRsity)
 
 # global options
 ## knit sizing
@@ -226,16 +227,14 @@ error_UCOS %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ## Algorithm 2 (Raj)
 ## SVD/FSVD/ALS (Raj)
 
-We will try to use SVD , Funk SVD and ALS with latent features starting with 10 and then increasing and decresing it to find better RMSE of or predictor. 
+We will try to use *Singular Value Decomposition* *(SVD)* , Funk SVD *(FSVD)* and *Alternating Least Squares (ALS)*  with latent features starting with 10 and then increasing and decresing it to find better RMSE of our predictor. 
 
 ### SVD Data Preparation 
-
 We have three type of data from evaluationScheme: 
 + "train" returns the training data for the run, 
 + "known" returns the known ratings used for prediction for the test data, and 
 + "unknown" returns the ratings used for evaluation for the test data.
 
-https://raw.githubusercontent.com/ChicagoBoothML/MachineLearning_Fall2015/master/Programming%20Scripts/MovieLens%20Movie%20Recommendation/R/MovieLens_MovieRecommendation.Rmd
 ```{r echo=FALSE}
 
 print("Glimpse of Data:")
@@ -284,7 +283,7 @@ recommenderRegistry$get_entry('SVD', dataType='realRatingMatrix')
 
 
 
-### Working with Funk SVD
+### Working with Funk Singular Value Decompostion SVD
 
 Funk SVD decomposes a matrix (with missing values) into two components 
 U  and V
@@ -300,8 +299,6 @@ U  and V
 # funkSVD(x, k = 10, gamma = 0.015, lambda = 0.001,
 #   min_improvement = 1e-06, min_epochs = 50, max_epochs = 200,
 #   verbose = FALSE)
-
-
 # Buid Model with K =  10 default
 fsvd <- funkSVD(ratings_train, verbose = TRUE) # k = 10, gamma = 0.015, lambda = 0.001,
 
@@ -331,13 +328,13 @@ Result = rbind(
   FSVD_Train_10 = fsvd10_train,
   FSVD_Test_10 = fsvd10_test
 )
-
-print("View the unknon Evalutation matrix")
-as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown") %>% kable_styling()%>% scroll_box()
-
-
-print("View the Predicted matrix ")
-as.data.frame.array(as(ratings_test_unknown_predict, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
+# Working Code commented to save dispaly space
+# print("View the unknon Evalutation matrix")
+# as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown") %>% kable_styling()%>% scroll_box()
+# 
+# 
+# print("View the Predicted matrix ")
+# as.data.frame.array(as(ratings_test_unknown_predict, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
 
 kable(Result,caption=" Result of Funk SVD") 
 ```
@@ -345,14 +342,16 @@ kable(Result,caption=" Result of Funk SVD")
 
 ### SVD Method 
 
-We used the SVD algorthim to create a model which makes user-item recommendation predictions. Here since our 
+We used the SVD algorthim to create a model which makes user-item recommendation predictions. 
 
 We chose to build our SVD model for our recommender system by using 10 default Latent Factor, Latent factors are the features that both User and Item have in common within a given user-item matrix.
 
 With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
+
 + *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
 
 + *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
+
 ```{r echo=FALSE}
 # Latent-Factor Collaborative Filtering Recommender
 # with matrix factorization by Singular-Value Decomposition (SVD)
@@ -496,10 +495,6 @@ In our Diversity test, we are using predicted rating of the Hotel from the USER 
 
 
 ```{r echo=TRUE}
-
-library(lsa)
-library(diveRsity)
-
 # Funcation to calualte Diversity
 
 getDivesity <- function(ActaulData,Predicated,tag) {
@@ -556,9 +551,6 @@ print(paste("Diversity Error [ ", tag ," ]:=> ",round(actaulDIversity_Error,4) )
 ```
 
 ```{r echo=TRUE}
-
-
-
 # Diversity with SVD with k = 10
 getDivesity(ratings_test_unknown,svd10_pred, "SVD k-10")
 
@@ -573,22 +565,19 @@ getDivesity(ratings_test_unknown,fsvd10_predict,"Funk SVD")
 ## Compare 
 
 We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.
+*Diversity Check with SVD of k = 10 * 
+<b>Diversity Error [  SVD with Z-score  ]:=>  0.028 </b><br>
+<b>Diversity Error [  Funck SVD k= 10 ]:=>  0.0301 </b><br>
+<b>Diversity Error [  SVD k-10  ]:=>  0.0312</b><br>
 
-"Diversity Error [  SVD with Z-score  ]:=>  0.028"
-"Diversity Error [  Funck SVD k= 10 ]:=>  0.0301"
-"Diversity Error [  SVD k-10  ]:=>  0.0312"
+*RMSE Check with SVD of k = 10 * 
+<b>RMSE  [  SVD with Z-score  ]:=>  0.94</b><br>
+<b>RMSE  [  Funck SVD k= 10 ]:=>  0.65</b><br>
+<b>RMSE  [  SVD k-10  ]:=>  0.68</b><br>
 
-"RMSE  [  SVD with Z-score  ]:=>  0.94"
-"RMSE  [  Funck SVD k= 10 ]:=>  0.65"
-"RMSE  [  SVD k-10  ]:=>  0.68"
-
+RMSE was 0.94 with SVD Zscore normalisation and Diversity Error was 0.028 with SVD of Z-score normalisation. FunkSVD seemed doing consistent in all the value of K (5,6,10), but didn't imporve much as comapored with SVD With Z-core on k=10 i.e. 10 latent factors.
 
 
-
-ref: https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff
-Ref: http://www.contrib.andrew.cmu.edu/~ravi/kdd17.pdf
-Ref: https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine
-Ref: https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html
 
 #### -------------END OF RAJ WORK
 
@@ -708,8 +697,11 @@ Also: Compare content algorith outcomes to hybrid approach.
 
 # References:
 
-[**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
 
+[*Recommender-systems-its-not-all*])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff)
+[*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
+[*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
+[**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
 [**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
 
 [**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines

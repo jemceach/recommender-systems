@@ -1,0 +1,4 @@
+"0","#  Z-score normalization reduces the variance to a range of roughly"
+"0","# ???3 to +3 standard deviations. It is interesting to see that there is a pronounced peak of"
+"0","# ratings between zero and two"
+"0","hist(getRatings(normalize(ratings_train,method=""Z-score"")))"
