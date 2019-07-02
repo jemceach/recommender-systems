@@ -1,0 +1,57 @@
+"0","# data processing install.packages(""rsample"")"
+"0","library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)"
+"0","#formatting"
+"0","library(knitr); library(kableExtra); library(prettydoc); library(default)"
+"0","#visualization"
+"0","library(ggplot2)"
+"0","#collaborative recommender "
+"0","library(recommenderlab); "
+"0","#hybrid recommender"
+"0","library(gbm);"
+"0","library(rsample);"
+"2","package ‘rsample’ was built under R version 3.5.3"
+"0","library(Metrics);"
+"0","library(caret);"
+"2","package ‘caret’ was built under R version 3.5.3"
+"2","Loading required package: lattice
+"
+"2","
+Attaching package: ‘lattice’
+
+"
+"2","The following object is masked from ‘package:openintro’:
+
+    lsegments
+
+"
+"2","
+Attaching package: ‘caret’
+
+"
+"2","The following objects are masked from ‘package:Metrics’:
+
+    precision, recall
+
+"
+"2","The following object is masked from ‘package:openintro’:
+
+    dotPlot
+
+"
+"2","The following objects are masked from ‘package:recommenderlab’:
+
+    MAE, RMSE
+
+"
+"0","library(textmineR)"
+"0","# global options"
+"0","## knit sizing"
+"0","options(max.print=""100""); opts_knit$set(width=75) "
+"0","## augment chunk output"
+"0","opts_chunk$set(echo=F,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion"
+"0","## set table style for consistency"
+"0","default(kable) <- list(format=""html"")"
+"0","default(kable_styling)  <- list(bootstrap_options = ""hover"",full_width=T, font_size=10)"
+"0","default(scroll_box) <- list(width = ""100%"")"
+"0","## working directory"
+"0","##try(setwd(""~/Github/612-group/project-4""))"
