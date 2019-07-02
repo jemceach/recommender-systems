@@ -118,7 +118,7 @@ We found that most of our restaurants received high ratings of 3. Most ratings c
 
 ### Raw Ratings
 
-```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
+```{r ratings-plot, fig.height=2, out.width = '100%', echo=F}
 data %>%  group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba099') +labs(title="Raw Ratings Distribution by Budget") 
 ```
 
@@ -138,8 +138,6 @@ ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#000000', fill='#6ba
 
 ```{r restaurant-plot,fig.height=3, out.width = '100%', echo=F}
 data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#cccccc", "#44867d", "#00332c"))
-
-data %>%select(placeID) %>% mutate(placeID = as.factor(placeID)) %>% group_by(placeID) %>% count() %>% arrange(freq)
 ```
 
 ### Ratings by Cuisine
@@ -152,19 +150,17 @@ data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group
 
 Our final transformations converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
 
-```{r build-matrix}
+```{r build-matrix, echo=F}
 # create user item matrix
 ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
 rownames(ui_matrix)<-ui_matrix$userID # set row names to userid
 ui_matrix<-ui_matrix %>% select(-userID) %>% as.matrix()# remove userid from columns
 umat <- as(ui_matrix,"realRatingMatrix") # save real ratings for algo 
-```
 
-The output of which can be previewed below: 
-```{r view-matrix, echo=F}
-## preview matrices 
+# preview matrices 
 as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="User Matrix Preview (Ratings Preserved as NA)") %>% kable_styling()
 ```
+
 
 
 
