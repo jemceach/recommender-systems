@@ -1,0 +1,9 @@
+"0","# The description and default parameters of this method in recommenderlab are as follows:
+recommenderRegistry$get_entry('SVD', dataType='realRatingMatrix')
+"
+"1","Recommender method: SVD for realRatingMatrix
+Description: Recommender based on SVD approximation with column-mean imputation.
+Reference: NA
+"
+"1","Parameters:
+"
