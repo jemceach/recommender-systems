@@ -93,10 +93,8 @@ restaurant <- inner_join(restaurant, cuisine, by="placeID")
 
 # user dataframe: 
 ##select attributes of interest from profile
-user_profile <- data4 %>% select(userID, budget,activity, drink_level, smoker)
-user <- inner_join(data3,user_profile,by='userID') 
+user <- data4 %>% select(userID, budget,activity, drink_level, smoker) %>% inner_join(data3,user_profile,by='userID') 
 ## set factors
-user$budget <- revalue(user$budget, c("low"="lowbudget", "medium"="mediumbudget","high"="highbudget"))
 user$budget <- factor(user$budget, levels = c("lowbudget", "mediumbudget", "highbudget"))
 user$smoker <- revalue(user$smoker, c("false"="nonsmoker", "true"="smoker")) 
 user$smoker <- factor(user$smoker, levels = c("nonsmoker", "smoker"))
@@ -374,4 +372,6 @@ Also: Compare content algorith outcomes to hybrid approach.
 
 [**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
 
-[**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf)A Framework for Developing and Testing Recommendation Algorithms 
+[**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
+
+[*UC Business Analytics R Programming Guide*:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
