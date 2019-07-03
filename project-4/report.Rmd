@@ -169,32 +169,34 @@ Finally, our data was split into training and tests sets for model evaluation of
 evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=1)
 ```
 
-# Algorithm 1: Cosine Method 
+## Algorithm 1: User-Based vs. Item Based 
 
-For the first comparison, we chose to used the recommenderlab package to compare the two collaborative filtering approaches: user-based and item-based. For data normalization we chose center, as we ran tests previously against other normalization techniques and the center approach did the best. Additionally, cosine similarity was used as the method of the system. 
+For the first comparison, we chose to use the recommenderlab package to compare two collaborative filtering approaches: user-based and item-based. For data normalization we chose center, as we ran tests previously against other normalization techniques and the center approach did the best. Additionally, cosine similarity was used as the method of the system. 
 
 ## Process 
-
 Here we are training our recommender with the train data set for both the UBCF and IBCF approaches. 
 ```{r, echo=T}
 #User-based collaborative filtering recommender
-
-ub_c <- Recommender(getData(evalu, "train"), "UBCF", 
+ub_train <- getData(evalu, "train")
+ub_c <- Recommender(ub_train, "UBCF", 
       param=list(normalize = "center",method="Cosine"))
 
 #Item-based collaborative filtering recommender
-ib_c <- Recommender(getData(evalu, "train"), "IBCF", 
+ib_train<-getData(evalu, "train")
+ib_c <- Recommender(ib_train, "IBCF", 
       param=list(normalize = "center",method="Cosine"))
 ```
 
 ## Predictions 
-
 After training our model, we are now ready for predictions using our test data. We then wanted to ensure our predictions remained inside the 1-3 rating scale, so we set ceilings/floors for any values that fell outside. Finally, we built a table to compare the error terms for both models. We found that the more memory intense approach, user-based collaborative filtering, faired better in tetms of error metrics!
 
 ```{r}
 #predicted ratings on the test data set for the UBCF and IBCF recommender
-p_ub <- predict(ub_c, getData(evalu,"known"),type="ratings")
-p_ib<- predict(ib_c, getData(evalu,"known"),type="ratings")
+ub_known<-getData(evalu, "known")
+ib_known<-getData(evalu, "known")
+
+p_ub <- predict(ub_c, ub_known, type="ratings")
+p_ib<- predict(ib_c, ib_known, type="ratings")
 
 #setting ceiling/floor values to ensure all are inside rating scale
 p_ub@data@x[p_ub@data@x[] < 1] <- 1
@@ -204,33 +206,34 @@ p_ib@data@x[p_ib@data@x[] < 1] <- 1
 p_ib@data@x[p_ib@data@x[] > 3] <- 3
 
 #compare the predictions for user-based and item-based
+ub_unknown<-getData(evalu, "unknown")
+ib_unknown<-getData(evalu, "unknown")
+
 error <- rbind(
-  ub_c = calcPredictionAccuracy(p_ub, getData(evalu, "unknown")),
-  ib_c = calcPredictionAccuracy(p_ib, getData(evalu, "unknown"))
+  ub_c = calcPredictionAccuracy(p_ub, ub_unknown),
+  ib_c = calcPredictionAccuracy(p_ib, ib_unknown)
 )
 error %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
 
-
 # Algorithm 2: SVD
 
-Our next method uses *Singular Value Decomposition* *(SVD)*. We started with 10 latent features, then increased and decreased them, to find better RMSE of our predictor. The latent features were derrived from the factors each user and item have in common within a given user-item matrix. 
-
-We compared the standard SVD approach to Funk SVD, Z-score SVD, and *Alternating Least Squares (ALS)* due to the similiarities between the algorithms. 
+Our next method uses *Singular Value Decomposition* *(SVD)*. We started with 10 latent features, then increased and decreased them, to find better RMSE of our predictor. The latent features were derrived from the factors each user and item have in common within a given user-item matrix. We compared a normalized SVD approach to Funk SVD and Z-score SVD. 
 
 ## SVD Method 
+
+
 
 We used the SVD algorthim to create a model which makes user-item recommendation predictions. The recommender relies on SVD approximation with column-mean imputation.
 
 With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
 
 1. *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
-
 2. *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
 
-We can also look at SVD using the funk approach. Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
+We also looked at SVD using the funk approach. Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
 
-```{r svd-method, warning=T}
+```{r svd-method}
 # Prep data
 ratings_train <- getData(evalu, 'train')# Training Dataset 
 ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
@@ -254,28 +257,17 @@ fsvd_pred = calcPredictionAccuracy(fsvd_predict,  ratings_test_unknown)
 # bind prediction results
 svd_results <- rbind(svdz_pred, svd_pred, fsvd_pred)
 ```
-
-Our prediction results can be seen below:
+Our prediction evaluations can be seen below:
 
 ```{r svd-results, echo=F}
-# STASH RAJ's train calc predictions
-
-### TRAIN PREDICTIONS
-### svd10_Train_pred <- predict(svdr,ratings_test_unknown,type='ratings')
-### svd10_Train_Acc <- calcPredictionAccuracy(ratings_train,svdr)
-### fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
-### reconstruct the rating matrix as R = UV' & calculate the RMSE on known ratings
-
-
 svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %>% kable_styling()
 ```
 
 # Diversity {.tabset}
 
-Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
+Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. restaurant rating) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
 
-In our Diversity test, we are using predicted rating of the Hotel from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
-
+In our Diversity test, we are using predicted rating of the restaurant from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
 
 ```{r}
 # Funcation to calualte Diversity
@@ -346,15 +338,12 @@ getDiversity(ratings_test_unknown,p_ub,"User-Based")
 getDiversity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
+## Compare 
+
 
 # Gradient Boosted Model (GBM)
 
 Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  Thus, we wanted to also try to incorporate a hybrid approach to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
-
-Reference later for  
-
-
-#
 
 The gradient boosted technique evaluates our data from decision trees. Using an iterative process, the algoritm improves the fit of our inputted variables when creating our predictive model.  We used the `gbm`, `resample`, `Metrics` & `caret` packages to build and evaluate the model.
 
@@ -457,6 +446,7 @@ Add more later :)
 # Conclusion
 
 **As part of your textual conclusion, discuss one or more additional experiments that could be performed and/or metrics that could be evaluated only if online evaluation was possible. Also, briefly propose how you would design a reasonable online evaluation environment.**
+
 
 
 Also: Compare content algorith outcomes to hybrid approach. 
