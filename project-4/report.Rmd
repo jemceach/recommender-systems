@@ -310,10 +310,10 @@ getDivesity <- function(ActualData,Predicted,tag) {
   print(paste("Actual Rating:=> ",a[which(a != 0)], "| Predicted Rating:=> ",round(b[which(b != 0)],2)))
   print(paste("Cosine for 2nd index of Test data:=> ",round(cosine(a[which(a != 0)],b[which(b != 0)]),2)))
   print(paste("Cosine for 2nd index of Calcualted Data:=> ",round(cal_cosine[2],2)))
-  print(paste("Average Diversity noted :=>" , round(mean(cal_cosine),2)))
+  print(paste("Average Diversity noted :=>" , round(mean(cal_cosine,na.rm = T),2)))
   
-  actaulDiversity_Error = 1 - mean(cal_cosine)
-  print(paste("Diversity Error [ ", tag ," ]:=> ",round(actaulDiversity_Error,4) ))
+  actualDiversity_Error = 1 - mean(cal_cosine, na.rm=T)
+  print(paste("Diversity Error [ ", tag ," ]:=> ",round(actualDiversity_Error,4) ))
   }
 
 ```
@@ -343,7 +343,7 @@ getDivesity(ratings_test_unknown,p_ub,"User-Based")
 ## Item-Based
 
 ```{r echo=F}
-getDivesity(ratings_test_unknown,p_ib,"Item-Based")
+#getDivesity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
 # Algo:
