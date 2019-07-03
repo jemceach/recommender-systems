@@ -277,10 +277,10 @@ Diversity measures how dissimilar recommended items are for a user. This similar
 In our Diversity test, we are using predicted rating of the Hotel from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
 
 
-```{r echo=TRUE}
+```{r}
 # Funcation to calualte Diversity
 
-getDivesity <- function(ActualData,Predicted,tag) {
+getDiversity <- function(ActualData,Predicted,tag) {
   cal_cosine <- NULL  
   Predicted = as(Predicted,  "matrix")
   ActualData= as(ActualData,  "matrix")
@@ -320,56 +320,34 @@ getDivesity <- function(ActualData,Predicted,tag) {
 
 ## SVD - Normal
 ```{r echo=F}
-getDivesity(ratings_test_unknown,svd_predict, "SVD k-10")
+getDiversity(ratings_test_unknown,svd_predict, "SVD k-10")
 ```
 
 ## SVD: Z-Score
-```{r echo=F}
-getDivesity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
 ```
 
 ## Funk SVD
 
-```{r echo=F}
-getDivesity(ratings_test_unknown,fsvd_predict,"Funk SVD")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,fsvd_predict,"Funk SVD")
 ```
 
 ## User-Based
 
-```{r echo=F}
-getDivesity(ratings_test_unknown,p_ub,"User-Based")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,p_ub,"User-Based")
 ```
 
 ## Item-Based
 
-```{r echo=F}
-#getDivesity(ratings_test_unknown,p_ib,"Item-Based")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
-# Algo:
 
-*Alternating Least Squares (ALS)* 
-
-# Compare 
-
-We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.<br>
-*Diversity Check with SVD of k = 10 * <br>
-<b>Diversity Error [  SVD with Z-score  ]:=>  0.028 </b><br>
-<b>Diversity Error [  Funck SVD k= 10 ]:=>  0.0301 </b><br>
-<b>Diversity Error [  SVD k-10  ]:=>  0.0312</b><br>
-<br>
-*RMSE Check with SVD of k = 10 * <br>
-<b>RMSE  [  SVD with Z-score  ]:=>  0.94</b><br>
-<b>RMSE  [  Funck SVD k= 10 ]:=>  0.65</b><br>
-<b>RMSE  [  SVD k-10  ]:=>  0.68</b><br>
-
-RMSE was 0.94 with SVD Zscore normalisation and Diversity Error was 0.028 with SVD of Z-score normalisation. FunkSVD seemed doing consistent in all the value of K (5,6,10), but didn't imporve much as comapored with SVD With Z-core on k=10 i.e. 10 latent factors.
-
-
-
-#### -------------END OF RAJ WORK
-
-# Hybrid Recommender System (Juliann)
+# Hybrid Recommender System 
 
 Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  We wanted to also try to incorporate a hybrid recommender to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
 
