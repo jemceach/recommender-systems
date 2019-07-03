@@ -265,14 +265,14 @@ svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %
 
 # Diversity {.tabset}
 
-Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
+Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. restaurant rating) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
 
-In our Diversity test, we are using predicted rating of the Hotel from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
+In our Diversity test, we are using predicted rating of the restaurant from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
 
-```{r echo=TRUE}
+```{r}
 # Funcation to calualte Diversity
 
-getDivesity <- function(ActualData,Predicted,tag) {
+getDiversity <- function(ActualData,Predicted,tag) {
   cal_cosine <- NULL  
   Predicted = as(Predicted,  "matrix")
   ActualData= as(ActualData,  "matrix")
@@ -312,56 +312,38 @@ getDivesity <- function(ActualData,Predicted,tag) {
 
 ## SVD - Normal
 ```{r echo=F}
-getDivesity(ratings_test_unknown,svd_predict, "SVD k-10")
+getDiversity(ratings_test_unknown,svd_predict, "SVD k-10")
 ```
 
 ## SVD: Z-Score
-```{r echo=F}
-getDivesity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
 ```
 
 ## Funk SVD
 
-```{r echo=F}
-getDivesity(ratings_test_unknown,fsvd_predict,"Funk SVD")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,fsvd_predict,"Funk SVD")
 ```
 
 ## User-Based
 
-```{r echo=F}
-getDivesity(ratings_test_unknown,p_ub,"User-Based")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,p_ub,"User-Based")
 ```
 
 ## Item-Based
 
-```{r echo=F}
-#getDivesity(ratings_test_unknown,p_ib,"Item-Based")
+```{r, echo=F}
+getDiversity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
 ## Compare 
 
-We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.<br>
-*Diversity Check with SVD of k = 10 * <br>
-<b>Diversity Error [  SVD with Z-score  ]:=>  0.028 </b><br>
-<b>Diversity Error [  Funck SVD k= 10 ]:=>  0.0301 </b><br>
-<b>Diversity Error [  SVD k-10  ]:=>  0.0312</b><br>
-<br>
-*RMSE Check with SVD of k = 10 * <br>
-<b>RMSE  [  SVD with Z-score  ]:=>  0.94</b><br>
-<b>RMSE  [  Funck SVD k= 10 ]:=>  0.65</b><br>
-<b>RMSE  [  SVD k-10  ]:=>  0.68</b><br>
 
-RMSE was 0.94 with SVD Zscore normalisation and Diversity Error was 0.028 with SVD of Z-score normalisation. FunkSVD seemed doing consistent in all the value of K (5,6,10), but didn't imporve much as comapored with SVD With Z-core on k=10 i.e. 10 latent factors.
+# Gradient Boosted Model (GBM)
 
-
-# Hybrid Recommender System
-
-Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  We wanted to also try to incorporate a hybrid recommender to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
-
-Reference later for [hybrid model algorithms](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af). 
-
-
-## Gradient Boosted Model (GBM)
+Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  Thus, we wanted to also try to incorporate a hybrid approach to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
 
 The gradient boosted technique evaluates our data from decision trees. Using an iterative process, the algoritm improves the fit of our inputted variables when creating our predictive model.  We used the `gbm`, `resample`, `Metrics` & `caret` packages to build and evaluate the model.
 
@@ -472,10 +454,10 @@ Also: Compare content algorith outcomes to hybrid approach.
 # References:
 
 
-[*Recommender-systems-its-not-all*])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff)
-[*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
-[*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
-[**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
-[**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
-
-[**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
+1.  [**Gab41**:])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff) It's Not All About the Accuracy
+2.  [*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
+3.  [*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
+4.  [**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
+5.  [**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
+6.  [**Medium**:](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af): How Do You Measure and Evaluate the Quality of Recommendation Engines
+7.  [**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
