@@ -230,7 +230,7 @@ With normalize parameter we are asking system to normalize the rating by subtrac
 
 We can also look at SVD using the funk approach. Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
 
-```{r svd-method}
+```{r svd-method, warning=T}
 # Prep data
 ratings_train <- getData(evalu, 'train')# Training Dataset 
 ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
@@ -243,20 +243,19 @@ svdz<- Recommender( data=ratings_train,method='SVD',param=list(k=10,normalize='Z
 fsvd <- funkSVD(ratings_train, verbose = F) # k = 10, gamma = 0.015, lambda = 0.001,
 
 ##Test/Evaluation Model Predication 
-predict <- predict(svdn,ratings_test_known,type='ratings')
-svd_pred <- calcPredictionAccuracy(predict,ratings_test_unknown)
-predict <- predict(svdz,ratings_test_known,type='ratings')
-svdz_pred <- calcPredictionAccuracy(predict,ratings_test_unknown)
-predict <- as(predict(fsvd, ratings_test_known, verbose = F), "realRatingMatrix")
-fsvd_pred = calcPredictionAccuracy(predict, ratings_test_unknown)
+svd_predict <- predict(svdn,ratings_test_known,type='ratings')
+svd_pred <- calcPredictionAccuracy(svd_predict,ratings_test_unknown)
+svdz_predict <- predict(svdz,ratings_test_known,type='ratings')
+svdz_pred <- calcPredictionAccuracy(svdz_predict,ratings_test_unknown)
+fsvd_predict <- predict(fsvd, ratings_test_known, verbose = F)
+fsvd_predict  <- as(fsvd_predict,"realRatingMatrix")
+fsvd_pred = calcPredictionAccuracy(fsvd_predict,  ratings_test_unknown)
 
 # bind prediction results
 svd_results <- rbind(svdz_pred, svd_pred, fsvd_pred)
 ```
 
-## Funk SVD
-
-
+Our prediction results can be seen below:
 
 ```{r svd-results, echo=F}
 # STASH RAJ's train calc predictions
@@ -266,95 +265,12 @@ svd_results <- rbind(svdz_pred, svd_pred, fsvd_pred)
 ### svd10_Train_Acc <- calcPredictionAccuracy(ratings_train,svdr)
 ### fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
 ### reconstruct the rating matrix as R = UV' & calculate the RMSE on known ratings
-### ratings_train_predict <- as(tcrossprod(fsvd$U, fsvd$V),"realRatingMatrix")
+
 
 svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %>% kable_styling()
 ```
 
-
-
-
-### Using SVD With Z score
-
-
-Below scatterplot shows that our rating is spread heavily among 2 and 3 as the smooth line is above 2. We could opt for multiple options here like taking average of all the three ratings and then using it as baseline for further analysis or we could just use the restaurant rating and build our recommender on it.
-
-After normalization with Z-score out data looks very much centered arround 0 and More towards the top two std Deviation. 
-
-
-```{r echo=FALSE}
-
-scatter.smooth(getRatings(ratings_train))
-scatter.smooth(getRatings(normalize(ratings_train,method="Z-score")))
-#  Z-score normalization reduces the variance to a range of roughly
-# ???3 to +3 standard deviations. It is interesting to see that there is a pronounced peak of
-# ratings between zero and two
-hist(getRatings(normalize(ratings_train,method="Z-score")))
-```
-
-
-Z-score in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
-```{r echo=FALSE}
-
-
-
-Result <- rbind(Result,
-                SVD_Z_Test_10 = svdz10_Test)
-kable(Result,caption="RMSE With SVD on ZSCORE")
-
-```
-
-
-##### Finding K for SVD
-Finding K for SVD by putting a function to find K and check RMSE
-```{r echo=TRUE}
-
-
-findKforSVD <- function(train,test,evalTest,k=5) {
-  #Create the recommender based on SVD and SVDF using the training data
-r.svd <- Recommender(train, "SVD", param=list(
-     k=k,         # number of latent factors
-     normalize='center'
-   ))
-r.svdz = Recommender(train, "SVD", param=list(
-     k=k,         # number of latent factors
-     normalize='z-score'
-   ))
-r.svdf <- Recommender(train, "SVDF")
-r.als <- Recommender(train, "ALS")
-
-#Compute predicted ratings for test data that is known using the UBCF algorithm
-p.svd <- predict(r.svd, test, type = "ratings")
-p.svdf <- predict(r.svdf, test, type = "ratings")
-p.als <- predict(r.als,test, type = "ratings")
-p.svdz <- predict(r.als,test, type = "ratings")
-
-getRatingMatrix(p.svd)[1:6,1:6]
-getRatingMatrix(p.svdf)[1:6,1:6]
-getRatingMatrix(p.als)[1:6,1:6]
-
-#Calculate the error between training prediction and unknown test data
-
-error <- rbind(
-  SVD = calcPredictionAccuracy(p.svd, evalTest),
-  SVDZ = calcPredictionAccuracy(p.svdz, evalTest),
-  SVDF = calcPredictionAccuracy(p.svdf, evalTest),
-  ALS = calcPredictionAccuracy(p.als,evalTest))
-kable(as.data.frame(error))
-  return(error)
-}
-
-error = rbind(
-  findKforSVD(getData(evalu, "train"), getData(evalu, "known"),getData(evalu, "unknown"),5),
-findKforSVD(getData(evalu, "train"), getData(evalu, "known"),getData(evalu, "unknown"),6),
-findKforSVD(getData(evalu, "train"), getData(evalu, "known"),getData(evalu, "unknown"),10))
-  
-kable(error,caption = "For K 5 6 10 in group of 4")
-
-
-```
-
-### Diversity
+# Diversity {.tabset}
 
 Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
 
@@ -364,69 +280,70 @@ In our Diversity test, we are using predicted rating of the Hotel from the User 
 ```{r echo=TRUE}
 # Funcation to calualte Diversity
 
-getDivesity <- function(ActaulData,Predicated,tag) {
-cal_cosine <- NULL  
-# Printing the MAtrix 
-print(as.data.frame.array(as(Predicated,  "matrix")) %>% head() %>% kable(caption="Predicated Rating  ") %>% kable_styling()%>% scroll_box())
-
-print(as.data.frame.array(as(ActaulData,  "matrix")) %>% head() %>% kable(caption="Actaul Rating ") %>% kable_styling()%>% scroll_box())
+getDivesity <- function(ActualData,Predicted,tag) {
+  cal_cosine <- NULL  
+  Predicted = as(Predicted,  "matrix")
+  ActualData= as(ActualData,  "matrix")
   
-# COnverting the result realmatrix to matrix 
-Predicated= as(Predicated,  "matrix")
-ActaulData= as(ActaulData,  "matrix")
+  for (i in 1:(dim(ActualData)[1])) {
+    a <- as.vector(ActualData[i,])
+    b <- as.vector(Predicted[i, ])
 
-  for (i in 1:(dim(ActaulData)[1])) {
-    a <- as.vector(ActaulData[i,])
-    b <- as.vector(Predicated[i, ])
     # set All NA from MAIN Data = 0
+
     b[which(is.na(a))]=0
     a[which(is.na(a))]=0
-      
+    
     cal_cosine[i] <- cosine(a ,b)  #a %*% b / sqrt(a%*%a * b%*%b)
-}
-
-
-
-print("============Caculating Diversity using cosine similarity==================")
-print (cal_cosine)
-
-print("==============================Valdiate With Data==========================")
-print("==========================================================================")
-
-
-a <- as.vector(ActaulData[2,])
-b <- as.vector(Predicated[2, ])
-b[which(is.na(a))]=0
-a[which(is.na(a))]=0
-print(paste("Actual Rating:=> ",a[which(a != 0)], "| Predicted Rating:=> ",round(b[which(b != 0)],2)))
-
-print(paste("Cosine for 2nd index of Test data:=> ",
-            round(cosine(a[which(a != 0)],b[which(b != 0)]),2)))
-
-
-print(paste("Cosine for 2nd index of Calcualted Data:=> ",round(cal_cosine[2],2)))
-
-print(paste("Average Diversity noted :=>" , round(mean(cal_cosine),2)))
-
-actaulDIversity_Error = 1 - mean(cal_cosine)
-
-print(paste("Diversity Error [ ", tag ," ]:=> ",round(actaulDIversity_Error,4) ))
-
-
-}
+    }
+  
+  print("============Caculating Diversity using cosine similarity==================")
+  print (cal_cosine)
+  print("==============================Valdiate With Data==========================")
+  print("==========================================================================")
+  
+  a <- as.vector(ActualData[2,])
+  b <- as.vector(Predicted[2, ])
+  b[which(is.na(a))]=0
+  a[which(is.na(a))]=0
+  
+  print(paste("Actual Rating:=> ",a[which(a != 0)], "| Predicted Rating:=> ",round(b[which(b != 0)],2)))
+  print(paste("Cosine for 2nd index of Test data:=> ",round(cosine(a[which(a != 0)],b[which(b != 0)]),2)))
+  print(paste("Cosine for 2nd index of Calcualted Data:=> ",round(cal_cosine[2],2)))
+  print(paste("Average Diversity noted :=>" , round(mean(cal_cosine),2)))
+  
+  actaulDiversity_Error = 1 - mean(cal_cosine)
+  print(paste("Diversity Error [ ", tag ," ]:=> ",round(actaulDiversity_Error,4) ))
+  }
 
 ```
 
-```{r echo=TRUE}
-# Diversity with SVD with k = 10
-getDivesity(ratings_test_unknown,svd10_pred, "SVD k-10")
+## SVD - Normal
+```{r echo=F}
+getDivesity(ratings_test_unknown,svd_predict, "SVD k-10")
+```
 
-# Diversity with SVD with k = 10 and Normalise user rating using Z score 
-getDivesity(ratings_test_unknown,svdz10_Pred,"SVD with Z-score")
+## SVD: Z-Score
+```{r echo=F}
+getDivesity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
+```
 
-# Diversity with FSVD with k = 10 and Normalise user rating using Z score 
-getDivesity(ratings_test_unknown,fsvd10_predict,"Funk SVD")
+## Funk SVD
 
+```{r echo=F}
+getDivesity(ratings_test_unknown,fsvd_predict,"Funk SVD")
+```
+
+## User-Based
+
+```{r echo=F}
+getDivesity(ratings_test_unknown,p_ub,"User-Based")
+```
+
+## Item-Based
+
+```{r echo=F}
+getDivesity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
 # Algo:
