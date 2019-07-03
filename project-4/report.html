@@ -4595,13 +4595,13 @@ MAE
 ub_c
 </td>
 <td style="text-align:right;">
-0.8457171
+0.7411515
 </td>
 <td style="text-align:right;">
-0.7152375
+0.5493056
 </td>
 <td style="text-align:right;">
-0.7172703
+0.6023041
 </td>
 </tr>
 <tr>
@@ -4609,13 +4609,13 @@ ub_c
 ib_c
 </td>
 <td style="text-align:right;">
-0.9915448
+0.7900890
 </td>
 <td style="text-align:right;">
-0.9831611
+0.6242406
 </td>
 <td style="text-align:right;">
-0.7715455
+0.6217231
 </td>
 </tr>
 </tbody>
@@ -4684,13 +4684,13 @@ MAE
 svdz_pred
 </td>
 <td style="text-align:right;">
-0.8011389
+0.6947706
 </td>
 <td style="text-align:right;">
-0.6418235
+0.4827062
 </td>
 <td style="text-align:right;">
-0.6820910
+0.5198580
 </td>
 </tr>
 <tr>
@@ -4698,13 +4698,13 @@ svdz_pred
 svd_pred
 </td>
 <td style="text-align:right;">
-0.8070127
+0.6984889
 </td>
 <td style="text-align:right;">
-0.6512695
+0.4878868
 </td>
 <td style="text-align:right;">
-0.6831385
+0.5277183
 </td>
 </tr>
 <tr>
@@ -4712,13 +4712,13 @@ svd_pred
 fsvd_pred
 </td>
 <td style="text-align:right;">
-1.2281090
+0.8160139
 </td>
 <td style="text-align:right;">
-1.5082516
+0.6658787
 </td>
 <td style="text-align:right;">
-1.0389539
+0.6895439
 </td>
 </tr>
 </tbody>
@@ -4764,76 +4764,67 @@ fsvd_pred
 <a class="sourceLine" id="cb7-33" data-line-number="33"><span class="st">        </span><span class="dv">0</span>)], b[<span class="kw">which</span>(b <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>)]), <span class="dv">2</span>)))</a>
 <a class="sourceLine" id="cb7-34" data-line-number="34">    <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;Cosine for 2nd index of Calcualted Data:=&gt; &quot;</span>, <span class="kw">round</span>(cal_cosine[<span class="dv">2</span>], </a>
 <a class="sourceLine" id="cb7-35" data-line-number="35">        <span class="dv">2</span>)))</a>
-<a class="sourceLine" id="cb7-36" data-line-number="36">    <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;Average Diversity noted :=&gt;&quot;</span>, <span class="kw">round</span>(<span class="kw">mean</span>(cal_cosine), <span class="dv">2</span>)))</a>
-<a class="sourceLine" id="cb7-37" data-line-number="37">    </a>
-<a class="sourceLine" id="cb7-38" data-line-number="38">    actaulDiversity_Error =<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(cal_cosine)</a>
-<a class="sourceLine" id="cb7-39" data-line-number="39">    <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;Diversity Error [ &quot;</span>, tag, <span class="st">&quot; ]:=&gt; &quot;</span>, <span class="kw">round</span>(actaulDiversity_Error, </a>
-<a class="sourceLine" id="cb7-40" data-line-number="40">        <span class="dv">4</span>)))</a>
-<a class="sourceLine" id="cb7-41" data-line-number="41">}</a></code></pre></div>
+<a class="sourceLine" id="cb7-36" data-line-number="36">    <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;Average Diversity noted :=&gt;&quot;</span>, <span class="kw">round</span>(<span class="kw">mean</span>(cal_cosine, <span class="dt">na.rm =</span> T), </a>
+<a class="sourceLine" id="cb7-37" data-line-number="37">        <span class="dv">2</span>)))</a>
+<a class="sourceLine" id="cb7-38" data-line-number="38">    </a>
+<a class="sourceLine" id="cb7-39" data-line-number="39">    actualDiversity_Error =<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(cal_cosine, <span class="dt">na.rm =</span> T)</a>
+<a class="sourceLine" id="cb7-40" data-line-number="40">    <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;Diversity Error [ &quot;</span>, tag, <span class="st">&quot; ]:=&gt; &quot;</span>, <span class="kw">round</span>(actualDiversity_Error, </a>
+<a class="sourceLine" id="cb7-41" data-line-number="41">        <span class="dv">4</span>)))</a>
+<a class="sourceLine" id="cb7-42" data-line-number="42">}</a></code></pre></div>
 <div id="svd---normal" class="section level2">
 <h2>SVD - Normal</h2>
 <pre><code>FALSE [1] &quot;============Caculating Diversity using cosine similarity==================&quot;
-FALSE [1] 0.9998508       NaN 0.9289444 1.0000000 0.9994963 1.0000000 0.9869275
-FALSE [8] 1.0000000
+FALSE [1] 1.0000000       NaN 1.0000000 0.9461394 0.9506076 0.9815286 1.0000000
+FALSE [8] 0.9797959
 FALSE [1] &quot;==============================Valdiate With Data==========================&quot;
 FALSE [1] &quot;==========================================================================&quot;
 FALSE [1] &quot;Actual Rating:=&gt;   | Predicted Rating:=&gt;  &quot;
 FALSE [1] &quot;Cosine for 2nd index of Test data:=&gt;  NaN&quot;
 FALSE [1] &quot;Cosine for 2nd index of Calcualted Data:=&gt;  NaN&quot;
-FALSE [1] &quot;Average Diversity noted :=&gt; NaN&quot;
-FALSE [1] &quot;Diversity Error [  SVD k-10  ]:=&gt;  NaN&quot;</code></pre>
+FALSE [1] &quot;Average Diversity noted :=&gt; 0.98&quot;
+FALSE [1] &quot;Diversity Error [  SVD k-10  ]:=&gt;  0.0203&quot;</code></pre>
 </div>
 <div id="svd-z-score" class="section level2">
 <h2>SVD: Z-Score</h2>
 <pre><code>FALSE [1] &quot;============Caculating Diversity using cosine similarity==================&quot;
-FALSE [1] 0.9999982       NaN 0.9324882 1.0000000 0.9988677 1.0000000 0.9869275
-FALSE [8] 1.0000000
+FALSE [1] 1.0000000       NaN 1.0000000 0.9504050 0.9527831 0.9807964 1.0000000
+FALSE [8] 0.9797959
 FALSE [1] &quot;==============================Valdiate With Data==========================&quot;
 FALSE [1] &quot;==========================================================================&quot;
 FALSE [1] &quot;Actual Rating:=&gt;   | Predicted Rating:=&gt;  &quot;
 FALSE [1] &quot;Cosine for 2nd index of Test data:=&gt;  NaN&quot;
 FALSE [1] &quot;Cosine for 2nd index of Calcualted Data:=&gt;  NaN&quot;
-FALSE [1] &quot;Average Diversity noted :=&gt; NaN&quot;
-FALSE [1] &quot;Diversity Error [  SVD with Z-score  ]:=&gt;  NaN&quot;</code></pre>
+FALSE [1] &quot;Average Diversity noted :=&gt; 0.98&quot;
+FALSE [1] &quot;Diversity Error [  SVD with Z-score  ]:=&gt;  0.0195&quot;</code></pre>
 </div>
 <div id="funk-svd" class="section level2">
 <h2>Funk SVD</h2>
 <pre><code>FALSE [1] &quot;============Caculating Diversity using cosine similarity==================&quot;
-FALSE [1] 0.9882556       NaN 0.6778790 1.0000000 0.9526644 1.0000000 0.9589618
-FALSE [8] 0.9694631
+FALSE [1] 1.0000000       NaN 1.0000000 0.9319852 0.9687514 0.9886669 0.9910847
+FALSE [8] 0.9747474
 FALSE [1] &quot;==============================Valdiate With Data==========================&quot;
 FALSE [1] &quot;==========================================================================&quot;
 FALSE [1] &quot;Actual Rating:=&gt;   | Predicted Rating:=&gt;  &quot;
 FALSE [1] &quot;Cosine for 2nd index of Test data:=&gt;  NaN&quot;
 FALSE [1] &quot;Cosine for 2nd index of Calcualted Data:=&gt;  NaN&quot;
-FALSE [1] &quot;Average Diversity noted :=&gt; NaN&quot;
-FALSE [1] &quot;Diversity Error [  Funk SVD  ]:=&gt;  NaN&quot;</code></pre>
+FALSE [1] &quot;Average Diversity noted :=&gt; 0.98&quot;
+FALSE [1] &quot;Diversity Error [  Funk SVD  ]:=&gt;  0.0207&quot;</code></pre>
 </div>
 <div id="user-based" class="section level2">
 <h2>User-Based</h2>
 <pre><code>FALSE [1] &quot;============Caculating Diversity using cosine similarity==================&quot;
-FALSE [1]        NA       NaN 0.9211429 1.0000000 0.9995594        NA 0.9869275
-FALSE [8] 1.0000000
-FALSE [1] &quot;==============================Valdiate With Data==========================&quot;
-FALSE [1] &quot;==========================================================================&quot;
-FALSE [1] &quot;Actual Rating:=&gt;   | Predicted Rating:=&gt;  &quot;
-FALSE [1] &quot;Cosine for 2nd index of Test data:=&gt;  NaN&quot;
-FALSE [1] &quot;Cosine for 2nd index of Calcualted Data:=&gt;  NaN&quot;
-FALSE [1] &quot;Average Diversity noted :=&gt; NA&quot;
-FALSE [1] &quot;Diversity Error [  User-Based  ]:=&gt;  NA&quot;</code></pre>
-</div>
-<div id="item-based" class="section level2">
-<h2>Item-Based</h2>
-<pre><code>FALSE [1] &quot;============Caculating Diversity using cosine similarity==================&quot;
-FALSE [1]        NA       NaN 0.9169626 1.0000000        NA 1.0000000        NA
+FALSE [1] 1.0000000       NaN 1.0000000 0.9465812 0.9555693 0.9797569        NA
 FALSE [8]        NA
 FALSE [1] &quot;==============================Valdiate With Data==========================&quot;
 FALSE [1] &quot;==========================================================================&quot;
 FALSE [1] &quot;Actual Rating:=&gt;   | Predicted Rating:=&gt;  &quot;
 FALSE [1] &quot;Cosine for 2nd index of Test data:=&gt;  NaN&quot;
 FALSE [1] &quot;Cosine for 2nd index of Calcualted Data:=&gt;  NaN&quot;
-FALSE [1] &quot;Average Diversity noted :=&gt; NA&quot;
-FALSE [1] &quot;Diversity Error [  Item-Based  ]:=&gt;  NA&quot;</code></pre>
+FALSE [1] &quot;Average Diversity noted :=&gt; 0.98&quot;
+FALSE [1] &quot;Diversity Error [  User-Based  ]:=&gt;  0.0236&quot;</code></pre>
+</div>
+<div id="item-based" class="section level2">
+<h2>Item-Based</h2>
 </div>
 </div>
 <div id="algo" class="section level1">
@@ -4858,41 +4849,41 @@ FALSE [1] &quot;Diversity Error [  Item-Based  ]:=&gt;  NA&quot;</code></pre>
 <div id="build-gbm-model" class="section level3">
 <h3>Build GBM Model</h3>
 <p>Our GBM model measures the relative influence of our select restaurant and user characteristics to make user-rating predictions. We found that type of cuisine from our tags had significant importance on our model.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="co"># Build Model</span></a>
-<a class="sourceLine" id="cb13-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb13-3" data-line-number="3"><span class="co">## subset data for model</span></a>
-<a class="sourceLine" id="cb13-4" data-line-number="4">PatronDataModel &lt;-<span class="st"> </span>data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(userID, placeID,rating, price,alcohol,smoking_area, Rcuisine)</a>
-<a class="sourceLine" id="cb13-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb13-6" data-line-number="6"><span class="co">## factor data</span></a>
-<a class="sourceLine" id="cb13-7" data-line-number="7">PatronDataModel<span class="op">$</span>Rcuisine&lt;-<span class="kw">as.factor</span>(PatronDataModel<span class="op">$</span>Rcuisine)</a>
-<a class="sourceLine" id="cb13-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb13-9" data-line-number="9"><span class="co">## train test spit</span></a>
-<a class="sourceLine" id="cb13-10" data-line-number="10">PatronSplit &lt;-<span class="st"> </span><span class="kw">initial_split</span>(PatronDataModel, <span class="dt">prop =</span> <span class="fl">.9</span>)</a>
-<a class="sourceLine" id="cb13-11" data-line-number="11">PatronTrain &lt;-<span class="st"> </span><span class="kw">training</span>(PatronSplit)</a>
-<a class="sourceLine" id="cb13-12" data-line-number="12">PatronTest  &lt;-<span class="st"> </span><span class="kw">testing</span>(PatronSplit)</a>
-<a class="sourceLine" id="cb13-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb13-14" data-line-number="14"><span class="co">## fit model</span></a>
-<a class="sourceLine" id="cb13-15" data-line-number="15">patron_fit_<span class="dv">1</span> &lt;-<span class="st"> </span>gbm<span class="op">::</span><span class="kw">gbm</span>(rating <span class="op">~</span>., </a>
-<a class="sourceLine" id="cb13-16" data-line-number="16">             <span class="dt">data =</span> PatronDataModel, </a>
-<a class="sourceLine" id="cb13-17" data-line-number="17">             <span class="dt">distribution =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="co">#gaussian algo (squared error)</span></a>
-<a class="sourceLine" id="cb13-18" data-line-number="18">             <span class="dt">verbose =</span> F, <span class="co">#change to true to view output</span></a>
-<a class="sourceLine" id="cb13-19" data-line-number="19">             <span class="dt">shrinkage =</span> <span class="fl">0.01</span>, <span class="co"># step size reduction</span></a>
-<a class="sourceLine" id="cb13-20" data-line-number="20">             <span class="dt">interaction.depth =</span> <span class="dv">3</span>, <span class="co"># tree depth for two way interactions</span></a>
-<a class="sourceLine" id="cb13-21" data-line-number="21">             <span class="dt">n.minobsinnode =</span> <span class="dv">5</span>, <span class="co"># min observations</span></a>
-<a class="sourceLine" id="cb13-22" data-line-number="22">             <span class="dt">n.trees =</span> <span class="dv">500</span>, <span class="co">#number of trees to fit/iterate</span></a>
-<a class="sourceLine" id="cb13-23" data-line-number="23">             <span class="dt">cv.folds =</span> <span class="dv">10</span> <span class="co">#cv folds</span></a>
-<a class="sourceLine" id="cb13-24" data-line-number="24">             )</a>
-<a class="sourceLine" id="cb13-25" data-line-number="25"></a>
-<a class="sourceLine" id="cb13-26" data-line-number="26"><span class="kw">show.gbm</span>(patron_fit_<span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="co"># Build Model</span></a>
+<a class="sourceLine" id="cb12-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb12-3" data-line-number="3"><span class="co">## subset data for model</span></a>
+<a class="sourceLine" id="cb12-4" data-line-number="4">PatronDataModel &lt;-<span class="st"> </span>data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(userID, placeID,rating, price,alcohol,smoking_area, Rcuisine)</a>
+<a class="sourceLine" id="cb12-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb12-6" data-line-number="6"><span class="co">## factor data</span></a>
+<a class="sourceLine" id="cb12-7" data-line-number="7">PatronDataModel<span class="op">$</span>Rcuisine&lt;-<span class="kw">as.factor</span>(PatronDataModel<span class="op">$</span>Rcuisine)</a>
+<a class="sourceLine" id="cb12-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb12-9" data-line-number="9"><span class="co">## train test spit</span></a>
+<a class="sourceLine" id="cb12-10" data-line-number="10">PatronSplit &lt;-<span class="st"> </span><span class="kw">initial_split</span>(PatronDataModel, <span class="dt">prop =</span> <span class="fl">.9</span>)</a>
+<a class="sourceLine" id="cb12-11" data-line-number="11">PatronTrain &lt;-<span class="st"> </span><span class="kw">training</span>(PatronSplit)</a>
+<a class="sourceLine" id="cb12-12" data-line-number="12">PatronTest  &lt;-<span class="st"> </span><span class="kw">testing</span>(PatronSplit)</a>
+<a class="sourceLine" id="cb12-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb12-14" data-line-number="14"><span class="co">## fit model</span></a>
+<a class="sourceLine" id="cb12-15" data-line-number="15">patron_fit_<span class="dv">1</span> &lt;-<span class="st"> </span>gbm<span class="op">::</span><span class="kw">gbm</span>(rating <span class="op">~</span>., </a>
+<a class="sourceLine" id="cb12-16" data-line-number="16">             <span class="dt">data =</span> PatronDataModel, </a>
+<a class="sourceLine" id="cb12-17" data-line-number="17">             <span class="dt">distribution =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="co">#gaussian algo (squared error)</span></a>
+<a class="sourceLine" id="cb12-18" data-line-number="18">             <span class="dt">verbose =</span> F, <span class="co">#change to true to view output</span></a>
+<a class="sourceLine" id="cb12-19" data-line-number="19">             <span class="dt">shrinkage =</span> <span class="fl">0.01</span>, <span class="co"># step size reduction</span></a>
+<a class="sourceLine" id="cb12-20" data-line-number="20">             <span class="dt">interaction.depth =</span> <span class="dv">3</span>, <span class="co"># tree depth for two way interactions</span></a>
+<a class="sourceLine" id="cb12-21" data-line-number="21">             <span class="dt">n.minobsinnode =</span> <span class="dv">5</span>, <span class="co"># min observations</span></a>
+<a class="sourceLine" id="cb12-22" data-line-number="22">             <span class="dt">n.trees =</span> <span class="dv">500</span>, <span class="co">#number of trees to fit/iterate</span></a>
+<a class="sourceLine" id="cb12-23" data-line-number="23">             <span class="dt">cv.folds =</span> <span class="dv">10</span> <span class="co">#cv folds</span></a>
+<a class="sourceLine" id="cb12-24" data-line-number="24">             )</a>
+<a class="sourceLine" id="cb12-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb12-26" data-line-number="26"><span class="kw">show.gbm</span>(patron_fit_<span class="dv">1</span>)</a></code></pre></div>
 <pre><code>FALSE gbm::gbm(formula = rating ~ ., distribution = &quot;gaussian&quot;, data = PatronDataModel, 
 FALSE     n.trees = 500, interaction.depth = 3, n.minobsinnode = 5, 
 FALSE     shrinkage = 0.01, cv.folds = 10, verbose = F)
 FALSE A gradient boosted model with gaussian loss function.
 FALSE 500 iterations were performed.
-FALSE The best cross-validation iteration was 170.
-FALSE There were 6 predictors of which 2 had non-zero influence.</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="co">## summarize model</span></a>
-<a class="sourceLine" id="cb15-2" data-line-number="2"><span class="kw">summary.gbm</span>(patron_fit_<span class="dv">1</span>, <span class="dt">plotit =</span> F) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable</span>() <span class="op">%&gt;%</span><span class="kw">kable_styling</span>()</a></code></pre></div>
+FALSE The best cross-validation iteration was 176.
+FALSE There were 6 predictors of which 3 had non-zero influence.</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="co">## summarize model</span></a>
+<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="kw">summary.gbm</span>(patron_fit_<span class="dv">1</span>, <span class="dt">plotit =</span> F) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable</span>() <span class="op">%&gt;%</span><span class="kw">kable_styling</span>()</a></code></pre></div>
 <table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -4915,7 +4906,7 @@ userID
 userID
 </td>
 <td style="text-align:right;">
-85.9217919
+85.7054909
 </td>
 </tr>
 <tr>
@@ -4926,18 +4917,7 @@ Rcuisine
 Rcuisine
 </td>
 <td style="text-align:right;">
-13.8273284
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-placeID
-</td>
-<td style="text-align:left;">
-placeID
-</td>
-<td style="text-align:right;">
-0.1395840
+14.0458493
 </td>
 </tr>
 <tr>
@@ -4948,7 +4928,18 @@ smoking_area
 smoking_area
 </td>
 <td style="text-align:right;">
-0.0655236
+0.0814059
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+placeID
+</td>
+<td style="text-align:left;">
+placeID
+</td>
+<td style="text-align:right;">
+0.0717793
 </td>
 </tr>
 <tr>
@@ -4959,7 +4950,7 @@ price
 price
 </td>
 <td style="text-align:right;">
-0.0457722
+0.0501891
 </td>
 </tr>
 <tr>
@@ -4970,43 +4961,43 @@ alcohol
 alcohol
 </td>
 <td style="text-align:right;">
-0.0000000
+0.0452855
 </td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="co"># Predictions</span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb16-3" data-line-number="3"><span class="co">## optimal number of boosting iterations</span></a>
-<a class="sourceLine" id="cb16-4" data-line-number="4">perf_gbm1 =<span class="st"> </span><span class="kw">gbm.perf</span>(patron_fit_<span class="dv">1</span>, <span class="dt">method =</span> <span class="st">&quot;cv&quot;</span>, <span class="dt">plot.it =</span> F)</a>
-<a class="sourceLine" id="cb16-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb16-6" data-line-number="6"><span class="co">## predict</span></a>
-<a class="sourceLine" id="cb16-7" data-line-number="7">patron_prediction_<span class="dv">1</span> &lt;-<span class="st"> </span>stats<span class="op">::</span><span class="kw">predict</span>(</a>
-<a class="sourceLine" id="cb16-8" data-line-number="8">                          <span class="dt">object =</span> patron_fit_<span class="dv">1</span>, <span class="co"># fit prediction</span></a>
-<a class="sourceLine" id="cb16-9" data-line-number="9">                          <span class="dt">newdata =</span> PatronTest, <span class="co"># test data </span></a>
-<a class="sourceLine" id="cb16-10" data-line-number="10">                          <span class="dt">n.trees =</span> perf_gbm1) <span class="co"># optimal n of iterations</span></a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="co"># Predictions</span></a>
+<a class="sourceLine" id="cb15-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb15-3" data-line-number="3"><span class="co">## optimal number of boosting iterations</span></a>
+<a class="sourceLine" id="cb15-4" data-line-number="4">perf_gbm1 =<span class="st"> </span><span class="kw">gbm.perf</span>(patron_fit_<span class="dv">1</span>, <span class="dt">method =</span> <span class="st">&quot;cv&quot;</span>, <span class="dt">plot.it =</span> F)</a>
+<a class="sourceLine" id="cb15-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb15-6" data-line-number="6"><span class="co">## predict</span></a>
+<a class="sourceLine" id="cb15-7" data-line-number="7">patron_prediction_<span class="dv">1</span> &lt;-<span class="st"> </span>stats<span class="op">::</span><span class="kw">predict</span>(</a>
+<a class="sourceLine" id="cb15-8" data-line-number="8">                          <span class="dt">object =</span> patron_fit_<span class="dv">1</span>, <span class="co"># fit prediction</span></a>
+<a class="sourceLine" id="cb15-9" data-line-number="9">                          <span class="dt">newdata =</span> PatronTest, <span class="co"># test data </span></a>
+<a class="sourceLine" id="cb15-10" data-line-number="10">                          <span class="dt">n.trees =</span> perf_gbm1) <span class="co"># optimal n of iterations</span></a></code></pre></div>
 </div>
 <div id="evaluation" class="section level3">
 <h3>Evaluation</h3>
 <p>We evaluated GBM model using standard RMSE, MSE, MEA, and RMSLE calculations. We also used a confusion matrix to calculate the accuracy of our predictions.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="co"># Metrics</span></a>
-<a class="sourceLine" id="cb17-2" data-line-number="2">fit_rmse &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">rmse</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb17-3" data-line-number="3">fit_mse &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">mse</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb17-4" data-line-number="4">fit_mae &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">mae</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb17-5" data-line-number="5">fit_rmsle &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">rmsle</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb17-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb17-7" data-line-number="7"><span class="co"># set factors</span></a>
-<a class="sourceLine" id="cb17-8" data-line-number="8">PatronTest<span class="op">$</span>rating &lt;-<span class="st"> </span><span class="kw">as.factor</span>(PatronTest<span class="op">$</span>rating)</a>
-<a class="sourceLine" id="cb17-9" data-line-number="9">fit_predict &lt;-<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">round</span>(patron_prediction_<span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb17-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb17-11" data-line-number="11"><span class="co"># confusion matrix</span></a>
-<a class="sourceLine" id="cb17-12" data-line-number="12">eval_cm &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(fit_predict, PatronTest<span class="op">$</span>rating)</a>
-<a class="sourceLine" id="cb17-13" data-line-number="13">fit_accuracy &lt;-<span class="st"> </span><span class="kw">round</span>(eval_cm<span class="op">$</span>overall[<span class="dv">1</span>], <span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb17-14" data-line-number="14"></a>
-<a class="sourceLine" id="cb17-15" data-line-number="15"><span class="co"># view metrics</span></a>
-<a class="sourceLine" id="cb17-16" data-line-number="16">results &lt;-<span class="st"> </span><span class="kw">cbind</span>(fit_rmse, fit_mse, fit_mae, fit_rmsle, fit_accuracy)</a>
-<a class="sourceLine" id="cb17-17" data-line-number="17"><span class="kw">rownames</span>(results) &lt;-<span class="st"> </span><span class="kw">c</span>()</a>
-<a class="sourceLine" id="cb17-18" data-line-number="18">results <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Model Evaluation Metrics&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable_styling</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="co"># Metrics</span></a>
+<a class="sourceLine" id="cb16-2" data-line-number="2">fit_rmse &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">rmse</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb16-3" data-line-number="3">fit_mse &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">mse</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb16-4" data-line-number="4">fit_mae &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">mae</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb16-5" data-line-number="5">fit_rmsle &lt;-<span class="st"> </span>Metrics<span class="op">::</span><span class="kw">rmsle</span>(<span class="dt">actual =</span> PatronTest<span class="op">$</span>rating, <span class="dt">predicted =</span> patron_prediction_<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb16-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb16-7" data-line-number="7"><span class="co"># set factors</span></a>
+<a class="sourceLine" id="cb16-8" data-line-number="8">PatronTest<span class="op">$</span>rating &lt;-<span class="st"> </span><span class="kw">as.factor</span>(PatronTest<span class="op">$</span>rating)</a>
+<a class="sourceLine" id="cb16-9" data-line-number="9">fit_predict &lt;-<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">round</span>(patron_prediction_<span class="dv">1</span>))</a>
+<a class="sourceLine" id="cb16-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb16-11" data-line-number="11"><span class="co"># confusion matrix</span></a>
+<a class="sourceLine" id="cb16-12" data-line-number="12">eval_cm &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(fit_predict, PatronTest<span class="op">$</span>rating)</a>
+<a class="sourceLine" id="cb16-13" data-line-number="13">fit_accuracy &lt;-<span class="st"> </span><span class="kw">round</span>(eval_cm<span class="op">$</span>overall[<span class="dv">1</span>], <span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb16-14" data-line-number="14"></a>
+<a class="sourceLine" id="cb16-15" data-line-number="15"><span class="co"># view metrics</span></a>
+<a class="sourceLine" id="cb16-16" data-line-number="16">results &lt;-<span class="st"> </span><span class="kw">cbind</span>(fit_rmse, fit_mse, fit_mae, fit_rmsle, fit_accuracy)</a>
+<a class="sourceLine" id="cb16-17" data-line-number="17"><span class="kw">rownames</span>(results) &lt;-<span class="st"> </span><span class="kw">c</span>()</a>
+<a class="sourceLine" id="cb16-18" data-line-number="18">results <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Model Evaluation Metrics&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable_styling</span>()</a></code></pre></div>
 <table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 Model Evaluation Metrics
@@ -5033,28 +5024,28 @@ fit_accuracy
 <tbody>
 <tr>
 <td style="text-align:right;">
-0.5325973
+0.5937331
 </td>
 <td style="text-align:right;">
-0.2836599
+0.352519
 </td>
 <td style="text-align:right;">
-0.440226
+0.4855282
 </td>
 <td style="text-align:right;">
-0.1689703
+0.2047895
 </td>
 <td style="text-align:right;">
-0.6415
+0.566
 </td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="co">### Note: Output shows NA (not meaningful for factors) if chunk is rerun</span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2"><span class="co">### without clearing global environment</span></a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="co">### Note: Output shows NA (not meaningful for factors) if chunk is rerun</span></a>
+<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="co">### without clearing global environment</span></a></code></pre></div>
 <p>The confusion matrix from the <code>caret</code> package also allowed us to look at the accuracy and percision by each of our predicted rating as a unique class.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1">eval_cm<span class="op">$</span>byClass <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">round</span>(<span class="dv">4</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Confusion Matrix Evaluation by Rating&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb19-2" data-line-number="2"><span class="st">    </span><span class="kw">kable_styling</span>()</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1">eval_cm<span class="op">$</span>byClass <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">round</span>(<span class="dv">4</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Confusion Matrix Evaluation by Rating&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-2" data-line-number="2"><span class="st">    </span><span class="kw">kable_styling</span>()</a></code></pre></div>
 <table class="table table-hover" style="font-size: 10px; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
 Confusion Matrix Evaluation by Rating
@@ -5104,7 +5095,7 @@ Balanced Accuracy
 Class: 1
 </td>
 <td style="text-align:right;">
-0.25
+0.4286
 </td>
 <td style="text-align:right;">
 1.0000
@@ -5113,28 +5104,28 @@ Class: 1
 1.0000
 </td>
 <td style="text-align:right;">
-0.9423
+0.8298
 </td>
 <td style="text-align:right;">
 1.0000
 </td>
 <td style="text-align:right;">
-0.25
+0.4286
 </td>
 <td style="text-align:right;">
-0.4000
+0.6000
 </td>
 <td style="text-align:right;">
-0.0755
+0.2642
 </td>
 <td style="text-align:right;">
-0.0189
+0.1132
 </td>
 <td style="text-align:right;">
-0.0189
+0.1132
 </td>
 <td style="text-align:right;">
-0.6250
+0.7143
 </td>
 </tr>
 <tr>
@@ -5142,37 +5133,37 @@ Class: 1
 Class: 2
 </td>
 <td style="text-align:right;">
-1.00
+0.9375
 </td>
 <td style="text-align:right;">
-0.4722
+0.4324
 </td>
 <td style="text-align:right;">
-0.4722
+0.4167
 </td>
 <td style="text-align:right;">
-1.0000
+0.9412
 </td>
 <td style="text-align:right;">
-0.4722
+0.4167
 </td>
 <td style="text-align:right;">
-1.00
+0.9375
 </td>
 <td style="text-align:right;">
-0.6415
+0.5769
 </td>
 <td style="text-align:right;">
-0.3208
+0.3019
 </td>
 <td style="text-align:right;">
-0.3208
+0.2830
 </td>
 <td style="text-align:right;">
 0.6792
 </td>
 <td style="text-align:right;">
-0.7361
+0.6850
 </td>
 </tr>
 <tr>
@@ -5180,37 +5171,37 @@ Class: 2
 Class: 3
 </td>
 <td style="text-align:right;">
-0.50
+0.3913
 </td>
 <td style="text-align:right;">
-1.0000
+0.9333
 </td>
 <td style="text-align:right;">
-1.0000
-</td>
-<td style="text-align:right;">
-0.5676
-</td>
-<td style="text-align:right;">
-1.0000
-</td>
-<td style="text-align:right;">
-0.50
+0.8182
 </td>
 <td style="text-align:right;">
 0.6667
 </td>
 <td style="text-align:right;">
-0.6038
+0.8182
 </td>
 <td style="text-align:right;">
-0.3019
+0.3913
 </td>
 <td style="text-align:right;">
-0.3019
+0.5294
 </td>
 <td style="text-align:right;">
-0.7500
+0.4340
+</td>
+<td style="text-align:right;">
+0.1698
+</td>
+<td style="text-align:right;">
+0.2075
+</td>
+<td style="text-align:right;">
+0.6623
 </td>
 </tr>
 </tbody>
