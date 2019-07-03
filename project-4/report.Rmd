@@ -169,32 +169,35 @@ Finally, our data was split into training and tests sets for model evaluation of
 evalu <- evaluationScheme(umat, method="split", train=0.9, given=3, goodRating=1)
 ```
 
-# Algorithm 1: Cosine Method 
+## Algorithm 1: User-Based vs. Item Based 
 
-For the first comparison, we chose to used the recommenderlab package to compare the two collaborative filtering approaches: user-based and item-based. For data normalization we chose center, as we ran tests previously against other normalization techniques and the center approach did the best. Additionally, cosine similarity was used as the method of the system. 
+For the first comparison, I chose to use the recommenderlab package to compare two collaborative filtering approaches: user-based and item-based. For data normalization I chose center, as I ran tests previously against other normalization techniques and the center approach did the best. Additionally, cosine similarity was used as the method of the system. 
 
-## Process 
-
+### Process 
 Here we are training our recommender with the train data set for both the UBCF and IBCF approaches. 
 ```{r, echo=T}
 #User-based collaborative filtering recommender
-
-ub_c <- Recommender(getData(evalu, "train"), "UBCF", 
+ub_train <- getData(evalu, "train")
+ub_c <- Recommender(ub_train, "UBCF", 
       param=list(normalize = "center",method="Cosine"))
 
 #Item-based collaborative filtering recommender
-ib_c <- Recommender(getData(evalu, "train"), "IBCF", 
+ib_train<-getData(evalu, "train")
+ib_c <- Recommender(ib_train, "IBCF", 
       param=list(normalize = "center",method="Cosine"))
 ```
 
-## Predictions 
+### Predictions 
 
 After training our model, we are now ready for predictions using our test data. We then wanted to ensure our predictions remained inside the 1-3 rating scale, so we set ceilings/floors for any values that fell outside. Finally, we built a table to compare the error terms for both models. We found that the more memory intense approach, user-based collaborative filtering, faired better in tetms of error metrics!
 
 ```{r}
 #predicted ratings on the test data set for the UBCF and IBCF recommender
-p_ub <- predict(ub_c, getData(evalu,"known"),type="ratings")
-p_ib<- predict(ib_c, getData(evalu,"known"),type="ratings")
+ub_known<-getData(evalu, "known")
+ib_known<-getData(evalu, "known")
+
+p_ub <- predict(ub_c, ub_known, type="ratings")
+p_ib<- predict(ib_c, ib_known, type="ratings")
 
 #setting ceiling/floor values to ensure all are inside rating scale
 p_ub@data@x[p_ub@data@x[] < 1] <- 1
@@ -204,80 +207,65 @@ p_ib@data@x[p_ib@data@x[] < 1] <- 1
 p_ib@data@x[p_ib@data@x[] > 3] <- 3
 
 #compare the predictions for user-based and item-based
+ub_unknown<-getData(evalu, "unknown")
+ib_unknown<-getData(evalu, "unknown")
+
 error <- rbind(
-  ub_c = calcPredictionAccuracy(p_ub, getData(evalu, "unknown")),
-  ib_c = calcPredictionAccuracy(p_ib, getData(evalu, "unknown"))
+  ub_c = calcPredictionAccuracy(p_ub, ub_unknown),
+  ib_c = calcPredictionAccuracy(p_ib, ib_unknown)
 )
 error %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
 
+## Diversity 
+
+Using Raj's algorithm, we can calculate the diversity for the UBCF and IBCF model. 
+
+```{r}
+
+#user-based diversity 
+getDivesity(ub_unknown, p_ub,"UBCF")
+
+#item-based diversity 
+getDivesity(ib_unknown, p_ib,"IBCF")
+
+```
 
 # Algorithm 2: SVD
 
-Our next method uses *Singular Value Decomposition* *(SVD)*. We started with 10 latent features, then increased and decreased them, to find better RMSE of our predictor. The latent features were derrived from the factors each user and item have in common within a given user-item matrix. 
+We will try to use *Singular Value Decomposition* *(SVD)* , Funk SVD *(FSVD)* and *Alternating Least Squares (ALS)*  with latent features starting with 10 and then increasing and decresing it to find better RMSE of our predictor. 
 
-We compared the standard SVD approach to Funk SVD, Z-score SVD, and *Alternating Least Squares (ALS)* due to the similiarities between the algorithms. 
+## SVD Data Preparation 
 
-## SVD Method 
+We have three type of data from evaluationScheme: 
++ `train` returns the training data for the run, 
++ `known` returns the known ratings used for prediction for the test data, and 
++ `unknown` returns the ratings used for evaluation for the test data.
 
-We used the SVD algorthim to create a model which makes user-item recommendation predictions. The recommender relies on SVD approximation with column-mean imputation.
+```{r echo=FALSE}
 
-With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
+print("Glimpse of Data:")
+head(data)
 
-1. *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
-
-2. *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
-
-We can also look at SVD using the funk approach. Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
-
-```{r svd-method}
-# Prep data
-ratings_train <- getData(evalu, 'train')# Training Dataset 
-ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
-ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
-
-# NORMALIZED
-## Train Model
-svdn <- Recommender(data=ratings_train,method='SVD', param=list(k=10, normalize='center'))
-svdz<- Recommender( data=ratings_train,method='SVD',param=list(k=10,normalize='Z-score'))
-fsvd <- funkSVD(ratings_train, verbose = F) # k = 10, gamma = 0.015, lambda = 0.001,
-
-##Test/Evaluation Model Predication 
-predict <- predict(svdn,ratings_test_known,type='ratings')
-svd_pred <- calcPredictionAccuracy(predict,ratings_test_unknown)
-predict <- predict(svdz,ratings_test_known,type='ratings')
-svdz_pred <- calcPredictionAccuracy(predict,ratings_test_unknown)
-predict <- as(predict(fsvd, ratings_test_known, verbose = F), "realRatingMatrix")
-fsvd_pred = calcPredictionAccuracy(predict, ratings_test_unknown)
-
-# bind prediction results
-svd_results <- rbind(svdz_pred, svd_pred, fsvd_pred)
-```
-
-## Funk SVD
+# Training Dataset 
+ratings_train <- getData(evalu, 'train')
+# Test data from evaluationScheme of type KNOWN
+ratings_test_known <- getData(evalu, 'known')
+# Unknow datset used for RMSE / model evaluation 
+ratings_test_unknown <- getData(evalu, 'unknown')
 
 
+print("Train Data")
+ratings_train
+print("Test Data:")
+ratings_test_known
+print("Evaluation Data:")
+ratings_test_unknown
 
-```{r svd-results, echo=F}
-# STASH RAJ's train calc predictions
-
-### TRAIN PREDICTIONS
-### svd10_Train_pred <- predict(svdr,ratings_test_unknown,type='ratings')
-### svd10_Train_Acc <- calcPredictionAccuracy(ratings_train,svdr)
-### fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
-### reconstruct the rating matrix as R = UV' & calculate the RMSE on known ratings
-### ratings_train_predict <- as(tcrossprod(fsvd$U, fsvd$V),"realRatingMatrix")
-
-svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %>% kable_styling()
 ```
 
 
-
-
-### Using SVD With Z score
-
-
-Below scatterplot shows that our rating is spread heavily among 2 and 3 as the smooth line is above 2. We could opt for multiple options here like taking average of all the three ratings and then using it as baseline for further analysis or we could just use the restaurant rating and build our recommender on it.
+Below scatterplot shows that our rating is spread heavily among 2 and 3 as the smooth line is above 2. We could opt for multiple options here like taking average of all the three ratings and then using it as baseline for further analysis or we could just use the rating of the Hotel and build our recommendor on it.
 
 After normalization with Z-score out data looks very much centered arround 0 and More towards the top two std Deviation. 
 
@@ -292,11 +280,163 @@ scatter.smooth(getRatings(normalize(ratings_train,method="Z-score")))
 hist(getRatings(normalize(ratings_train,method="Z-score")))
 ```
 
+```{r include=FALSE}
+recommenderRegistry$get_entry_names()
+recommenderRegistry$get_entries(dataType='realRatingMatrix')
+# The description and default parameters of this method in recommenderlab are as follows:
+recommenderRegistry$get_entry('SVD', dataType='realRatingMatrix')
 
+```
+
+
+
+### Working with Funk Singular Value Decompostion SVD
+
+Funk SVD decomposes a matrix (with missing values) into two components 
+U  and V
+. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by R = UV'
+
+```{r echo=FALSE}
+# library("recosystem")
+# library("svd")
+# library(Metrics)
+# #linear algebra  here used for rmse calculation
+# suppressWarnings(suppressMessages(library(Metrics)))
+# 
+# funkSVD(x, k = 10, gamma = 0.015, lambda = 0.001,
+#   min_improvement = 1e-06, min_epochs = 50, max_epochs = 200,
+#   verbose = FALSE)
+# Buid Model with K =  10 default
+fsvd <- funkSVD(ratings_train, verbose = TRUE) # k = 10, gamma = 0.015, lambda = 0.001,
+
+
+### reconstruct the rating matrix as R = UV'
+### and calculate the root mean square error on the known ratings
+ratings_train_predict <- tcrossprod(fsvd$U, fsvd$V)
+ratings_train_predict  <- as(ratings_train_predict,"realRatingMatrix")
+
+
+
+ fsvd10_train <- calcPredictionAccuracy(
+  ratings_train,  ratings_train_predict
+  )
+fsvd10_train
+
+### For Test data
+
+fsvd10_predict <- predict(fsvd, ratings_test_known, verbose = TRUE)
+ratings_test_unknown_predict  <- as(fsvd10_predict,"realRatingMatrix")
+fsvd10_test = calcPredictionAccuracy(
+ ratings_test_unknown_predict,  ratings_test_unknown
+  )
+fsvd10_test
+
+Result = rbind(
+  FSVD_Train_10 = fsvd10_train,
+  FSVD_Test_10 = fsvd10_test
+)
+# Working Code commented to save dispaly space
+# print("View the unknon Evalutation matrix")
+# as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown") %>% kable_styling()%>% scroll_box()
+# 
+# 
+# print("View the Predicted matrix ")
+# as.data.frame.array(as(ratings_test_unknown_predict, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
+
+kable(Result,caption=" Result of Funk SVD") 
+```
+
+
+### SVD Method 
+
+We used the SVD algorthim to create a model which makes user-item recommendation predictions. 
+
+We chose to build our SVD model for our recommender system by using 10 default Latent Factor, Latent factors are the features that both User and Item have in common within a given user-item matrix.
+
+With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
+
++ *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
+
++ *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
+
+```{r echo=FALSE}
+# Latent-Factor Collaborative Filtering Recommender
+# with matrix factorization by Singular-Value Decomposition (SVD)
+svdr <- Recommender(
+   data=ratings_train,
+   method='SVD',            # Recommender based on SVD approximation with column-mean imputation.
+
+   param=list(
+     k=10,         # number of latent factors
+     normalize='center'    # normalizing by subtracting average rating per user;
+                           # note that we don't scale by standard deviations here;
+                           # we are assuming people rate on the same scale but have
+                           # different biases
+    
+   ))
+
+ #======================================= Returns NAN 
+# Predicton on Train Data
+ 
+ svd10_Train_pred <- predict(svdr,ratings_train,type='ratings')
+ 
+# Evaluation of Train Predication 
+ 
+ svd10_Train_Acc <- calcPredictionAccuracy(
+  svd10_Train_pred,
+  ratings_train)
+ #=======================================
+ 
+ 
+ # Doing Test on Test data.
+ 
+   svd10_pred <- predict(
+   svdr,
+   ratings_test_known,
+   type='ratings')
+
+  # Evaluate the result from Unknown evluationfeare data.
+   
+svd10_Test <- calcPredictionAccuracy(
+  svd10_pred,
+  ratings_test_unknown)
+
+Result <- rbind(Result,
+                SVD_Train_10 = svd10_Train_Acc,
+                SVD_Test_10 = svd10_Test)
+
+print(paste("the number of latent features (k) is ",getModel(svdr)$k))
+# as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
+
+# as.data.frame.array(as(svd10_pred, "matrix")) %>% head() %>% kable(caption="svd10_pred ") %>% kable_styling()%>% scroll_box()
+
+kable(Result,caption=" Result of SVD Test ")
+```
+
+### Using SVD With Z score
 Z-score in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
 ```{r echo=FALSE}
 
+# Latent-Factor Collaborative Filtering Recommender
+# with matrix factorization by Singular-Value Decomposition (SVD)
+svdz<- Recommender(
+   data=ratings_train,
+   method='SVD',            # Item-Based Collaborative Filtering
 
+   param=list(
+     k=10,         # number of latent factors
+     normalize='Z-score'   # normalizing by subtracting average rating per user and the devide by std Deviation;
+  ))
+
+   svdz10_Pred <- predict(
+   svdz,
+   ratings_test_known,
+   type='ratings')
+   
+   
+svdz10_Test <- calcPredictionAccuracy(
+  svdz10_Pred,
+  ratings_test_unknown)
 
 Result <- rbind(Result,
                 SVD_Z_Test_10 = svdz10_Test)
@@ -429,11 +569,7 @@ getDivesity(ratings_test_unknown,fsvd10_predict,"Funk SVD")
 
 ```
 
-# Algo:
-
-*Alternating Least Squares (ALS)* 
-
-# Compare 
+## Compare 
 
 We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.<br>
 *Diversity Check with SVD of k = 10 * <br>
@@ -562,6 +698,7 @@ Add more later :)
 # Conclusion
 
 **As part of your textual conclusion, discuss one or more additional experiments that could be performed and/or metrics that could be evaluated only if online evaluation was possible. Also, briefly propose how you would design a reasonable online evaluation environment.**
+
 
 
 Also: Compare content algorith outcomes to hybrid approach. 
