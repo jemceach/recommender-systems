@@ -4740,8 +4740,8 @@ fsvd_pred
 </div>
 <div id="diversity" class="section level1 tabset">
 <h1>Diversity</h1>
-<p>Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item’s content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.</p>
-<p>In our Diversity test, we are using predicted rating of the Hotel from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.</p>
+<p>Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item’s content (e.g. restaurant cusine) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.</p>
+<p>In our Diversity test, we are using predicted rating of our restaurants from the User and Actual rating of the restaurants from the User. We only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="co"># Function to calualte Diversity</span></a>
 <a class="sourceLine" id="cb7-2" data-line-number="2"></a>
 <a class="sourceLine" id="cb7-3" data-line-number="3">getDiversity &lt;-<span class="st"> </span><span class="cf">function</span>(ActualData, Predicted, tag) {</a>
