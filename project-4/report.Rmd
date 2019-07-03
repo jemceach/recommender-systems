@@ -347,14 +347,14 @@ getDiversity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
 
-# Hybrid Recommender System 
+# Gradient Boosted Model (GBM)
 
-Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  We wanted to also try to incorporate a hybrid recommender to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
+Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  Thus, we wanted to also try to incorporate a hybrid approach to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
 
-Reference later for [hybrid model algorithms](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af). 
+Reference later for  
 
 
-## Gradient Boosted Model (GBM)
+#
 
 The gradient boosted technique evaluates our data from decision trees. Using an iterative process, the algoritm improves the fit of our inputted variables when creating our predictive model.  We used the `gbm`, `resample`, `Metrics` & `caret` packages to build and evaluate the model.
 
@@ -464,10 +464,10 @@ Also: Compare content algorith outcomes to hybrid approach.
 # References:
 
 
-[*Recommender-systems-its-not-all*])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff)
-[*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
-[*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
-[**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
-[**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
-
-[**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
+1.  [**Gab41**:])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff) It's Not All About the Accuracy
+2.  [*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
+3.  [*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
+4.  [**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
+5.  [**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
+6.  [**Medium**:](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af): How Do You Measure and Evaluate the Quality of Recommendation Engines
+7.  [**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
