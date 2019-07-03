@@ -225,11 +225,80 @@ We have three type of data from evaluationScheme:
 *  `known` returns the known ratings used for prediction for the test data.
 *  `unknown` returns the ratings used for evaluation for the test data.
 
-```{r echo=T}
+```{r svd-prep}
 ratings_train <- getData(evalu, 'train')# Training Dataset 
 ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
 ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation 
 ```
+
+
+### SVD Method 
+
+We used the SVD algorthim to create a model which makes user-item recommendation predictions. The recommender relies on SVD approximation with column-mean imputation.
+
+With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
+
++ *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
+
++ *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
+
+```{r svd-method}
+# Latent-Factor Collaborative Filtering Recommender with matrix factorization by SVD
+# Recommender based on SVD approximation with column-mean imputation.
+
+svdr <- Recommender(data=ratings_train,method='SVD', param=list(k=10, normalize='center'))
+
+# normalizing by subtracting average rating per user;
+# note that we don't scale by standard deviations here;
+# we are assuming people rate on the same scale but have different biases
+    
+#Train
+svd10_Train_pred <- predict(svdr,ratings_train,type='ratings')
+ 
+# Evaluation of Train Predication 
+svd10_Train_Acc <- calcPredictionAccuracy(svd10_Train_pred,ratings_train)
+
+#Test/Evaluate the result from Unknown evaluations for data.
+svd10_pred <- predict(svdr,ratings_test_known,type='ratings')
+svd10_Test <- calcPredictionAccuracy(svd10_pred,ratings_test_unknown)
+
+#Results
+Result <- rbind(SVD_Train_10 = svd10_Train_Acc,
+                SVD_Test_10 = svd10_Test)
+
+kable(Result,caption=" Result of SVD Test ") %>% kable_styling()
+svd10_Train_Acc
+```
+
+## Funk SVD
+
+Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
+
+```{r funk-svd}
+# Buid Model with K =  10 default
+fsvd <- funkSVD(ratings_train, verbose = TRUE) # k = 10, gamma = 0.015, lambda = 0.001,
+## reconstruct the rating matrix as R = UV'
+ratings_train_predict <- tcrossprod(fsvd$U, fsvd$V)
+## calculate the root mean square error on the known ratings
+ratings_train_predict  <- as(ratings_train_predict,"realRatingMatrix")
+
+# Train 
+fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
+
+# Test
+fsvd10_predict <- predict(fsvd, ratings_test_known, verbose = TRUE)
+ratings_test_unknown_predict  <- as(fsvd10_predict,"realRatingMatrix")
+fsvd10_test = calcPredictionAccuracy(ratings_test_unknown_predict,  ratings_test_unknown)
+
+Result = rbind(Result, FSVD_Train_10 = fsvd10_train,FSVD_Test_10 = fsvd10_test)
+
+kable(Result,caption=" Result of Funk SVD") %>% kable_styling()
+```
+
+
+
+
+### Using SVD With Z score
 
 
 Below scatterplot shows that our rating is spread heavily among 2 and 3 as the smooth line is above 2. We could opt for multiple options here like taking average of all the three ratings and then using it as baseline for further analysis or we could just use the restaurant rating and build our recommender on it.
@@ -248,114 +317,6 @@ hist(getRatings(normalize(ratings_train,method="Z-score")))
 ```
 
 
-## Funk SVD
-
-Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
-
-```{r funk-svd}
-# Buid Model with K =  10 default
-fsvd <- funkSVD(ratings_train, verbose = TRUE) # k = 10, gamma = 0.015, lambda = 0.001,
-## reconstruct the rating matrix as R = UV'
-ratings_train_predict <- tcrossprod(fsvd$U, fsvd$V)
-## calculate the root mean square error on the known ratings
-ratings_train_predict  <- as(ratings_train_predict,"realRatingMatrix")
-
-# Train 
-fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
-fsvd10_train
-
-# Test
-
-fsvd10_predict <- predict(fsvd, ratings_test_known, verbose = TRUE)
-ratings_test_unknown_predict  <- as(fsvd10_predict,"realRatingMatrix")
-fsvd10_test = calcPredictionAccuracy(
- ratings_test_unknown_predict,  ratings_test_unknown
-  )
-fsvd10_test
-
-Result = rbind(
-  FSVD_Train_10 = fsvd10_train,
-  FSVD_Test_10 = fsvd10_test
-)
-# Working Code commented to save dispaly space
-# print("View the unknon Evalutation matrix")
-# as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown") %>% kable_styling()%>% scroll_box()
-# 
-# 
-# print("View the Predicted matrix ")
-# as.data.frame.array(as(ratings_test_unknown_predict, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
-
-kable(Result,caption=" Result of Funk SVD") 
-```
-
-
-### SVD Method 
-
-We used the SVD algorthim to create a model which makes user-item recommendation predictions. The recommender relies on SVD approximation with column-mean imputation.
-
-
-
-With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
-
-+ *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
-
-+ *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
-
-```{r echo=FALSE}
-# Latent-Factor Collaborative Filtering Recommender
-# with matrix factorization by Singular-Value Decomposition (SVD)
-svdr <- Recommender(
-   data=ratings_train,
-   method='SVD',            # Recommender based on SVD approximation with column-mean imputation.
-
-   param=list(
-     k=10,         # number of latent factors
-     normalize='center'    # normalizing by subtracting average rating per user;
-                           # note that we don't scale by standard deviations here;
-                           # we are assuming people rate on the same scale but have
-                           # different biases
-    
-   ))
-
- #======================================= Returns NAN 
-# Predicton on Train Data
- 
- svd10_Train_pred <- predict(svdr,ratings_train,type='ratings')
- 
-# Evaluation of Train Predication 
- 
- svd10_Train_Acc <- calcPredictionAccuracy(
-  svd10_Train_pred,
-  ratings_train)
- #=======================================
- 
- 
- # Doing Test on Test data.
- 
-   svd10_pred <- predict(
-   svdr,
-   ratings_test_known,
-   type='ratings')
-
-  # Evaluate the result from Unknown evluationfeare data.
-   
-svd10_Test <- calcPredictionAccuracy(
-  svd10_pred,
-  ratings_test_unknown)
-
-Result <- rbind(Result,
-                SVD_Train_10 = svd10_Train_Acc,
-                SVD_Test_10 = svd10_Test)
-
-print(paste("the number of latent features (k) is ",getModel(svdr)$k))
-# as.data.frame.array(as(ratings_test_unknown, "matrix")) %>% head() %>% kable(caption="ratings_test_unknown_predict ") %>% kable_styling()%>% scroll_box()
-
-# as.data.frame.array(as(svd10_pred, "matrix")) %>% head() %>% kable(caption="svd10_pred ") %>% kable_styling()%>% scroll_box()
-
-kable(Result,caption=" Result of SVD Test ")
-```
-
-### Using SVD With Z score
 Z-score in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
 ```{r echo=FALSE}
 
