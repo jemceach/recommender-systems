@@ -218,21 +218,7 @@ Our next method uses *Singular Value Decomposition* *(SVD)*. We started with 10 
 
 We compared the standard SVD approach to Funk SVD, Z-score SVD, and *Alternating Least Squares (ALS)* due to the similiarities between the algorithms. 
 
-## SVD Data Preparation 
-
-We have three type of data from evaluationScheme: 
-*  `train` returns the training data for the run. 
-*  `known` returns the known ratings used for prediction for the test data.
-*  `unknown` returns the ratings used for evaluation for the test data.
-
-```{r svd-prep}
-ratings_train <- getData(evalu, 'train')# Training Dataset 
-ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
-ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation 
-```
-
-
-### SVD Method 
+## SVD Method 
 
 We used the SVD algorthim to create a model which makes user-item recommendation predictions. The recommender relies on SVD approximation with column-mean imputation.
 
@@ -243,6 +229,11 @@ With normalize parameter we are asking system to normalize the rating by subtrac
 + *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
 
 ```{r svd-method}
+# Prep data
+ratings_train <- getData(evalu, 'train')# Training Dataset 
+ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
+ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
+
 # Latent-Factor Collaborative Filtering Recommender with matrix factorization by SVD
 # Recommender based on SVD approximation with column-mean imputation.
 
