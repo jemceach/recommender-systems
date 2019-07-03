@@ -188,7 +188,7 @@ ib_c <- Recommender(ib_train, "IBCF",
 ```
 
 ## Predictions 
-After training our model, we are now ready for predictions using our test data. We then wanted to ensure our predictions remained inside the 1-3 rating scale, so we set ceilings/floors for any values that fell outside. Finally, we built a table to compare the error terms for both models. We found that the more memory intense approach, user-based collaborative filtering, faired better in tetms of error metrics!
+After training our model, we are now ready for predictions using our test data. We then wanted to ensure our predictions remained inside the 1-3 rating scale, so we set ceilings/floors for any values that fell outside. Finally, we built a table to compare the error terms for both models. 
 
 ```{r}
 #predicted ratings on the test data set for the UBCF and IBCF recommender
@@ -215,6 +215,9 @@ error <- rbind(
 )
 error %>% kable(caption="Prediction Comparisons") %>% kable_styling()
 ```
+
+We found that the more memory intense approach, user-based collaborative filtering, faired better in terms of error metrics as user-based had lower RMSE at .356 compared to the the item-based at .447. This could be due to the fact that the users are very similar as they are all Mexican college students and so it would make send that the user collaborastive filtering provides more accuraate results. 
+
 
 # Algorithm 2: SVD
 
@@ -265,14 +268,14 @@ svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %
 
 # Diversity {.tabset}
 
-Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. restaurant rating) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
+Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. Hotel proposed) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
 
-In our Diversity test, we are using predicted rating of the restaurant from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
+In our Diversity test, we are using predicted rating of the Hotel from the User and Actual rating of the hotel from the User. Ten we only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
 
-```{r}
+```{r echo=TRUE}
 # Funcation to calualte Diversity
 
-getDiversity <- function(ActualData,Predicted,tag) {
+getDivesity <- function(ActualData,Predicted,tag) {
   cal_cosine <- NULL  
   Predicted = as(Predicted,  "matrix")
   ActualData= as(ActualData,  "matrix")
@@ -312,38 +315,56 @@ getDiversity <- function(ActualData,Predicted,tag) {
 
 ## SVD - Normal
 ```{r echo=F}
-getDiversity(ratings_test_unknown,svd_predict, "SVD k-10")
+getDivesity(ratings_test_unknown,svd_predict, "SVD k-10")
 ```
 
 ## SVD: Z-Score
-```{r, echo=F}
-getDiversity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
+```{r echo=F}
+getDivesity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
 ```
 
 ## Funk SVD
 
-```{r, echo=F}
-getDiversity(ratings_test_unknown,fsvd_predict,"Funk SVD")
+```{r echo=F}
+getDivesity(ratings_test_unknown,fsvd_predict,"Funk SVD")
 ```
 
 ## User-Based
 
-```{r, echo=F}
-getDiversity(ratings_test_unknown,p_ub,"User-Based")
+```{r echo=F}
+getDivesity(ratings_test_unknown,p_ub,"User-Based")
 ```
 
 ## Item-Based
 
-```{r, echo=F}
-getDiversity(ratings_test_unknown,p_ib,"Item-Based")
+```{r echo=F}
+getDivesity(ratings_test_unknown,p_ib,"Item-Based")
 ```
 
 ## Compare 
 
+We noted that SVD with Z score is doing good recommendation in terms of RMSE as well as with Diversity score.<br>
+*Diversity Check with SVD of k = 10 * <br>
+<b>Diversity Error [  SVD with Z-score  ]:=>  0.028 </b><br>
+<b>Diversity Error [  Funck SVD k= 10 ]:=>  0.0301 </b><br>
+<b>Diversity Error [  SVD k-10  ]:=>  0.0312</b><br>
+<br>
+*RMSE Check with SVD of k = 10 * <br>
+<b>RMSE  [  SVD with Z-score  ]:=>  0.94</b><br>
+<b>RMSE  [  Funck SVD k= 10 ]:=>  0.65</b><br>
+<b>RMSE  [  SVD k-10  ]:=>  0.68</b><br>
 
-# Gradient Boosted Model (GBM)
+RMSE was 0.94 with SVD Zscore normalisation and Diversity Error was 0.028 with SVD of Z-score normalisation. FunkSVD seemed doing consistent in all the value of K (5,6,10), but didn't imporve much as comapored with SVD With Z-core on k=10 i.e. 10 latent factors.
 
-Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  Thus, we wanted to also try to incorporate a hybrid approach to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
+
+# Hybrid Recommender System
+
+Our data source was rich with categorical features containing user data such as height, weight, religion, personality-types and more.  We wanted to also try to incorporate a hybrid recommender to look at user and restaurant attributers to build our prediction model using a different machine learning techinique -- Gradient Boosting. 
+
+Reference later for [hybrid model algorithms](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af). 
+
+
+## Gradient Boosted Model (GBM)
 
 The gradient boosted technique evaluates our data from decision trees. Using an iterative process, the algoritm improves the fit of our inputted variables when creating our predictive model.  We used the `gbm`, `resample`, `Metrics` & `caret` packages to build and evaluate the model.
 
@@ -442,22 +463,33 @@ Cons:
 Add more later :)
 
 
-
 # Conclusion
 
 **As part of your textual conclusion, discuss one or more additional experiments that could be performed and/or metrics that could be evaluated only if online evaluation was possible. Also, briefly propose how you would design a reasonable online evaluation environment.**
 
+After running the following algorithms :
+- Item-based - center normalized
+- User-based - center normalized
+- SVD - center normalized
+- SVD - Z-score normalized
+- SVD funk
 
+We can conclude that the SVD algorithm using a normalized center showed the best results overall with an RMSE of ~ 0.3699. This means the SVD algo would provide the most relevant restaurant recommendations to Mexican college students. 
+However once we calculated the diversity score, we now see that FunkSVD performed the best with a score of .0184, so this recommender would give the most diverse restaurant recommendations to these college students. 
+
+We should note that this is a very niche market as it is specific to a subset of the Mexican population. In addition, the rating scale is minimal from 1-3 so the recommendation results could drastically change if the rating scale was increased from 1-5. 
+
+In terms of online data, if we were to recommend restaurants based on real-time ratings, we would use an approach where we would allow the users to find restaurants based on ratings and distance. In our personal experience distance for food is a major factor in addition to ratings. 
 
 Also: Compare content algorith outcomes to hybrid approach. 
 
 # References:
 
 
-1.  [**Gab41**:])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff) It's Not All About the Accuracy
-2.  [*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
-3.  [*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
-4.  [**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
-5.  [**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
-6.  [**Medium**:](https://medium.com/@alfonsollanes/how-do-you-measure-and-evaluate-the-quality-of-recommendation-engines-2e91db5952af): How Do You Measure and Evaluate the Quality of Recommendation Engines
-7.  [**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
+[*Recommender-systems-its-not-all*])(https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff)
+[*Cosine Similarity*](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
+[*EvaluationScheme from Recommenderlab*](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
+[**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
+[**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
+
+[**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
