@@ -224,9 +224,11 @@ We used the SVD algorthim to create a model which makes user-item recommendation
 
 With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
 
-+ *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
+1. *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
 
-+ *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
+2. *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
+
+We can also look at SVD using the funk approach. Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
 
 ```{r svd-method}
 # Prep data
@@ -234,56 +236,39 @@ ratings_train <- getData(evalu, 'train')# Training Dataset
 ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
 ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 
-# Latent-Factor Collaborative Filtering Recommender with matrix factorization by SVD
-# Recommender based on SVD approximation with column-mean imputation.
+# NORMALIZED
+## Train Model
+svdn <- Recommender(data=ratings_train,method='SVD', param=list(k=10, normalize='center'))
+svdz<- Recommender( data=ratings_train,method='SVD',param=list(k=10,normalize='Z-score'))
+fsvd <- funkSVD(ratings_train, verbose = F) # k = 10, gamma = 0.015, lambda = 0.001,
 
-svdr <- Recommender(data=ratings_train,method='SVD', param=list(k=10, normalize='center'))
+##Test/Evaluation Model Predication 
+predict <- predict(svdn,ratings_test_known,type='ratings')
+svd_pred <- calcPredictionAccuracy(predict,ratings_test_unknown)
+predict <- predict(svdz,ratings_test_known,type='ratings')
+svdz_pred <- calcPredictionAccuracy(predict,ratings_test_unknown)
+predict <- as(predict(fsvd, ratings_test_known, verbose = F), "realRatingMatrix")
+fsvd_pred = calcPredictionAccuracy(predict, ratings_test_unknown)
 
-# normalizing by subtracting average rating per user;
-# note that we don't scale by standard deviations here;
-# we are assuming people rate on the same scale but have different biases
-    
-#Train
-svd10_Train_pred <- predict(svdr,ratings_train,type='ratings')
- 
-# Evaluation of Train Predication 
-svd10_Train_Acc <- calcPredictionAccuracy(svd10_Train_pred,ratings_train)
-
-#Test/Evaluate the result from Unknown evaluations for data.
-svd10_pred <- predict(svdr,ratings_test_known,type='ratings')
-svd10_Test <- calcPredictionAccuracy(svd10_pred,ratings_test_unknown)
-
-#Results
-Result <- rbind(SVD_Train_10 = svd10_Train_Acc,
-                SVD_Test_10 = svd10_Test)
-
-kable(Result,caption=" Result of SVD Test ") %>% kable_styling()
-svd10_Train_Acc
+# bind prediction results
+svd_results <- rbind(svdz_pred, svd_pred, fsvd_pred)
 ```
 
 ## Funk SVD
 
-Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
 
-```{r funk-svd}
-# Buid Model with K =  10 default
-fsvd <- funkSVD(ratings_train, verbose = TRUE) # k = 10, gamma = 0.015, lambda = 0.001,
-## reconstruct the rating matrix as R = UV'
-ratings_train_predict <- tcrossprod(fsvd$U, fsvd$V)
-## calculate the root mean square error on the known ratings
-ratings_train_predict  <- as(ratings_train_predict,"realRatingMatrix")
 
-# Train 
-fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
+```{r svd-results, echo=F}
+# STASH RAJ's train calc predictions
 
-# Test
-fsvd10_predict <- predict(fsvd, ratings_test_known, verbose = TRUE)
-ratings_test_unknown_predict  <- as(fsvd10_predict,"realRatingMatrix")
-fsvd10_test = calcPredictionAccuracy(ratings_test_unknown_predict,  ratings_test_unknown)
+### TRAIN PREDICTIONS
+### svd10_Train_pred <- predict(svdr,ratings_test_unknown,type='ratings')
+### svd10_Train_Acc <- calcPredictionAccuracy(ratings_train,svdr)
+### fsvd10_train <- calcPredictionAccuracy(ratings_train,  ratings_train_predict)
+### reconstruct the rating matrix as R = UV' & calculate the RMSE on known ratings
+### ratings_train_predict <- as(tcrossprod(fsvd$U, fsvd$V),"realRatingMatrix")
 
-Result = rbind(Result, FSVD_Train_10 = fsvd10_train,FSVD_Test_10 = fsvd10_test)
-
-kable(Result,caption=" Result of Funk SVD") %>% kable_styling()
+svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %>% kable_styling()
 ```
 
 
@@ -311,26 +296,7 @@ hist(getRatings(normalize(ratings_train,method="Z-score")))
 Z-score in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
 ```{r echo=FALSE}
 
-# Latent-Factor Collaborative Filtering Recommender
-# with matrix factorization by Singular-Value Decomposition (SVD)
-svdz<- Recommender(
-   data=ratings_train,
-   method='SVD',            # Item-Based Collaborative Filtering
 
-   param=list(
-     k=10,         # number of latent factors
-     normalize='Z-score'   # normalizing by subtracting average rating per user and the devide by std Deviation;
-  ))
-
-   svdz10_Pred <- predict(
-   svdz,
-   ratings_test_known,
-   type='ratings')
-   
-   
-svdz10_Test <- calcPredictionAccuracy(
-  svdz10_Pred,
-  ratings_test_unknown)
 
 Result <- rbind(Result,
                 SVD_Z_Test_10 = svdz10_Test)
