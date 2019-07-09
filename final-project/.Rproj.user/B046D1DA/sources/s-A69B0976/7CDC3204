@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1562693755452.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "7CDC3204",
+    "lastKnownWriteTime" : 1562638147,
+    "last_content_update" : 1562702032868,
+    "path" : "~/GitHub/612-group/final-project/report.Rmd",
+    "project_path" : "report.Rmd",
+    "properties" : {
+        "cursorPosition" : "24,0",
+        "last_setup_crc32" : "A69B09766dd65ad1",
+        "scrollLine" : "11",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

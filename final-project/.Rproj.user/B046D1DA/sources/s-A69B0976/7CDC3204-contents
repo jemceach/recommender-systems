@@ -1,0 +1,27 @@
+---
+title: "report"
+author: "Juliann McEachern"
+date: "July 16, 2019"
+output: 
+  html_document:
+    theme: flatly
+    highlight: pygments
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    df_print: paged
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+
+URL <- "data/yelp_dataset.tar.gz"
+library(readtext)
+
+readtext(file)
+
+jsonlite::base64_dec()
+rjson::fromJSON()
+RJSONIO::
+```
+
