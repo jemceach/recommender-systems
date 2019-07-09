@@ -1,0 +1,6 @@
+"0","URL <- ""data/yelp_dataset.tar.gz"""
+"0","library(readtext)"
+"0","readtext(file)"
+"2","Error in list_files(file, ignore_missing, TRUE, verbosity) : 
+  File '' does not exist.
+"
