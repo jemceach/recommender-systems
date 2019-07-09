@@ -13,6 +13,20 @@ output:
     code_folding: hide
 ---
 
+```{r global-options, echo=F}
+# global options
+## knit sizing
+options(max.print="100"); opts_knit$set(width=75) 
+
+## augment chunk output
+opts_chunk$set(echo=T,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
+
+## set table style for consistency
+default(kable) <- list(format="html")
+default(kable_styling)  <- list(bootstrap_options = "hover",full_width=T, font_size=10)
+default(scroll_box) <- list(width = "100%")
+```
+
 # Project Overview
 
 Insert Project Purpose Here.
@@ -26,16 +40,15 @@ library(data.table)
 #### Import data 
 
 Use `fread` function to read tsv files. 
+
 ```{r}
 apps<-as.data.frame(fread("data/apps.tsv"))
 users<-as.data.frame(fread("data/users.tsv"))
 user_history<-as.data.frame(fread("data/user_history.tsv"))
-window_dates<-as.data.frame(fread("data/window_dates.tsv"))
-jobs <-untar("tsv.tar.gz",files="data/jobs.tsv")
-jobs <- as.data.frame(fread(jobs))
+jobs <- as.data.frame(fread("data/jobs.tsv"))
 ```
 
 ```{r}
-window_dates
+jobs
 ```
 
