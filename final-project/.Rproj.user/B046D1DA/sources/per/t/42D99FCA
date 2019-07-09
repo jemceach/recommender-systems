@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1562643597141.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "42D99FCA",
+    "lastKnownWriteTime" : 7308604914264011873,
+    "last_content_update" : 1562643597141,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "891C7434",
+        "caption" : "apps",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=apps&cache_key=891C7434",
+        "displayedObservations" : "1603111",
+        "environment" : "",
+        "object" : "apps",
+        "preview" : "0",
+        "totalObservations" : "1603111",
+        "variables" : "5"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
