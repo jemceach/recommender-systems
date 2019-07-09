@@ -1,0 +1,387 @@
+---
+title: "Accuracy and Beyond in Restaurant Recommender Systems"
+author: "Christina Valore, Juliann McEachern, & Rajwant Mishra"
+date: "July 2, 2019"
+output: 
+  html_document:
+    theme: flatly
+    highlight: pygments
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    df_print: paged
+    code_folding: hide
+---
+ 
+```{r dependencies, echo=F,comment=F,message=F,warning=F,prompt=F}
+#dependencies
+## data processing packages
+library(tidyr); library(dplyr); library(RCurl); library(jsonlite); library(plyr)
+
+##formatting packages
+library(knitr); library(kableExtra); library(default)
+
+##visualization packages
+library(ggplot2)
+
+##recommender packages
+library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
+
+# global options
+## knit sizing
+options(max.print="100"); opts_knit$set(width=75) 
+
+## augment chunk output
+opts_chunk$set(echo=T,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
+
+## set table style for consistency
+default(kable) <- list(format="html")
+default(kable_styling)  <- list(bootstrap_options = "hover",full_width=T, font_size=10)
+default(scroll_box) <- list(width = "100%")
+
+## working directory
+##try(setwd("~/Github/612-group/project-4"))
+```
+
+# Getting Started
+
+In this assignment, we practiced working with accuracy and other recommender system metrics. We compared the performance of serveral algorithms and analyzed the diversity of our recommendations.
+
+## Data Selection
+
+Our data was sourced from Kaggle's [Restaurant Data with Consumer Ratings](https://www.kaggle.com/uciml/restaurant-data-with-consumer-ratings) collection, which contained several datasets pertaining to restaurants and their patrons. The csv files are stored within our repository in the data folder. 
+
+```{r load-data}
+# cusine tags
+data1<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/chefmozcuisine.csv") 
+# restaurant name
+data2<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/geoplaces2.csv") 
+# user ratings
+data3<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/rating_final.csv") 
+# user profile
+data4<-read.csv("https://raw.githubusercontent.com/jemceach/612-group/master/project-4/data/userprofile.csv") 
+```
+
+## Data Tranformations
+
+We cleaned our data using transformations and regular expression unite our user and restaurant data. 
+
+```{r tidy-data}
+# restaurant dataframe
+## concatenate restaurant tags 
+cuisine <- aggregate(Rcuisine ~., data1, toString) 
+## merge & transform
+restaurant <- data2 %>% select(placeID, name, city,price, alcohol,smoking_area) %>% mutate(name=tolower(gsub("[\u00ef\u00bf\u00bd\'_']", " ", name))) %>% mutate(city=tolower(city)) 
+## set/revalue factors 
+restaurant$city <- revalue(restaurant$city, c("cd victoria"="ciudad victoria", "cd. victoria"="ciudad victoria","victoria "="ciudad victoria","victoria"="ciudad victoria","san luis potosi "="san luis potosi","san luis potos"="san luis potosi","s.l.p"="san luis potosi","slp"="san luis potosi","s.l.p."="san luis potosi")) 
+restaurant$smoking_area = revalue(restaurant$smoking_area, c("none"="no", "not permitted"="no", "section"="yes", "permitted"="yes", "only at bar"="yes")) 
+restaurant$price <- factor(restaurant$price, levels = c("low", "medium", "high"))
+restaurant$alcohol = revalue(restaurant$alcohol, c("No_Alcohol_Served"="no", "Full_Bar"="yes", "Wine-Beer" ="yes"))
+restaurant <- inner_join(restaurant, cuisine, by="placeID")
+
+# user dataframe: 
+##select attributes of interest from profile
+user_profile <- data4 %>% select(userID, budget,activity, smoker)
+user <- inner_join(data3,user_profile,by='userID') %>% select(-service_rating, -food_rating)
+## set/revalue factors
+user$budget <- factor(user$budget, levels = c("low", "medium", "high"))
+user$smoker <- revalue(user$smoker, c("false"="no", "true"="yes")) 
+user$smoker <- factor(user$smoker, levels = c("no", "yes"))
+## change ratings from 0-2 scale to 1-3
+user$rating[user$rating==2]<-3;user$rating[user$rating==1]<-2;user$rating[user$rating==0]<-1
+
+# combine user / restaurant data & subset 
+data <- inner_join(user, restaurant, by="placeID") 
+data <- data %>% filter(city == "san luis potosi", activity=="student") %>% select(-city, -activity)
+```
+
+The output of which can be previewed below: 
+
+```{r data-preview, echo=F}
+#view output
+data %>% head() %>% kable(caption="User-Item Dataframe") %>% kable_styling()
+```
+
+## Data Exploration
+
+We found that 80% of our raters were students students and 76% of our restaurants were located within the Mexican city of San Luis Potosi.  As a result, we subsetted our restaurant/patron data to limit the scope of our system to this specific population. After subsetting our raw data, we identified 78 unique users and 56 restaurants to build our recommender systems from. 
+
+The following plots help visualize the distribution of our overall ratings given by users based on their budget and the restaurant's categorized pricing. We also viewed the rating counts each restaurant received. On average, each venue received 13 user ratings. 
+
+## Data Visualizations {.tabset}
+
+We found that most of our restaurants received high ratings of 3. Most ratings came from users with low-medium budgets and that the majority of our restaurants were in the middle bracket for price. We had a wide spread in the number of ratings each restaurant received, with the fewest being 3 and the most being 32 ratings from our users. There were 32 unique cuisine tags assigned to our restaurants. Mexican cuisine was the most popular and those restaurants received 108 total ratings.
+
+### Raw Ratings
+
+```{r ratings-plot, fig.height=2, out.width = '100%', echo=F}
+data %>%  group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Raw Ratings Distribution") 
+```
+
+### Ratings by Budget
+
+```{r budget-plot, fig.height=2, out.width = '100%', echo=F}
+data %>% filter(!is.na(budget)) %>% group_by(rating) %>% ggplot(aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Ratings Distribution by Budget") + facet_wrap(~budget, nrow=1)
+```
+
+### Ratings by Price
+
+```{r price-plot, fig.height=2, out.width = '100%', echo=F}
+ggplot(data, aes(x=rating)) + geom_histogram(bins=3, color='#63707e', fill='#c8dad3') +labs(title="Ratings Distribution by Restaurant Pricing") + facet_wrap(data$price, nrow=1)
+```
+
+### Ratings by Restaurant
+
+```{r restaurant-plot,fig.height=3, out.width = '100%', echo=F}
+data %>% mutate(placeID = as.factor(placeID), rating=as.factor(rating)) %>% group_by(placeID) %>% add_tally() %>% ungroup() %>% ggplot(aes(x=reorder(placeID, -n),fill=rating))+ geom_bar(stat="count", color="#000000") + theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+labs(title="Restaurant Rating Counts") + scale_fill_manual(values=c("#c8dad3", "#93b5b3", "#63707e"))
+```
+
+### Ratings by Cuisine
+
+```{r cuisine-plot, fig.height=4.5, out.width = '100%', echo=F}
+data %>% select(Rcuisine, rating) %>% mutate(rating=as.factor(rating)) %>% group_by(Rcuisine) %>% add_tally() %>% ungroup %>% ggplot(aes(x=reorder(Rcuisine, -n), fill=rating)) + geom_bar(stat="count",color="#000000")+labs(title="Restaurant Cuisine Tag Counts with Ratings") + theme(axis.title.x=element_blank(), axis.text.x = element_text(angle = 30, hjust = 1, size = 8))+ scale_fill_manual(values=c("#c8dad3", "#93b5b3", "#63707e"))
+```
+
+# Prepare Recommender 
+
+## Matrix Building 
+
+We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
+
+```{r build-matrix, echo=F}
+# create user item matrix
+ui_matrix <- data %>% select(userID, placeID, rating) %>% spread(placeID, rating)
+rownames(ui_matrix)<-ui_matrix$userID # set row names to userid
+ui_matrix<-ui_matrix %>% select(-userID) %>% as.matrix()# remove userid from columns
+umat <- as(ui_matrix,"realRatingMatrix") # save real ratings for algo 
+
+# preview matrices 
+as.data.frame.array(ui_matrix) %>% head() %>% kable(caption="Preview of User-Item Matrix") %>% kable_styling() %>% scroll_box()
+```
+
+## Training and Test Subsets
+
+Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommenderlab` package. 90% of data was retained for training and 10% for testing purposes.
+
+```{r train-test}
+# evaluation method with 90% of data for train and 10% for test
+set.seed(1000)
+evalu <- evaluationScheme(umat, method="split", train=0.8, given=3, goodRating=1, k=10)
+```
+
+# Algorithm 1: UBCF/IBCF 
+
+For the first comparison, we chose to use the recommenderlab package to compare two collaborative filtering approaches: user-based and item-based. For data normalization we chose center, as we ran tests previously against other normalization techniques and the center approach did the best. Additionally, cosine similarity was used as the method of the system. 
+
+## Process 
+
+Here we are training our recommender with the train data set for both the UBCF and IBCF approaches. 
+```{r ub-ib-process}
+#User-based collaborative filtering recommender
+ub_train <- getData(evalu, "train")
+ub_c <- Recommender(ub_train, "UBCF", 
+      param=list(normalize = "center",method="Cosine"))
+
+#Item-based collaborative filtering recommender
+ib_train<-getData(evalu, "train")
+ib_c <- Recommender(ib_train, "IBCF", 
+      param=list(normalize = "center",method="Cosine"))
+```
+
+## Predictions 
+
+After training our model, we are now ready for predictions using our test data. We then wanted to ensure our predictions remained inside the 1-3 rating scale, so we set ceilings/floors for any values that fell outside. Finally, we built a table to compare the error terms for both models. 
+
+```{r ub-ib-predict}
+#predicted ratings on the test data set for the UBCF and IBCF recommender
+ub_known<-getData(evalu, "known")
+ib_known<-getData(evalu, "known")
+
+p_ub <- predict(ub_c, ub_known, type="ratings")
+p_ib<- predict(ib_c, ib_known, type="ratings")
+
+#setting ceiling/floor values to ensure all are inside rating scale
+p_ub@data@x[p_ub@data@x[] < 1] <- 1
+p_ub@data@x[p_ub@data@x[] > 3] <- 3
+
+p_ib@data@x[p_ib@data@x[] < 1] <- 1
+p_ib@data@x[p_ib@data@x[] > 3] <- 3
+
+#compare the predictions for user-based and item-based
+ub_unknown<-getData(evalu, "unknown")
+ib_unknown<-getData(evalu, "unknown")
+
+error <- rbind(
+  ub_c = calcPredictionAccuracy(p_ub, ub_unknown),
+  ib_c = calcPredictionAccuracy(p_ib, ib_unknown)
+)
+error %>% kable(caption="Prediction Comparisons") %>% kable_styling()
+```
+
+We found that the more memory intense approach, user-based collaborative filtering, faired better in terms of error metrics as user-based had lower RMSE at .66 compared to the the item-based at .85. This could be due to the fact that the users are very similar as they are all Mexican college students and so it would make send that the user collaborative filtering provides more accurate results. 
+
+
+# Algorithm 2: SVD
+
+Our next method uses Singular Value Decomposition (SVD). We compared a normalized SVD approach to Funk SVD and Z-score SVD. 
+
+## Process
+
+We used the SVD algorthim to create a model which makes user-item recommendation predictions. The recommender relies on SVD approximation with column-mean imputation.
+
+With normalize parameter we are asking system to normalize the rating by subtracting avg rating per user. Two availble methods are :
+
+1. *Normalization* tries to reduce the individual rating bias by row centering the data, i.e., by subtracting from each available rating the mean of the ratings of that user (row). 
+2. *Z-score* in addition divides by the standard deviation of the row/column. Normalization can also be done on columns.
+
+We also looked at SVD using the funk approach. Funk SVD decomposes a matrix (with missing values) into two components: `U` and `V`. The singular values are folded into these matrices. The approximation for the original matrix can be obtained by `R = UV'
+
+```{r svd-method}
+# Prep data
+ratings_train <- getData(evalu, 'train')# Training Dataset 
+ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
+ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
+
+# NORMALIZED
+## Train Model
+svdn <- Recommender(data=ratings_train,method='SVD', param=list(k=10, normalize='center'))
+svdz<- Recommender( data=ratings_train,method='SVD',param=list(k=10,normalize='Z-score'))
+fsvd <- funkSVD(ratings_train, verbose = F) # k = 10, gamma = 0.015, lambda = 0.001,
+
+##Test/Evaluation Model Predication 
+svd_predict <- predict(svdn,ratings_test_known,type='ratings')
+svd_pred <- calcPredictionAccuracy(svd_predict,ratings_test_unknown)
+svdz_predict <- predict(svdz,ratings_test_known,type='ratings')
+svdz_pred <- calcPredictionAccuracy(svdz_predict,ratings_test_unknown)
+fsvd_predict <- predict(fsvd, ratings_test_known, verbose = F)
+fsvd_predict  <- as(fsvd_predict,"realRatingMatrix")
+fsvd_pred = calcPredictionAccuracy(fsvd_predict,  ratings_test_unknown)
+
+# bind prediction results
+svd_results <- rbind(svdz_pred, svd_pred, fsvd_pred)
+```
+
+## Predictions
+
+Our prediction evaluations can be seen below:
+
+```{r svd-results, echo=F}
+svd_results %>% kable(caption="SVD Prediction Results with 10 Latent Factors") %>% kable_styling()
+```
+
+# Diversity {.tabset}
+
+Diversity measures how dissimilar recommended items are for a user. This similarity is often determined using the item's content (e.g. restaurant cusine) but can also be determined using how similarly items are rated. One measure of diversity is the Intra-List Similarity (ILS). The ILS equation can calculate the similarity between any two items (ij, ik) using the cosine similarity, Jaccard similarity coefficient, or another similarity metric could be utilized in the equation.
+
+In our Diversity test, we are using predicted rating of our restaurants from the User and Actual rating of the restaurants from the User. We only use the items that have been rate from the original dataset and calculate the cosine similarity among the predicted and actual rating.  
+
+```{r div-function}
+# Function to calualte Diversity
+
+getDiversity <- function(ActualData, Predicted, tag) {
+    print(paste("Cosine Similarity Diversity for:", tag, ">>>"))
+    print("==========================================================================")
+    cal_cosine <- NULL
+    Predicted = as(Predicted, "matrix")
+    ActualData = as(ActualData, "matrix")
+    
+    for (i in 1:(dim(ActualData)[1])) {
+        a <- as.vector(ActualData[i, ])
+        b <- as.vector(Predicted[i, ])
+        
+        # set All NA from MAIN Data = 0
+        
+        a[which(is.na(a))] = 0
+        b[which(is.na(b))] = 0
+        
+        cal_cosine[i] <- cosine(a, b)  #a %*% b / sqrt(a%*%a * b%*%b)
+        print(paste(i,": ", cal_cosine[i]))
+    }
+    print("==========================================================================")
+    print(paste("Mean Diversity:=>", round(mean(cal_cosine, na.rm = T), 4)))
+    actualDiversity_Error = 1 - mean(cal_cosine, na.rm = T)
+    print(paste("Diversity Error:=> ", round(actualDiversity_Error, 4)))
+}
+
+# Return Mean Diversity Only
+MeanDiversity <- function(ActualData, Predicted) {
+    cal_cosine <- NULL
+    Predicted = as(Predicted, "matrix")
+    ActualData = as(ActualData, "matrix")
+    for (i in 1:(dim(ActualData)[1])) {
+        a <- as.vector(ActualData[i, ])
+        b <- as.vector(Predicted[i, ])
+        a[which(is.na(a))] = 0
+        b[which(is.na(b))] = 0
+        cal_cosine[i] <- cosine(a, b)  
+    }
+    return(mean(cal_cosine, na.rm = T))
+}
+```
+
+## SVD: Normal
+```{r svdn-div, echo=F}
+getDiversity(ratings_test_unknown,svd_predict, "SVD k-10")
+```
+
+## SVD: Z-Score
+```{r svdz-div, echo=F}
+getDiversity(ratings_test_unknown,svdz_predict,"SVD with Z-score")
+```
+
+## Funk SVD
+
+```{r funk-div, echo=F}
+getDiversity(ratings_test_unknown,fsvd_predict,"Funk SVD")
+```
+
+## User-Based
+
+```{r ub-div, echo=F}
+getDiversity(ratings_test_unknown, p_ub, "User-Based")
+```
+
+## Item-Based
+
+```{r ib-div, echo=F}
+getDiversity(ratings_test_unknown,p_ib,"Item-Based")
+```
+
+# Conclusion {.tabset} 
+
+After running several algorithm variations, our methods for UBCF, Z-Score SVD, and Normalized SVD produced our strongest accuracy scores, with the Z-Score SVD performing the best. This algorithm would produce the most relevant restaurant recommendations to Mexican college students.
+
+Once we calculated the diversity score, we found that all algorithms, with the exeption of item-based collaborative filtering, performed similarly. The SVD algorithms performed the best, with the normalized SVD producing the lowest score. We can rely on these methods to provide the most diverse restaurant recommendations to the college students in our model. 
+
+## Accuracy Metrics
+```{r accuracy, echo=F}
+rbind(error,svd_results)  %>% round(4) %>% kable(caption = "Compare All Accuracy Measures") %>% kable_styling() 
+```
+
+## Diversity Metrics
+```{r m-div, echo=F}
+svdn_d <- MeanDiversity(ratings_test_unknown,svd_predict)
+svdz_d <- MeanDiversity(ratings_test_unknown,svdz_predict)
+fsvd_d <- MeanDiversity(ratings_test_unknown,fsvd_predict)
+ubcf_d <- MeanDiversity(ratings_test_unknown,p_ub)
+ibcf_d <- MeanDiversity(ratings_test_unknown,p_ib)
+
+mean_div <-data.frame(rbind(svdn_d,svdz_d,fsvd_d,ubcf_d,ibcf_d))
+colnames(mean_div) <- "Mean"
+mean_div %>% kable(caption = "Compare Mean Diversity Measures") %>% kable_styling()
+```
+
+We should note that this is a very niche market as it is specific to a subset of the Mexican population. In addition, the rating scale is minimal from 1-3 so the recommendation results could drastically change if the rating scale was increased from 1-5. 
+
+In terms of online data, if we were to recommend restaurants based on real-time ratings, we would use an approach where we would allow the users to find restaurants based on ratings and distance. In our personal experience distance for food is a major factor in addition to ratings. 
+
+Our data had very rich categorical features for us to play with, which included transportation. In the future, we would like to incorporate these types of categorical features into a hybrid system and compare our findings using gradient boosting or decision tree algorithms.  
+
+# References
+
+1.  [**Lab 41**:](https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff) Recommender Systems - It's Not All About the Accuracy
+2.  [**Cosine Similarity**:](https://www.rdocumentation.org/packages/lsa/versions/0.73.1/topics/cosine)
+3.  [**EvaluationScheme from Recommenderlab**:](https://rdrr.io/cran/recommenderlab/man/evaluationScheme-class.html)
+4.  [**Building Recommenders**:](https://buildingrecommenders.wordpress.com/2015/11/19/overview-of-recommender-algorithms-part-3/) Overview of Recommender Algorithms
+5. [**recommenderlab**:](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf) A Framework for Developing and Testing Recommendation Algorithms 
+6.  [**UC Business Analytics R Programming Guide**:](http://uc-r.github.io/gbm_regression) Gradient Boosting Machines
