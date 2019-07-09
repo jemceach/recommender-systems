@@ -1,0 +1,16 @@
+---
+title: "report"
+author: "Juliann McEachern"
+date: "July 8, 2019"
+output: html_document
+---
+
+```{r}
+untar("tmp.tar.gz",files="wp2011-survey/anon-data.csv")
+X <- read.csv("wp2011-survey/anon-data.csv")
+```
+
+```{r}
+colnames(data)
+```
+
