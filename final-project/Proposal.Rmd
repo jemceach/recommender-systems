@@ -21,11 +21,27 @@ Find an interesting dataset and describe the system you plan to build out. If yo
 
 For our final project, we decided to work with a data subset from the Yelp challenge. Our subset focuses on Yelp reviews from the metropolitan area of Phoeniz, Arizona. Our data takes into account not only reviews, but also businesses, users and check-in's. Our data consists of: 
 
-- businesses: 12,742
-- check-in sets: 9,016
-- users: 48,978
-- reviews: 252,863
+* `businesses`: 12,742 observations
+    *  "business_id"   
+    *  "categories"    
+    *  "city"          
+    *  "full_address"  
+    *  "latitude"      
+    *  "longitude"     
+    *   "name"         
+    *  "neighborhoods" 
+    *  "open"          
+    *  "review_count"  
+    *  "state"         
+    *  "type" 
+- `check-ins`: 9,016 observations
+- `users`: 48,978
+- `reviews`: 252,863
+
+This data is stored within the data folder of our repository for review and replication purposes.
 
 ## Recommender 
 
-We aim to build out a system where we recommend businesses to users based on past reviews, check-in's and location. We will continue to builf off our project 4, as we use the same methods to recommend new businesses to users based on past reviews. Our recommendation approaches will include content based and SVD filtering using cosine similarity, collaborative filtering using least squares and location-based filtering. If time permits, we may even have a chance to do NLP processing on the individual reviews to better understand sentiment analysis, using a 0 or 1 to classify low nd high rankings.
+We aim to build out a system where we recommend businesses to users based on past reviews, check-in's and location. We will continue to builf off our project 4, as we use the same methods to recommend new businesses to users based on past reviews. Our recommendation approaches will include content based and SVD filtering using cosine similarity, collaborative filtering using least squares and location-based filtering. 
+
+If time permits, we may even have a chance to do NLP processing on the individual reviews to better understand sentiment analysis, using a 0 or 1 to classify low and high rankings. We would also like to try implimenting a shiny app for recommendations.
