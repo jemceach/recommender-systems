@@ -8,18 +8,16 @@ output:
     highlight: tango
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## Project Proposal
 
-Find an interesting dataset and describe the system you plan to build out. If you would like to use one of the datasets you have already worked with, you should add a unique element or incorporate additional data. (i.e. explicit features you scrape from another source, like image analysis on movie posters). The overall goal, however, will be to produce quality recommendations by extracting insights from a large dataset. You may do so using Spark, or another distributed computing method, OR by effectively applying one of the more advanced mathematical techniques we have covered. There is no preference for one over the other, as long as your recommender works! The planning document should be written up and published as a notebook on GitHub or in RPubs.Please submit the link in the Unit 4 folder, due Thursday, July 5.
+Find an interesting data-set and describe the system you plan to build out. If you would like to use one of the data-sets you have already worked with, you should add a unique element or incorporate additional data. (i.e. explicit features you scrape from another source, like image analysis on movie posters). 
+
+The overall goal, however, will be to produce quality recommendations by extracting insights from a large data-set. You may do so using Spark, or another distributed computing method, OR by effectively applying one of the more advanced mathematical techniques we have covered. There is no preference for one over the other, as long as your recommender works! The planning document should be written up and published as a notebook on GitHub or in RPubs.Please submit the link in the Unit 4 folder, due Tuesday, July 9.
 
 
 ## Yelp data
 
-For our final project, we decided to work with a data subset from the Yelp challenge. Our subset focuses on Yelp reviews from the metropolitan area of Phoeniz, Arizona. Our data takes into account not only reviews, but also businesses, users and check-in's. Our data consists of: 
+For our final project, we decided to work with a data subset from the Yelp challenge. Our subset focuses on Yelp reviews from the metropolitan area of Phoenix, Arizona. Our data takes into account not only reviews, but also businesses, users and check-in's. Our datasets consists of the following variables: 
 
 * `businesses`: 12,742 observations
     *  "business_id"   
@@ -28,20 +26,32 @@ For our final project, we decided to work with a data subset from the Yelp chall
     *  "full_address"  
     *  "latitude"      
     *  "longitude"     
-    *   "name"         
+    *  "name"         
     *  "neighborhoods" 
     *  "open"          
     *  "review_count"  
     *  "state"         
     *  "type" 
 - `check-ins`: 9,016 observations
-- `users`: 48,978
-- `reviews`: 252,863
+    *  "checkin_info" 
+    *  "type"         
+    *  "business_id" 
+- `users`: 48,978 observations
+    *  "user_id"      
+    *  "review_count" 
+    *  "name"         
+    *  "type"    
+- `reviews`: 252,863 observations
+    *  "user_id"    
+    *  "business_id" 
+    *  "type"   
 
-This data is stored within the data folder of our repository for review and replication purposes.
+This data is stored within `.json` files the data folder of our repository for review and replication purposes.
 
 ## Recommender 
 
-We aim to build out a system where we recommend businesses to users based on past reviews, check-in's and location. We will continue to builf off our project 4, as we use the same methods to recommend new businesses to users based on past reviews. Our recommendation approaches will include content based and SVD filtering using cosine similarity, collaborative filtering using least squares and location-based filtering. 
+We aim to build out a system where we recommend businesses to users based on past reviews, check-in's and location. We will continue to build off our project 4, as we use the same methods to recommend new businesses to users based on past reviews. Our recommendation approaches will include content based and SVD filtering using cosine similarity, collaborative filtering using least squares and location-based filtering. 
 
-If time permits, we may even have a chance to do NLP processing on the individual reviews to better understand sentiment analysis, using a 0 or 1 to classify low and high rankings. We would also like to try implimenting a shiny app for recommendations.
+If time permits, we may even have a chance to do NLP processing on the individual reviews to better understand sentiment analysis, using a 0 or 1 to classify low and high rankings. We would also like to try implementing a shiny app for recommendations.
+
+**Source:** https://www.kaggle.com/c/yelp-recsys-2013/data
