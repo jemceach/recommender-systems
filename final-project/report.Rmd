@@ -13,12 +13,54 @@ output:
     code_folding: hide
 ---
 
-```{r setup, include=FALSE}
 
-untar(yelp_dataset.tar)
-download.file(URL, "yelp_dataset.tar")
-
+```{r}
+library(dplyr); library(tidyr)
 library(jsonlite)
-yelp <- stream_in(file("path/yelp/yelptrainingset/yelptrainingset_business.JSON"),)
 ```
+
+```{r setup, include=FALSE}
+# Read JSON files from repository 
+business1<-stream_in(file("data/yelp_test_set_business.json"))
+business2<-stream_in(file("data/yelp_training_set_business.json"))
+user1<-stream_in(file("data/yelp_test_set_user.json"))
+user2<-stream_in(file("data/yelp_training_set_user.json"))
+checkin1<-stream_in(file("data/yelp_test_set_checkin.json"))
+checkin2<-stream_in(file("data/yelp_training_set_checkin.json"))
+review1<-stream_in(file("data/yelp_test_set_review.json"))
+review2<-stream_in(file("data/yelp_training_set_review.json"))
+```
+
+
+```{r}
+# sort alphabetically
+business1<- business1[ , order(names(business1))]
+business2<-business2[ , order(names(business2))]
+```
+
+```{r}
+# View col names for test set
+colnames(business1)
+```
+
+
+```{r}
+# View col names for train set
+colnames(business2)
+```
+
+Identified business2 does not have "stars" variable. Dropping and merging dataframes.
+
+```{r}
+business2 <- select(business2, -stars)
+```
+
+Bind dataframes. 
+
+```{r}
+business_df <- rbind(business1, business2)
+```
+
+
+
 
