@@ -1,21 +1,23 @@
 ---
 title: "Final Project - Yelp Recommender System"
 author: "Juliann McEachern, Rajwant Mishra,Christina Valore"
-date:  " July 16, 2019"
-output: 
+date: ' July 16, 2019'
+output:
   html_document:
-    theme: flatly
-    highlight: pygments
-    toc_depth: 2
-    df_print: paged
     code_folding: hide
+    df_print: paged
+    highlight: pygments
+    theme: flatly
+    toc_depth: 2
+  pdf_document:
+    toc_depth: '2'
 ---
 
 # Overview
 
 Add overview here. 
 
-```{r, echo=F}
+```{r, echo=F, message=F, warning=F}
 ## data processing packages
 library(dplyr); library(tidyr);library(jsonlite)
 ##formatting packages
@@ -30,19 +32,19 @@ library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 
 @ Raj - Add textual explanation of process. What data is available? Explain variables we have to work with. 
 
-```{r include=FALSE}
+```{r, message=F, warning=F}
 # Read JSON files from repository 
 # Business Data 
-business<-stream_in(file("data/yelp_training_set_business.json"))
+business<-stream_in(file("data/yelp_training_set_business.json"),verbose = F)
 
 # user Data 
-user <-stream_in(file("data/yelp_training_set_user.json"))
+user <-stream_in(file("data/yelp_training_set_user.json"),verbose = F)
 
 # checkin Data 
-checkin <-stream_in(file("data/yelp_training_set_checkin.json"))
+checkin <-stream_in(file("data/yelp_training_set_checkin.json"),verbose = F)
 
 # review  Data 
-review <-stream_in(file("data/yelp_training_set_review.json"))
+review <-stream_in(file("data/yelp_training_set_review.json"),verbose = F)
 ```
 
 ### Data Transformations
@@ -51,7 +53,7 @@ review <-stream_in(file("data/yelp_training_set_review.json"))
 
 We changed the business and user columns name for clarity to better identify our variables. 
 
-```{r include=FALSE}
+```{r}
 # Business Data
 
 ## create dataframe
@@ -138,31 +140,40 @@ df_main_chk <- inner_join(df_main,df_checkin[,-c(1)],by=("business_id"))
 
 ```
 
-## Data Introduction  {.tabset .tabset-fade .tabset-pills}
+## Data Introduction  {.tabset}
 
 ### Business
 This dataset list business information with average business rating, along with category of the Business.
 <center>**Business Train Data** </center>
- `r head(df_main_train_business)`
+ 
+```{r}
+head(df_business)
+```
  
 ### Review
 Review is main dataset here, it holds link to Users and Business and the corresponding Text Reviews are listed along with ratings.
 
 <center>**Review Train Data** </center>
-`r head(df_main_train_review)`
+```{r}
+head(df_review)
+```
 
 ### User
 Users Holds all the information about user, average rating of the Users given so far, count of the review and different count of Votes on "Cool", "Useful" and "funny".
 
 <center>**User Train Data** </center>
-`r head(df_main_train_user) `
+```{r}
+head(df_user) 
+```
 
 ### Checkin 
 Checkin information is round the clock and 7 days data of the Customer's checkin. Column name start with hour-Day 
 here hours [00 to 23]- [0 to 6]
 
 <center>**Checkin Train Data** </center>
-`r head(df_main_train_checkin)`
+```{r} 
+head(df_checkin)
+```
 
 ## Final Data: 
 * We renamed All the Columns from Business (bus_),User(usr_) and Review (rev_) dataset, so that we can identify them from the Big dataset
@@ -170,7 +181,7 @@ here hours [00 to 23]- [0 to 6]
 * Final Dataset is then combined with Checkin information of the Businesses 
 
 
-```{r echo=FALSE}
+```{r}
 # DT::datatable(head(DF_MAIN,10), caption = "Review Data")
 # head(DF_MAIN_CHK,10) %>% kable(caption="Data with Checkins Info") %>% kable_styling()
 
@@ -195,16 +206,8 @@ We converted our raw ratings data into a user-item matrix to test and train our 
 
 ```{r}
 
-# create user item matrix with 500 items only as I was getting storage error.
+# create user item matrix with  only as I was getting storage error.
 # https://github.com/tidyverse/tidyr/issues/426
-
-df_main$user_id <- as.factor(df_main$user_id)
-df_main$business_id <- as.factor(df_main$business_id)
-
-mat <- df_main %>% 
-  select(user_id, business_id, rev_stars) %>%
-  dcast(user_id ~ business_id)
-
 
 
 
@@ -215,6 +218,7 @@ mat <- df_main %>%
 
 # preview matrices 
 #as.data.frame.array(ui_matrix_star) %>% head() %>% kable(caption="Preview of User-Item Matrix (User-Business)") %>% kable_styling() %>% scroll_box()
+
 
 
 
@@ -229,12 +233,12 @@ Finally, our data was split into training and tests sets for model evaluation of
 # evaluation method with 90% of data for train and 10% for test
 set.seed(1000)
 
-evalu <- evaluationScheme(real_ui_matrix_star, method="split", train=0.8, given=0)
+#evalu <- evaluationScheme(real_ui_matrix_star, method="split", train=0.8, given=0)
 
 # Prep data
-ratings_train <- getData(evalu, 'train')# Training Dataset 
-ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
-ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
+#ratings_train <- getData(evalu, 'train')# Training Dataset 
+#ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
+#ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 
 ```
 
