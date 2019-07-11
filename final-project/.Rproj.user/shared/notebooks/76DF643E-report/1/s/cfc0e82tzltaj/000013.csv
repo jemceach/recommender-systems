@@ -1,6 +1,0 @@
-"0","#Test"
-"0","df_main_test_review <- review1  "
-"0","# Train"
-"0","df_review2_vote <- review2$votes"
-"0","df_main_train_review <- review2  %>% select( -votes) %>% bind_cols(.,df_review2_vote) "
-"0","head(df_main_test_review)"
