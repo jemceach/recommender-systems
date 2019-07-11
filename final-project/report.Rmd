@@ -25,27 +25,22 @@ library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 
 ```{r include=FALSE}
 # Read JSON files from repository 
-# Business Test and Train Data 
-business1<-stream_in(file("data/yelp_test_set_business.json"))
+# Business Data 
 business2<-stream_in(file("data/yelp_training_set_business.json"))
 
-# user Test and Train Data 
-user1 <-stream_in(file("data/yelp_test_set_user.json"))
+# user Data 
 user2 <-stream_in(file("data/yelp_training_set_user.json"))
 
-# checkin Test and Train Data 
-checkin1 <-stream_in(file("data/yelp_test_set_checkin.json"))
+# checkin Data 
 checkin2 <-stream_in(file("data/yelp_training_set_checkin.json"))
 
-# review Test and Train Data 
-review1 <-stream_in(file("data/yelp_test_set_review.json"))
+# review  Data 
 review2 <-stream_in(file("data/yelp_training_set_review.json"))
 ```
 
 ```{r include=FALSE}
 # Business Data
 # sort data by Business Name alphabetically
-df_main_test_business <- business1[ , order(names(business1))] %>% .[,c(3,1,2,7,9,10,11,12)] %>% mutate(df_main_train_business,categories_all = as.character(categories)) 
 df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,9,10,12,13,11)] %>% mutate(df_main_train_business,categories_all = as.character(categories)) 
 
 ## Keeping STARS for Training set at index 11
@@ -67,8 +62,8 @@ df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,
 # Votes is dataframe in the user dataset , we will read this data and then bind columns with user data.
 df_main_train_user <- user2 %>% select( -votes) %>% bind_cols(.,user2$votes) %>% .[,c(1,2,4,5,3,6,7,8)]
 df_main_train_user_long <- gather(df_main_train_user,key= "mood", value = "rating",funny,useful,cool)
+
 # Test User
-df_main_test_user <- user1[,c(1,3,2,4)] 
 # Updating the name of the Users Votes column to user_funny , user_usefull, user_cool
 HeaderName_usr <- c("user_id","usr_name","usr_review_count", "usr_type","usr_average_stars","usr_funny","usr_useful","usr_cool")
 
@@ -87,13 +82,8 @@ names(df_main_train_user) <- HeaderName_usr
 # checkin_info is a dataframe with the above structure of the data, we would extract this info and append it to the Checkin Table against the Business ID.
 df_main_train_checkin <- checkin2  %>% select( -checkin_info) %>% bind_cols(.,checkin2$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
 
-# Test 
-df_main_test_checkin <- checkin1  %>% select( -checkin_info) %>% bind_cols(.,checkin1$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
-
 
 #Reviews Data 
-df_main_test_review <- review1  
-# Train
 df_review2_vote <- review2$votes
 df_main_train_review <- review2  %>% select( -votes) %>% bind_cols(.,df_review2_vote) 
 HeaderName_rev <- c("user_id" ,
@@ -231,7 +221,6 @@ ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE 
 * [**Tidyr Issue**](https://github.com/tidyverse/tidyr/issues/426)
 * [**Data Overview**](https://www.kaggle.com/c/yelp-recsys-2013/overview)
 
- 
 
 
 ```{r}
