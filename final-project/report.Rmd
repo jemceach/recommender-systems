@@ -13,11 +13,14 @@ output:
 
 
 ```{r include=FALSE}
-library(dplyr); library(tidyr)
-library(jsonlite)
-library(tidyverse)
-library(plyr)
-library(DT)
+## data processing packages
+library(dplyr); library(tidyr);library(jsonlite);library(tidyverse);library(plyr);library(DT);library(spelling)
+##formatting packages
+library(knitr); library(kableExtra); library(default)
+##visualization packages
+library(ggplot2)
+##recommender packages
+library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 ```
 
 ```{r include=FALSE}
@@ -39,185 +42,200 @@ review1 <-stream_in(file("data/yelp_test_set_review.json"))
 review2 <-stream_in(file("data/yelp_training_set_review.json"))
 ```
 
-
-
 ```{r include=FALSE}
-# sort alphabetically
-df_main_test_business <- business1[ , order(names(business1))] %>% .[,c(3,1,2,7,9,10,11,12)]
-df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,9,10,12,13,11)] ## Keeping STARTS for Training set at index 11
-head(df_main_test_business)
+# Business Data
+# sort data by Business Name alphabetically
+df_main_test_business <- business1[ , order(names(business1))] %>% .[,c(3,1,2,7,9,10,11,12)] %>% mutate(df_main_train_business,categories_all = as.character(categories)) 
+df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,9,10,12,13,11)] %>% mutate(df_main_train_business,categories_all = as.character(categories)) 
 
+## Keeping STARS for Training set at index 11
+# Changing the columns name for clarity so that we can identify business data and user data ( except the keys )
 
-```
+ HeaderName_bus <- c( "bus_city",
+                  "business_id",
+                  "bus_categories",
+                  "bus_name",
+                  "bus_open" ,
+                  "bus_review_count",
+                  "bus_state",
+                  "bus_type",
+                  "bus_stars",
+                  "bus_categories_all")
+ names(df_main_train_business) <- HeaderName_bus
 
-```{r include=FALSE}
-head(df_main_train_business)
-
-
-```
-```{r include=FALSE}
-
-#-----------------------------------------------------------------------BACKUP ZONE START
-# glimpse(df_main_train_business)
-# glimpse(df_main_test_business)
-# 
-# unnest(df_main_train_business,.id=
-#          "R")
-
-# ddply(df_main_train_business, .(`business_id`), mutate,
-#        categories_all =paste(unique(`categories`),collapse=":"))
-
-#Not needed , keeping this code for backup
-#mutate(df_main_train_business,categories_all = as.character(categories)) 
-#-----------------------------------------------------------------------BACKUP ZONE ENDs
-
-# Expanding Categories to each Row for each business.
-
-df_main_train_business_long<- df_main_train_business %>% 
-  unnest(categories ,.id= "id") %>% .[,c(2,3,4,5,6,9,1,8)] # Star column at index at 8
-
-df_main_test_business_long<- df_main_test_business %>% 
-  unnest(categories ,.id= "id") %>% .[,c(2,3,4,5,6,9,1)]
-
-head(df_main_test_business_long)
-head(df_main_train_business_long)
-
-```
-
-
-
-```{r include=FALSE}
-# Test data 
-head(user1)
-# Train Data 
-# ! Keeping the extra column in Train data 
-head(user2)
-
-
-
-```
-
-```{r include=FALSE}
-# Train  User
-rm(vote)
-vote <- user2$votes
-df_main_train_user <- user2 %>% select( -votes) %>% bind_cols(.,vote) %>% .[,c(1,2,4,5,3,6,7,8)]
-
+# User Data
+# Votes is dataframe in the user dataset , we will read this data and then bind columns with user data.
+df_main_train_user <- user2 %>% select( -votes) %>% bind_cols(.,user2$votes) %>% .[,c(1,2,4,5,3,6,7,8)]
 df_main_train_user_long <- gather(df_main_train_user,key= "mood", value = "rating",funny,useful,cool)
 # Test User
 df_main_test_user <- user1[,c(1,3,2,4)] 
+# Updating the name of the Users Votes column to user_funny , user_usefull, user_cool
+HeaderName_usr <- c("user_id","usr_name","usr_review_count", "usr_type","usr_average_stars","usr_funny","usr_useful","usr_cool")
 
-# Train
-head(df_main_train_user)
-head(df_main_train_user_long)
+
+names(df_main_train_user) <- HeaderName_usr
+
+#checkins data
+
+#         '0-0': (number of checkins from 00:00 to 01:00 on all Sundays),
+#         '1-0': (number of checkins from 01:00 to 02:00 on all Sundays), 
+#         ... 
+#         '14-4': (number of checkins from 14:00 to 15:00 on all Thursdays),
+#         ...
+#         '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
+
+# checkin_info is a dataframe with the above structure of the data, we would extract this info and append it to the Checkin Table against the Business ID.
+df_main_train_checkin <- checkin2  %>% select( -checkin_info) %>% bind_cols(.,checkin2$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
 
 # Test 
-head(df_main_test_user)
+df_main_test_checkin <- checkin1  %>% select( -checkin_info) %>% bind_cols(.,checkin1$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
 
 
-
-```
-
-```{r include=FALSE}
-head(checkin1) # Test 
-head(checkin2) # Train 
-```
-```{r include=FALSE}
-
-# Test 
-df_checkin_info1 <- checkin1$checkin_info
-df_main_test_checkin <- checkin1  %>% select( -checkin_info) %>% bind_cols(.,df_checkin_info1) # %>% .[,c(1,2,4,5,3,6,7,8)]
-
-# Train
-df_checkin_info2 <- checkin2$checkin_info
-df_main_train_checkin <- checkin2  %>% select( -checkin_info) %>% bind_cols(.,df_checkin_info2) # %>% .[,c(1,2,4,5,3,6,7,8)]
-
-head(df_main_train_checkin)
-head(df_main_test_checkin)
-```
-
-```{r include=FALSE}
-head(review1) # Test 
-head(review2) # Train 
-```
-```{r include=FALSE}
-
-#Test
+#Reviews Data 
 df_main_test_review <- review1  
 # Train
 df_review2_vote <- review2$votes
 df_main_train_review <- review2  %>% select( -votes) %>% bind_cols(.,df_review2_vote) 
-head(df_main_test_review)
-head(df_main_train_review)
-```
-## Data Preparation 
+HeaderName_rev <- c("user_id" ,
+                "review_id",
+                "rev_stars",
+                "rev_date" ,
+                "rev_text" ,
+                "rev_type" ,
+                "business_id",
+                "rev_funny"   ,
+                "rev_useful" ,
+                "rev_cool")
+names(df_main_train_review) <- HeaderName_rev
 
-### Business Data
+#----------------------------------------------------------------------------------------------
+# Building Main data set by Joining all the above data sets on key of Business_ID and User_ID
+#----------------------------------------------------------------------------------------------
+
+#Group all reviews that have a business with a star rating
+review_bus  <- inner_join(df_main_train_review,df_main_train_business,by=("business_id"))
+
+#Group all reviews that have and User's data
+review_user <-   inner_join(df_main_train_review,df_main_train_user,by=("user_id"))
+
+# joining all the "Review and Users" information with  the "Review and Business"  Dataset. 
+# Moving Key in the Begning 
+DF_MAIN <- inner_join(review_bus,review_user[,-c(2,3,4,5,6,8,9,10)], 
+                              by =c("business_id","user_id")) %>% .[,c(1,2,7,3,4,5,6,8:26)]
+# Appending the Checkins information for the Business 
+DF_MAIN_CHK <- inner_join(DF_MAIN,df_main_train_checkin[,-c(1)],by=("business_id"))
+
+```
+
+## Data Introduction  {.tabset .tabset-fade .tabset-pills}
+
+### Business
+This dataset list business information with average business rating, along with category of the Business.
 <center>**Business Train Data** </center>
  `r head(df_main_train_business)`
- 
-<center>**Business Train Long Data** </center>
- `r head(df_main_train_business_long)`
- 
-<center>**Business Test Data** </center>
- `r head(df_main_test_business)`
-<center>**Business Test Long Data** </center>
- `r head(df_main_test_business_long)` 
- 
-### User Data 
-<center>**User Train Data** </center>
-`r head(df_main_train_user) `
-<center>**User Train Long Data** </center>
-`r head(df_main_train_user_long)`
-<center>**User Test Data ** </center>
-`r head(df_main_test_user)`
-
-### Checkin Data
-<center>**Checkin Train Data** </center>
-`r head(df_main_train_checkin)`
-<center>**Checkin Test Data ** </center>
-`r head(df_main_test_checkin)`
-
-### Review Data
+### Review
+Review is main dataset here, it holds link to Users and Business and the corresponding Text Reviews are listed along with ratings.
 <center>**Review Train Data** </center>
 `r head(df_main_train_review)`
 
-<center>**Review Test Data** </center>
-`r head(df_main_test_review) `
+### User
+Users Holds all the information about user, average rating of the Users given so far, count of the review and different count of Votes on "Cool", "Useful" and "funny".
+
+<center>**User Train Data** </center>
+`r head(df_main_train_user) `
+
+### Checkin 
+Checkin information is round the clock and 7 days data of the Customer's checkin. Column name start with hour-Day 
+here hours [00 to 23]- [0 to 6]
+
+<center>**Checkin Train Data** </center>
+`r head(df_main_train_checkin)`
+
+## Final Data: 
+* We renamed All the Columns from Business (bus_),User(usr_) and Review (rev_) dataset, so that we can identify them from the Big dataset
+* Review dataset will be combined with User and Business dataset, with User_ID and Business_Id as key
+* Final Dataset is then combined with Checkin information of the Businesses 
 
 
-> We aim to build out a system where we recommend businesses to users based on past reviews, check-in’s and location. 
+```{r echo=FALSE}
+# DT::datatable(head(DF_MAIN,10), caption = "Review Data")
+# head(DF_MAIN_CHK,10) %>% kable(caption="Data with Checkins Info") %>% kable_styling()
+
+head(DF_MAIN_CHK,10) 
+
+```
+
+## Data Exploration {.tabset .tabset-fade .tabset-pills}
+
+WIP
+
+## Data Visualizations {.tabset .tabset-fade .tabset-pills}
+
+WIP
+
+## Data Preparation for Model {.tabset .tabset-fade .tabset-pills}
+
+## Matrix Building 
+We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
+
+```{r}
+
+# create user item matrix with 500 items only as I was getting storage error.
+# https://github.com/tidyverse/tidyr/issues/426
+
+ui_matrix_star <- DF_MAIN[1:500,]  %>% select(user_id, business_id, rev_stars) %>% 
+  group_by_at(vars(-rev_stars)) %>%  #  # group by everything other than the value column.
+  dplyr::mutate(row_id=1:n()) %>% ungroup() %>%  # build group index
+  spread(key=business_id, value=rev_stars) %>%    # spread
+  select(-row_id)  # drop the index
+
+rownames(ui_matrix_star)<-ui_matrix_star$user_id # set row names to user_id
+ui_matrix_star<-ui_matrix_star %>% select(-user_id) %>% as.matrix()# remove user_id from columns
+umat <- as(ui_matrix_star,"realRatingMatrix") # save real ratings for algo 
+real_ui_matrix_star <- as(ui_matrix_star,"realRatingMatrix") # save real ratings for algo 
+
+# preview matrices 
+as.data.frame.array(ui_matrix_star) %>% head() %>% kable(caption="Preview of User-Item Matrix (User-Business)") %>% kable_styling() %>% scroll_box()
 
 
+```
+
+
+## Training and Test Subsets
+
+Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommendaerlab` package. 80% of data was retained for training and 20% for testing purposes.
+
+```{r train-test}
+# evaluation method with 90% of data for train and 10% for test
+set.seed(1000)
+
+evalu <- evaluationScheme(real_ui_matrix_star, method="split", train=0.8, given=0)
+
+# Prep data
+ratings_train <- getData(evalu, 'train')# Training Dataset 
+ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
+ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
+
+```
+
+
+
+## Algorithm{.tabset .tabset-fade .tabset-pills}
+
+
+## Conclusion {.tabset .tabset-fade .tabset-pills} 
+
+## Accuracy Metrics {.tabset .tabset-fade .tabset-pills}
+
+# References
+* [**Tidyr Issue**](https://github.com/tidyverse/tidyr/issues/426)
+* [**Data Overview**](https://www.kaggle.com/c/yelp-recsys-2013/overview)
+
+ 
+
+
+```{r}
+
+```
 
 <hr><hr>
-```{r eval=FALSE, include=FALSE}
-# View col names for test set
-colnames(business1)
-```
-
-
-```{r eval=FALSE, include=FALSE}
-# View col names for train set
-colnames(business2)
-```
-
-
-
-
-```{r eval=FALSE, include=FALSE}
-# Identified business2 does not have "stars" variable. Dropping and merging dataframes.
-business2 <- select(business2, -stars)
-```
-
-
-
-
-```{r eval=FALSE, include=FALSE}
-# Bind dataframes. 
-business_df <- rbind(business1, business2)
-```
-
-
-
-

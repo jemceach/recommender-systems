@@ -1,4 +1,0 @@
-"0","# sort alphabetically"
-"0","df_main_test_business <- business1[ , order(names(business1))] %>% .[,c(3,1,2,7,9,10,11,12)]"
-"0","df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,9,10,12,13,11)] ## Keeping STARTS for Training set at index 11"
-"0","head(df_main_test_business)"

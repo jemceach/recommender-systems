@@ -1,7 +1,0 @@
-"0","# Test "
-"0","df_checkin_info1 <- checkin1$checkin_info"
-"0","df_main_test_checkin <- checkin1  %>% select( -checkin_info) %>% bind_cols(.,df_checkin_info1) # %>% .[,c(1,2,4,5,3,6,7,8)]"
-"0","# Train"
-"0","df_checkin_info2 <- checkin2$checkin_info"
-"0","df_main_train_checkin <- checkin2  %>% select( -checkin_info) %>% bind_cols(.,df_checkin_info2) # %>% .[,c(1,2,4,5,3,6,7,8)]"
-"0","head(df_main_train_checkin)"
