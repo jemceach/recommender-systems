@@ -4,15 +4,17 @@ author: "Juliann McEachern, Rajwant Mishra,Christina Valore"
 date:  " July 16, 2019"
 output: 
   html_document:
-    theme: sandstone
+    theme: paper
     highlight: pygments
+    toc: true
+    toc_float: true
     toc_depth: 2
     df_print: paged
     code_folding: hide
 ---
 # Overview 
 
-Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews,ratings, and check-in data for a wide-range of businesses. 
+Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews, ratings, and check-in data for a wide-range of businesses. 
 
 ```{r,echo=F,comment=F,message=F,warning=F,prompt=F}
 ## data processing packages
@@ -211,8 +213,11 @@ df_user %>% select (user_id,average_stars,review_count) %>%
 ```
 
 
+# Recommender Algorithm
 
-## Matrix Building 
+We tested 3 recommender algorithms to see which had the best performance metrics for our recommender system. To test the algorithsm, we first had to create a user-item matrix and then split our data into training and test sets. 
+
+**Matrix Building**
 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms. The matrix was saved as a realRatingMatrix for processing purposes later on using the `recommenderlab` package. 
 
@@ -222,9 +227,9 @@ matrix_data <- df_main %>% select(user_id, business_id, stars) %>% mutate(user_i
 ui_mat <- as(matrix_data,"realRatingMatrix")
 ```
 
-## Training and Test Subsets
+**Train and Test Splits**
 
-Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommenderlab` package. 80% of data was retained for training and 20% for testing purposes.
+Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommenderlab` package. 80% of data was retained for training and 20% for testing purposes.
 
 ```{r train-test}
 # evaluation method with 80% of data for train and 20% for test
@@ -238,11 +243,6 @@ dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KN
 test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 ```
 
-
-
-
-# Recommender Algorithm
-
 ## Algorithm 1 (Raj)
 ```{r}
 # I am planning to see how I can use Business's rating and rev_funny,rev_useful,rev_cool
@@ -252,13 +252,17 @@ test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluati
 
 ## Algorithm 2 (Christina)
 
+Algo
+
 ## Algorithm 3 (Juliann)
+
+Algo 
 
 ## Analysis
 
 Compare algorithms performance. Select most effective to build recommender system.
 
-# Recommender
+# Recommender System
 
 Test system
 
