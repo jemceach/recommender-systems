@@ -1,82 +1,46 @@
 ---
-title: "report"
+title: "Final Project - Yelp Recommender System"
 author: "Juliann McEachern, Rajwant Mishra,Christina Valore"
 date:  " July 16, 2019"
 output: 
   html_document:
-    theme: flatly
+    theme: sandstone
     highlight: pygments
     toc_depth: 2
     df_print: paged
     code_folding: hide
 ---
-# Overview {.tabset .tabset-fade .tabset-pills}
+# Overview 
 
-Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews,ratings, and check-in data for a wide-range of businesses. The four datasets consist of the following observations and variables:
+Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews,ratings, and check-in data for a wide-range of businesses. 
 
-## Business
-*  'type': 'business',
-*  'business_id': (encrypted business id),
-*  'name': (business name),
-*  'neighborhoods': [(hood names)],
-*  'full_address': (localized address),
-*  'city': (city),
-*  'state': (state),
-*  'latitude': latitude,
-*  'longitude': longitude,
-*  'stars': (star rating, rounded to half-stars),
-*  'review_count': review count,
-*  'categories': [(localized category names)]
-*  'open': True / False (corresponds to permanently closed, not business hours),
-
-## Review
-*  'type': 'review',
-*  'business_id': (encrypted business id),
-*  'user_id': (encrypted user id),
-*  'stars': (star rating),
-*  'text': (review text),
-*  'date': (date, formatted like '2012-03-14', %Y-%m-%d in strptime notation),
-*  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
-
-## User
-Some user profiles are omitted from the data because they have elected not to have public profiles. Their reviews may still be in the data set if they are still visible on Yelp.
-
-*  'type': 'user',
-*  'user_id': (encrypted user id),
-*  'name': (first name),
-*  'review_count': (review count),
-*  'average_stars': (floating point average, like 4.31),
-*  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
-
-## Checkin
-If there are no checkins for a business, the entire record will be omitted.
-*  'type': 'checkin',
-*  'business_id': (encrypted business id),
-*  'checkin_info' (example of checkin format)
-  *  '0-0': (number of checkins from 00:00 to 01:00 on all Sundays),
-  *  '1-0': (number of checkins from 01:00 to 02:00 on all Sundays), 
-  *  '14-4': (number of checkins from 14:00 to 15:00 on all Thursdays),
-  *  '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
-
-If there was no checkin for an hour-day block it will not be in the dictionary,
-
-# Getting Started
-
-The following packages were used in `R` to complete our project. 
-
-```{r}
+```{r,echo=F,comment=F,message=F,warning=F,prompt=F}
 ## data processing packages
 library(dplyr); library(tidyr);library(jsonlite);library(stringr)
 
 ##formatting packages
-library(knitr); library(kableExtra); library(default)
+library(knitr); library(kableExtra); library(default); library(hrbrthemes)
 
 ##visualization packages
 library(ggplot2)
 
 ##recommender packages
 library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
+
+# global options
+
+## knit sizing
+options(max.print="100"); opts_knit$set(width=75) 
+
+## augment chunk output
+opts_chunk$set(echo=T,cache=F, tidy=T,comment=F,message=T,warning=T) #change message/warning to F upon completion
+
+## set table style for consistency
+default(kable) <- list(format="html")
+default(kable_styling)  <- list(bootstrap_options = "hover",full_width=T, font_size=10)
+default(scroll_box) <- list(width = "100%")
 ```
+
 
 ## Data Aquisition
 
@@ -102,6 +66,8 @@ We choose to limit the scope to our recommender system to only businesses with t
 
 We applied additional transformation to remove unnessacary data. There were 1224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which were subsequently removed from our data. There were also 3 businesses in our dataset from outside of AZ that we allso removed. 
 
+As a result of our transformations, our recommender data now consists of 4828 unique businesses. This data is previewed below: 
+
 ```{r, warning=F, comment=F}
 # dropped open, neighborhoods(no data), full address, and review count, type (all business)
 df_business<-business %>% filter(open == "TRUE", state=="AZ") %>% select(-open, -neighborhoods, -full_address, -review_count, -type, -stars) %>% mutate(categories = sapply(categories, toString)) 
@@ -113,32 +79,14 @@ filter <- 'Argentine| Burmese| Cambodian| Cocktail Bars|Laotian|Lebanese|Live/Ra
 df_business <- df_business %>% filter(str_detect(categories, filter)) %>% mutate(categories = as.factor(categories))
 ```
 
-As a result of our transformations, our recommender data now consists of 4828 unique businesses. This data is previewed below: 
 
 ```{r, echo=F}
 #preview business
 df_business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling()
 ```
 
-The graphs below show geographic trends in our data as well as our most popular categories. 
-
-```{r}
-# All Business City
-df_business %>% select (business_id, city) %>% group_by(city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = city, y = Count)) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=90, hjust=1))+
-    xlab(label = "Business City")+
-  geom_text(aes(label = Count), colour = "blue", fontface = "bold" ,position = position_stack(vjust = 1.1),check_overlap=TRUE)
-
-
-# All Business City by Focus Category
-
-## add graph later
-  
-```
-
-
 ### Review
+
 We subset our review data from the subset of food and beverage businesses. This dropped our review data from 229,907 to 165,823 reviews. 
 
 ```{r}
@@ -155,29 +103,20 @@ df_review$business_id <- as.character(df_review$business_id)
 
 ```{r, echo=F}
 #preview reviews
-df_review %>% head() %>% kable(caption="Preview Review Data") %>% kable_styling()
+df_review %>% select(-text) %>% head() %>% kable(caption="Preview Review Data (without Review Text)") %>% kable_styling()
+
+#preview review text
+
+df_review %>% select(text) %>% head(1) %>% kable(caption="Preview of a Singular Review Text") %>% kable_styling()
 ```
 
-Include plot showing something like number of reviews for each business. Review date by month is pretty consistant and not telling of much on its own. 
-
-```{r, echo=F}
-library(lubridate)
-# Avg Rating Given by User
-df_review %>% select (stars,date) %>% 
-  mutate(month = month(as_date(date))) %>% group_by(month) %>% 
-  dplyr::summarise(Count=n()) %>%  
-  ggplot(aes ( x= factor(month),y = Count)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x=element_text(angle=00, hjust=1))+
-  xlab(label = "Avg Rating Given by User")
-
-
-str_split(df_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
-```
 
 ### User 
 
 We applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. 
+
+The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
+
 ```{r, echo=F}
 #subset user & remove columns (type)
 df_user <- user %>% filter(user_id %in% df_review$user_id) %>% select(-type)
@@ -186,21 +125,9 @@ df_user <- user %>% filter(user_id %in% df_review$user_id) %>% select(-type)
 df_user <- do.call(data.frame, df_user)
 ```
 
-The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
-
 ```{r, echo=F}
 #preview users
 df_user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
-```
-
-The plot below shows the distribution of our average ratings given by all users. 
-```{r, echo=F}
-# Avg Rating Given by User
-df_user %>% select (user_id,average_stars,review_count) %>%
-  ggplot(aes(x = round(average_stars), y = review_count)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x=element_text(angle=00, hjust=1))+
-  xlab(label = "Avg Rating Given by User")
 ```
 
 ### Checkins
@@ -236,71 +163,109 @@ df_main <-df_business %>% inner_join(df_review, by="business_id")
 df_main %>% head() 
 ```
 
+## Visualize Data
+
+**CLEAN UP SECTION**
+
+The graphs below show geographic trends in our data as well as our most popular categories. 
+
+```{r}
+# All Business City
+df_business %>% select (business_id, city) %>% group_by(city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = city, y = Count)) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=90, hjust=1))+
+    xlab(label = "Business City")+
+  geom_text(aes(label = Count), colour = "blue", fontface = "bold" ,position = position_stack(vjust = 1.1),check_overlap=TRUE)
+
+
+# All Business City by Focus Category
+
+## add graph later
+  
+```
+
+CONSIDER Including plot showing something like number of reviews for each business. Review date by month is pretty consistant and not telling of much on its own. 
+```{r, echo=F}
+library(lubridate)
+# Avg Rating Given by User
+df_review %>% select (stars,date) %>% 
+  mutate(month = month(as_date(date))) %>% group_by(month) %>% 
+  dplyr::summarise(Count=n()) %>%  
+  ggplot(aes ( x= factor(month),y = Count)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(angle=00, hjust=1))+
+  xlab(label = "Avg Rating Given by User")
+
+
+str_split(df_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
+```
+
+The plot below shows the distribution of our average ratings given by all users. 
+```{r, echo=F}
+# Avg Rating Given by User
+df_user %>% select (user_id,average_stars,review_count) %>%
+  ggplot(aes(x = round(average_stars), y = review_count)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(angle=00, hjust=1))+
+  xlab(label = "Avg Rating Given by User")
+```
+
+
 
 ## Matrix Building 
 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms. The matrix was saved as a realRatingMatrix for processing purposes later on using the `recommenderlab` package. 
 
 ```{r}
-matrix_data <- main_df %>% select(user_id, business_id, stars) %>% mutate(user_id=as.factor(user_id), business_id=as.factor(business_id), stars=as.numeric(stars))
+matrix_data <- df_main %>% select(user_id, business_id, stars) %>% mutate(user_id=as.factor(user_id), business_id=as.factor(business_id), stars=as.numeric(stars))
 
-ui_mat <- as(matrix_data, "realRatingMatrix")
+ui_mat <- as(matrix_data,"realRatingMatrix")
 ```
-
-```{r, echo=F}
-
-# make wide df for matrix by spreading business id on stars 
-mat_test <- matrix_data %>% group_by(user_id) %>% spread(business_id, stars)
-
-
-mat_test
-```
-
 
 ## Training and Test Subsets
 
-Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommendaerlab` package. 80% of data was retained for training and 20% for testing purposes.
+Finally, our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommenderlab` package. 80% of data was retained for training and 20% for testing purposes.
 
 ```{r train-test}
-# evaluation method with 90% of data for train and 10% for test
+# evaluation method with 80% of data for train and 20% for test
 set.seed(1000)
 
-evalu <- evaluationScheme(real_ui_matrix_star, method="split", train=0.5, given=0)
+evalu <- evaluationScheme(ui_mat, method="split", train=0.8, given=0, goodRating=1, k=10)
 
 # Prep data
-ratings_train <- getData(evalu, 'train')# Training Dataset 
-ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
-ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
-
+train <- getData(evalu, 'train')# Training Dataset 
+dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
+test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 ```
 
 
 
-## Algorithm{.tabset .tabset-fade .tabset-pills}
-### User and Item 
+
+# Recommender Algorithm
+
+## Algorithm 1 (Raj)
 ```{r}
 # I am planning to see how I can use Business's rating and rev_funny,rev_useful,rev_cool
 # and see how users are rating against these parameters, I would check cosine similarlty of user 
 # rating with these info and recommend some similar  Business to the Users.
-
-
-head(df_review[,c(7,8,9,10)])
 ```
 
+## Algorithm 2 (Christina)
 
+## Algorithm 3 (Juliann)
 
-## Conclusion {.tabset .tabset-fade .tabset-pills} 
+## Analysis
 
-## Accuracy Metrics {.tabset .tabset-fade .tabset-pills}
+Compare algorithms performance. Select most effective to build recommender system.
+
+# Recommender
+
+Test system
+
+# Conclusion
+
+Final conlusion. Explain limitations of system. Make recommendations for future improvements.  
 
 # References
-* [**Tidyr Issue**](https://github.com/tidyverse/tidyr/issues/426)
 * [**Data Overview**](https://www.kaggle.com/c/yelp-recsys-2013/overview)
 
-
-
-```{r}
-
-```
-
-<hr><hr>
