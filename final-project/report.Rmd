@@ -10,9 +10,81 @@ output:
     df_print: paged
     code_folding: hide
 ---
-# Overview
+# Overview {.tabset .tabset-fade .tabset-pills}
 
-Add overview here.
+we decided to work with kaggle data from a 2013 Yelp challenge. The challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account not only reviews, but also businesses, users and check-in’s as well. These datasets consist of the following observations and variables:
+## Business
+---
+{
+  'type': 'business',
+  'business_id': (encrypted business id),
+  'name': (business name),
+  'neighborhoods': [(hood names)],
+  'full_address': (localized address),
+  'city': (city),
+  'state': (state),
+  'latitude': latitude,
+  'longitude': longitude,
+  'stars': (star rating, rounded to half-stars),
+  'review_count': review count,
+  'categories': [(localized category names)]
+  'open': True / False (corresponds to permanently closed, not business hours),
+}
+---
+
+## Review
+---
+{
+  'type': 'review',
+  'business_id': (encrypted business id),
+  'user_id': (encrypted user id),
+  'stars': (star rating),
+  'text': (review text),
+  'date': (date, formatted like '2012-03-14', %Y-%m-%d in strptime notation),
+  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
+}
+---
+## User
+Some user profiles are omitted from the data because they have elected not to have public profiles. Their reviews may still be in the data set if they are still visible on Yelp.
+---
+{
+  'type': 'user',
+  'user_id': (encrypted user id),
+  'name': (first name),
+  'review_count': (review count),
+  'average_stars': (floating point average, like 4.31),
+  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
+}
+---
+
+## Checkin
+If there are no checkins for a business, the entire record will be omitted.
+---
+{
+  'type': 'checkin',
+  'business_id': (encrypted business id),
+  'checkin_info': {
+        '0-0': (number of checkins from 00:00 to 01:00 on all Sundays),
+        '1-0': (number of checkins from 01:00 to 02:00 on all Sundays), 
+        ... 
+        '14-4': (number of checkins from 14:00 to 15:00 on all Thursdays),
+        ...
+        '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
+  } # if there was no checkin for an hour-day block it will not be in the dict
+}
+---
+
+## Packages Used
+---
+## data processing packages
+library(dplyr); library(tidyr);library(jsonlite);library(tidyverse);library(plyr);library(DT);library(spelling)
+##formatting packages
+library(knitr); library(kableExtra); library(default)
+##visualization packages
+library(ggplot2)
+##recommender packages
+library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
+---
 
 ```{r include=FALSE}
 ## data processing packages
@@ -25,9 +97,10 @@ library(ggplot2)
 library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 ```
 
-### Data Aquisition
+## Data Aquisition  {.tabset .tabset-fade .tabset-pills}
 
 @ Raj - Add textual explanation of process. What data is available? Explain variables we have to work with. 
+All the data is multiarray of Json, which means file is a collection of json data. We will use  *stream_in*  functions which can be used to parse line-by-line data from the json file. 
 
 ```{r, message=F, warning=F}
 # Read JSON files from repository 
@@ -44,10 +117,28 @@ checkin2 <-stream_in(file("data/yelp_training_set_checkin.json"))
 review2 <-stream_in(file("data/yelp_training_set_review.json"))
 ```
 
-### Data Transformations
+## Data Transformations {.tabset .tabset-fade .tabset-pills}
 @ Raj - Explain process. What was included/excluded? Why? Ie: 
 
-We changed the business and user columns name for clarity to better identify our variables. 
+We changed the business and user columns name for clarity to better identify our variables. We have also dropped some fields and rearranged few of them. Only keeping following fields for by dataset:
+
+|      **BUSINESS**       | **USERs**              | **REVIEWS* *     | **CHECKIN**   |
+|:-------------------:|--------------------|--------------|-----------|
+| bus_city            | user_id            | user_id      | NO CHANGE |
+| business_id         | usr_name           | review_id    |           |
+| bus_categories      | usr_review_count   | rev_stars    |           |
+| bus_name            | usr_type           | rev_date     |           |
+| bus_open            | usr_average_stars  | rev_text     |           |
+|  bus_review_count   | usr_funny          | rev_type     |           |
+| bus_state           | usr_useful         | business_id  |           |
+| bus_type            | usr_cool           | rev_funny    |           |
+| bus_stars           | rev_useful         |              |           |
+| bus_categories_all  | rev_cool           |              |           |
+
+Only "full_address" ,"longitude" and "latitude" were dropped from MAIN Data set to reduce the dataset for model, these information can be accessed from main data set when required.
+
+
+### Given Data
 
 ```{r include=FALSE}
 # Business Data
@@ -73,11 +164,8 @@ df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,
 # Votes is dataframe in the user dataset , we will read this data and then bind columns with user data.
 df_main_train_user <- user2 %>% select( -votes) %>% bind_cols(.,user2$votes) %>% .[,c(1,2,4,5,3,6,7,8)]
 df_main_train_user_long <- gather(df_main_train_user,key= "mood", value = "rating",funny,useful,cool)
-
-# Test User
 # Updating the name of the Users Votes column to user_funny , user_usefull, user_cool
 HeaderName_usr <- c("user_id","usr_name","usr_review_count", "usr_type","usr_average_stars","usr_funny","usr_useful","usr_cool")
-
 
 names(df_main_train_user) <- HeaderName_usr
 
@@ -110,7 +198,13 @@ HeaderName_rev <- c("user_id" ,
 names(df_main_train_review) <- HeaderName_rev
 ```
 
+### Transformed Data 
 We then joined our dataframes using the `Business_ID` and `User_ID` as unique keys. 
+
+1. We started with creating Business and Review dataset with `Business_ID` as key .
+2. We created similar user and Review dataset with `User_ID` as key
+3. Finally we merged the above two dataset into one using the `Business_ID` and `User_ID` as unique keys. 
+4. During the first two step we have created few duplicated as part of Review data, so in final data set we have dropped the duplicate review columns.
 
 ```{r}
 #----------------------------------------------------------------------------------------------
