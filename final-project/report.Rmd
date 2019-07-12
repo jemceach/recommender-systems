@@ -98,215 +98,33 @@ review <-stream_in(file("data/yelp_training_set_review.json"),verbose = F)
 
 ### Business
 
-There were 1224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which we filtered out and removed from our data. There were 508 unique category tags listed within our business data. We choose to limit the scope to our recommender system to only businesses with tags related to food and beverages.
+We choose to limit the scope to our recommender system to only businesses with tags related to food and beverages. There were originally 508 unique category tags listed within our business data. We manually filtered 112 targeted categories to subset our data. 
 
-**Change filter to grep. Coersion warning. This will work for now**
+We applied additional transformation to remove unnessacary data. There were 1224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which were subsequently removed from our data. There were also 3 businesses in our dataset from outside of AZ that we allso removed. 
 
 ```{r, warning=F, comment=F}
-# dropped open, neighborhoods(no data), full address, and review count
-df_business<-business %>% filter(open == "TRUE") %>% select(-open, -neighborhoods, -full_address, -review_count, -business) %>% mutate(categories, sapply(categories, toString))
+# dropped open, neighborhoods(no data), full address, and review count, type (all business)
+df_business<-business %>% filter(open == "TRUE", state=="AZ") %>% select(-open, -neighborhoods, -full_address, -review_count, -type, -stars) %>% mutate(categories = sapply(categories, toString)) 
 
 # create category filter
 filter <- 'Argentine| Burmese| Cambodian| Cocktail Bars|Laotian|Lebanese|Live/Raw Food|Russian|African|Champagne Bars|Kosher|Modern European|Scandinavian|Taiwanese|Tapas/Small Plates|Afghan|Brazilian|Food Trucks|Shaved Ice|Wineries|Dim Sum|Ethiopian|Fondue|Hookah Bars|Persian/Iranian|Peruvian| Polish| Seafood Markets| Tapas Bars|Halal|British| Cheese Shops|German|Spanish|Cheesesteaks|Cuban|Do-It-Yourself Food|Gastropubs|Salad|Creperies|Soup|Chocolatiers & Shops|Filipino|Food Stands|Fruits & Veggies|Meat Shops|Mongolian|Soul Food|Comfort Food| Irish|Fish & Chips|Cajun/Creole|Caribbean|Pakistani|Southern|Candy Stores|Vegan|Latin American|Breweries|French|Gay Bars|Korean|Gluten-Free|Hawaiian|Farmers Market|Vegetarian|Middle Eastern|Ethnic Food|Indian|Pubs|Chicken Wings|Dive Bars| Juice Bars & Smoothies|Vietnamese|Cafes|Wine Bars|Bagels|Diners|Hot Dogs|Tex-Mex|Donuts|Greek|Thai| Desserts|Mediterranean|Beer| Wine & Spirits|Seafood|Sushi Bars| Lounges|Steakhouses|Buffets|Japanese|Sports Bars|Delis|Bakeries|Specialty Food|Breakfast & Brunch|Ice Cream & Frozen Yogurt|Burgers|Italian| Chinese|Coffee & Tea|American (New)|Sandwiches|Fast Food|Pizza|American (Traditional)|Bars|Mexican|Food| Restaurants'
 
-# filter businesses using filter
-df_business <- df_business %>% filter(str_detect(categories, filter))
+# filter businesses using filter & factor categories
+df_business <- df_business %>% filter(str_detect(categories, filter)) %>% mutate(categories = as.factor(categories))
 ```
-```{r}
+
+As a result of our transformations, our recommender data now consists of 4828 unique businesses. This data is previewed below: 
+
+```{r, echo=F}
+#preview business
 df_business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling()
 ```
 
-
-### User
-
-Insert changes here. 
-
-
-We changed the business and user columns name for clarity to better identify our variables. We have also dropped some fields and rearranged few of them. Only keeping following fields for by dataset:
-
-|      **BUSINESS**       | **USERs**              | **REVIEWS* *     | **CHECKIN**   |
-|:-------------------:|--------------------|--------------|-----------|
-| bus_city            | user_id            | user_id      | NO CHANGE |
-| business_id         | usr_name           | review_id    |           |
-| bus_categories      | usr_review_count   | rev_stars    |           |
-| bus_name            | usr_type           | rev_date     |           |
-| bus_open            | usr_average_stars  | rev_text     |           |
-| bus_review_count    | usr_funny          | rev_type     |           |
-| bus_state           | usr_useful         | business_id  |           |
-| bus_type            | usr_cool           | rev_funny    |           |
-| bus_stars           | rev_useful         |              |           |
-| bus_categories_all  | rev_cool           |              |           |
-
-Only "full_address" ,"longitude" and "latitude" were dropped from MAIN Data set to reduce the dataset for model, these information can be accessed from main data set when required.
-
-
-### Given Data
+The graphs below show geographic trends in our data as well as our most popular categories. 
 
 ```{r}
-# Business Data
-# sort data by Business Name alphabetically
-df_business<- business[ , order(names(business))] %>% .[,c(3,1,2,7,9,10,12,13,11)] %>% mutate(df_business,categories_all = as.character(categories)) 
-
-## Keeping STARS for Training set at index 11
-# Changing the columns name for clarity so that we can identify business data and user data ( except the keys )
-
- HeaderName_bus <- c( "bus_city",
-                  "business_id",
-                  "bus_categories",
-                  "bus_name",
-                  "bus_open" ,
-                  "bus_review_count",
-                  "bus_state",
-                  "bus_type",
-                  "bus_stars",
-                  "bus_categories_all")
- names(df_business) <- HeaderName_bus
-
-# User Data
-# Votes is dataframe in the user dataset , we will read this data and then bind columns with user data.
-df_user <- user %>% select( -votes) %>% bind_cols(.,user$votes) %>% .[,c(1,2,4,5,3,6,7,8)]
-df_user_long <- gather(df_user,key= "mood", value = "rating",funny,useful,cool)
-# Updating the name of the Users Votes column to user_funny , user_usefull, user_cool
-HeaderName_usr <- c("user_id","usr_name","usr_review_count", "usr_type","usr_average_stars","usr_funny","usr_useful","usr_cool")
-
-names(df_user) <- HeaderName_usr
-
-#checkins data
-
-#         '0-0': (number of checkins from 00:00 to 01:00 on all Sundays),
-#         '1-0': (number of checkins from 01:00 to 02:00 on all Sundays), 
-#         ... 
-#         '14-4': (number of checkins from 14:00 to 15:00 on all Thursdays),
-#         ...
-#         '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
-
-# checkin_info is a dataframe with the above structure of the data, we would extract this info and append it to the Checkin Table against the Business ID.
-df_main_train_checkin <- checkin  %>% select( -checkin_info) %>% bind_cols(.,checkin$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
-
-
-#Reviews Data 
-df_review_vote <- review$votes
-df_review <- review  %>% select( -votes) %>% bind_cols(.,df_review_vote) 
-HeaderName_rev <- c("user_id" ,
-                "review_id",
-                "rev_stars",
-                "rev_date" ,
-                "rev_text" ,
-                "rev_type" ,
-                "business_id",
-                "rev_funny"   ,
-                "rev_useful" ,
-                "rev_cool")
-names(df_review) <- HeaderName_rev
-```
-
-### Transformed Data 
-We then joined our dataframes using the `Business_ID` and `User_ID` as unique keys. 
-
-1. We started with creating Business and Review dataset with `Business_ID` as key .
-2. We created similar user and Review dataset with `User_ID` as key
-3. Finally we merged the above two dataset into one using the `Business_ID` and `User_ID` as unique keys. 
-4. During the first two step we have created few duplicated as part of Review data, so in final data set we have dropped the duplicate review columns.
-
-```{r}
-#----------------------------------------------------------------------------------------------
-# Building Main data set by Joining all the above data sets on key of Business_ID and User_ID
-#----------------------------------------------------------------------------------------------
-
-#Group all reviews that have a business with a star rating
-review_bus  <- inner_join(df_review,df_business,by=("business_id"))
-
-#Group all reviews that have and User's data
-review_user <-   inner_join(df_review,df_user,by=("user_id"))
-
-# joining all the "Review and Users" information with  the "Review and Business"  Dataset. 
-# Moving Key in the Begning 
-DF_MAIN <- inner_join(review_bus,review_user[,-c(2,3,4,5,6,8,9,10)], 
-                              by =c("business_id","user_id")) %>% .[,c(1,2,7,3,4,5,6,8:26)]
-# Appending the Checkins information for the Business 
-DF_MAIN_CHK <- inner_join(DF_MAIN,df_main_train_checkin[,-c(1)],by=("business_id"))
-
-```
-
-## Data Introduction  {.tabset .tabset-fade .tabset-pills}
-
-### Business
-This dataset list business information with average business rating, along with category of the Business.
-<center>**Business Train Data** </center>
- `r head(df_business)`
-### Review
-Review is main dataset here, it holds link to Users and Business and the corresponding Text Reviews are listed along with ratings.
-<center>**Review Train Data** </center>
-`r head(df_review)`
-
-### User
-Users Holds all the information about user, average rating of the Users given so far, count of the review and different count of Votes on "Cool", "Useful" and "funny".
-
-<center>**User Train Data** </center>
-`r head(df_user) `
-
-### Checkin 
-Checkin information is round the clock and 7 days data of the Customer's checkin. Column name start with hour-Day 
-here hours [00 to 23]- [0 to 6]
-
-<center>**Checkin Train Data** </center>
-`r head(df_main_train_checkin)`
-
-## Final Data: 
-* We renamed All the Columns from Business (bus_),User(usr_) and Review (rev_) dataset, so that we can identify them from the Big dataset
-* Review dataset will be combined with User and Business dataset, with User_ID and Business_Id as key
-* Final Dataset is then combined with Checkin information of the Businesses 
-
-
-```{r echo=FALSE}
-# DT::datatable(head(DF_MAIN,10), caption = "Review Data")
-# head(DF_MAIN_CHK,10) %>% kable(caption="Data with Checkins Info") %>% kable_styling()
-
-head(DF_MAIN_CHK,10) 
-
-```
-
-## Data Exploration {.tabset .tabset-fade .tabset-pills}
-
-### Business Categories 
-
-```{r}
-df_business_long<- df_business %>%  
-  unnest("bus_categories"= df_business$bus_categories ,.id= "id") %>% .[,c(2,3,4,5,6,9,10,1,8)] # Star column at index at 8
-
-df_business_long
-
-# All Business Catgories 
-df_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
-         geom_point()+
-          theme(axis.text.x=element_text(angle=90, hjust=1))+
-    xlab(label = "Business Categories")
-
-# Business Categories with 350+ Business
-df_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% unique() %>% dplyr::summarise(Count=n()) %>% arrange(.,desc(Count)) %>% filter (Count >= 350) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=90, hjust=1))+
-    xlab(label = "Categories with 350+ Business")+
-  geom_label(aes(label = Count),  color="white" , fill= "black",nudge_y = -0.02)
-
-
-## Focus Category 
-gl_focus_category <- c("Food","Restaurants","Shopping")
-```
-
-### Business States/City
-```{r}
-
-# All Business By State
-df_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_state) %>% group_by(bus_state) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_state, y = log(Count))) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=20, hjust=1))+
-    xlab(label = "Business State")+
-  geom_label(aes(label = Count),  color="white" , fill= "black",nudge_y = -0.02)
-
-
 # All Business City
-df_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_city) %>% group_by(bus_city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count)) +
+df_business %>% select (business_id, city) %>% group_by(city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = city, y = Count)) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=90, hjust=1))+
     xlab(label = "Business City")+
@@ -314,62 +132,39 @@ df_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_city) %>% 
 
 
 # All Business City by Focus Category
-df_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (business_id, bus_city,bus_categories) %>% unique()%>% group_by(bus_city,bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count, fill=bus_categories)) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=70, hjust=1))+
-    xlab(label = "Business in City by Focus Category")
+
+## add graph later
   
 ```
 
-### Rating
-```{r}
-# All Business Categories by Rating
-df_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_city)) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=90, hjust=1))+
-    xlab(label = "Stars Rating by City")
 
-  # geom_text(aes(label = Count), colour = "blue", fontface = "bold" ,position = position_stack(vjust = 1.1),check_overlap=TRUE)
-
-
-
-# All Business Categories by Rating
-df_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_categories,bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_categories)) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=00, hjust=1))+
-    xlab(label = "Stars Rating by Focus Category")
-
-# Count of Business by Category 
-fct_count(df_business_long$bus_categories,sort = TRUE) %>% rename(.,c("f"= "Name","n"="Count"))
-# library(forcats) 
-# 
-# plot(fct_count(df_business_long$bus_categories,sort = TRUE))
-# 
-# unique(df_business_long$bus_state)
-```
-### User {.tabset .tabset-fade .tabset-pills}
+### Review
+We subset our review data from the subset of food and beverage businesses. This dropped our review data from 229,907 to 165,823 reviews. 
 
 ```{r}
+#subset reviews & remove columns (type)
+df_review <- review %>% filter(business_id %in% df_business$business_id)%>% select(-type)
 
-# Avg Rating Given by User
-df_user %>% select (user_id,usr_average_stars,usr_review_count) %>%
-  # group_by(user_id,usr_average_stars,usr_funny) %>% 
-  # dplyr::summarise(Count=n()) %>%   
-  ggplot(aes(x = round(usr_average_stars), y = usr_average_stars)) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=00, hjust=1))+
-    xlab(label = "Avg Rating Given by User")
+# assemble ratings data (funny/useful/cool) into singular columns.
+df_review <- do.call(data.frame, df_review)
 
+# remove factor from user_id
+df_review$user_id <- as.character(df_review$user_id)
+df_review$business_id <- as.character(df_review$business_id)
 ```
 
-### Review 
+```{r, echo=F}
+#preview reviews
+df_review %>% head() %>% kable(caption="Preview Review Data") %>% kable_styling()
+```
 
+Include plot showing something like number of reviews for each business. Review date by month is pretty consistant and not telling of much on its own. 
 
-```{r}
+```{r, echo=F}
 library(lubridate)
 # Avg Rating Given by User
-df_review %>% select (rev_stars,rev_date ) %>% 
-  mutate(month = month(as_date(rev_date) )) %>% group_by(month) %>% 
+df_review %>% select (stars,date) %>% 
+  mutate(month = month(as_date(date))) %>% group_by(month) %>% 
   dplyr::summarise(Count=n()) %>%  
   ggplot(aes ( x= factor(month),y = Count)) +
   geom_bar(stat = "identity") +
@@ -378,49 +173,87 @@ df_review %>% select (rev_stars,rev_date ) %>%
 
 
 str_split(df_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
+```
 
+### User 
 
+We applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. 
+```{r, echo=F}
+#subset user & remove columns (type)
+df_user <- user %>% filter(user_id %in% df_review$user_id) %>% select(-type)
+
+# assemble ratings data (funny/useful/cool) into singular columns.
+df_user <- do.call(data.frame, df_user)
+```
+
+The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
+
+```{r, echo=F}
+#preview users
+df_user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
+```
+
+The plot below shows the distribution of our average ratings given by all users. 
+```{r, echo=F}
+# Avg Rating Given by User
+df_user %>% select (user_id,average_stars,review_count) %>%
+  ggplot(aes(x = round(average_stars), y = review_count)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(angle=00, hjust=1))+
+  xlab(label = "Avg Rating Given by User")
+```
+
+### Checkins
+
+Lastly, we evaluated our checkins data and applied our business filter once more. This decreased our checkin observations from 8282 to 4423. This change tells us that no checkin data is available for 8.4% of businesses in our subset. 
+
+```{r, echo=F}
+#subset checkin & remove columns (type)
+df_checkin <- checkin %>% filter(business_id %in% df_business$business_id) %>% select(-type)
+
+# unpack checkin_info into singular columns.
+### there are 168 checkin column variables. wait to see how data is used before unpacking with do.call.
+#df_checkin <- do.call(data.frame, df_user)
+```
+
+```{r, echo=F}
+#preview users
+df_checkin %>% head() 
+
+### unable to apply kable style without unpacking checkin_info TBD
+```
+
+## Merge Data 
+
+Next, we created our main dataframe business and review dataframes using the `Business_ID` and `User_ID` as unique keys. This dataframe will be referenced later on when building our recommender matrices and algorithms. 
+
+```{r}
+df_main <-df_business %>% inner_join(df_review, by="business_id")
+```
+
+```{r, echo=F}
+#preview main df
+df_main %>% head() 
 ```
 
 
-
-
-## Data Preparation for Model {.tabset .tabset-fade .tabset-pills}
-
 ## Matrix Building 
-We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
+
+We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms. The matrix was saved as a realRatingMatrix for processing purposes later on using the `recommenderlab` package. 
 
 ```{r}
+matrix_data <- main_df %>% select(user_id, business_id, stars) %>% mutate(user_id=as.factor(user_id), business_id=as.factor(business_id), stars=as.numeric(stars))
 
-# create user item matrix with 500 items only as I was getting storage error while bulding user item matrix with all the item. We Decided  to use only category "Restaurant" & "Shopping" for our Recommndation .
+ui_mat <- as(matrix_data, "realRatingMatrix")
+```
 
-#---------------------------------TEAM NOTE:
-# I Thought we can use TWo category to make problem more close to the actual problem, where we handle more than one Category to recommend.
-#---------------------------------TEAM NOTE:
+```{r, echo=F}
 
-# https://github.com/tidyverse/tidyr/issues/426
-
-#Settting up the Business Category 
-str_Category <- "Restaurant|Shopping"
-
-# Creating User Item Matrix 
-ui_matrix_star <- DF_MAIN %>% filter(str_detect(bus_categories_all, str_Category)) %>% select(user_id, business_id, rev_stars) %>% 
-  group_by_at(vars(-rev_stars)) %>%  #  # group by everything other than the value column.
-  dplyr::mutate(row_id=1:n()) %>% ungroup() %>%  # build group index
-  spread(key=business_id, value=rev_stars) %>%    # spread
-  select(-row_id)  # drop the index
-
-rownames(ui_matrix_star)<-ui_matrix_star$user_id # set row names to user_id
-ui_matrix_star<-ui_matrix_star %>% select(-user_id) %>% as.matrix()# remove user_id from columns
-umat <- as(ui_matrix_star,"realRatingMatrix") # save real ratings for algo 
-real_ui_matrix_star <- as(ui_matrix_star,"realRatingMatrix") # save real ratings for algo 
+# make wide df for matrix by spreading business id on stars 
+mat_test <- matrix_data %>% group_by(user_id) %>% spread(business_id, stars)
 
 
-
-# preview matrices 
-as.data.frame.array(ui_matrix_star) %>% head() %>% kable(caption="Preview of User-Item Matrix (User-Business)") %>% kable_styling() %>% scroll_box()
-
-
+mat_test
 ```
 
 
