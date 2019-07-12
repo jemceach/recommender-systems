@@ -12,81 +12,59 @@ output:
 ---
 # Overview {.tabset .tabset-fade .tabset-pills}
 
-we decided to work with kaggle data from a 2013 Yelp challenge. The challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account not only reviews, but also businesses, users and check-in’s as well. These datasets consist of the following observations and variables:
+Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews,ratings, and check-in data for a wide-range of businesses. The four datasets consist of the following observations and variables:
+
 ## Business
----
-{
-  'type': 'business',
-  'business_id': (encrypted business id),
-  'name': (business name),
-  'neighborhoods': [(hood names)],
-  'full_address': (localized address),
-  'city': (city),
-  'state': (state),
-  'latitude': latitude,
-  'longitude': longitude,
-  'stars': (star rating, rounded to half-stars),
-  'review_count': review count,
-  'categories': [(localized category names)]
-  'open': True / False (corresponds to permanently closed, not business hours),
-}
----
+*  'type': 'business',
+*  'business_id': (encrypted business id),
+*  'name': (business name),
+*  'neighborhoods': [(hood names)],
+*  'full_address': (localized address),
+*  'city': (city),
+*  'state': (state),
+*  'latitude': latitude,
+*  'longitude': longitude,
+*  'stars': (star rating, rounded to half-stars),
+*  'review_count': review count,
+*  'categories': [(localized category names)]
+*  'open': True / False (corresponds to permanently closed, not business hours),
 
 ## Review
----
-{
-  'type': 'review',
-  'business_id': (encrypted business id),
-  'user_id': (encrypted user id),
-  'stars': (star rating),
-  'text': (review text),
-  'date': (date, formatted like '2012-03-14', %Y-%m-%d in strptime notation),
-  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
-}
----
+*  'type': 'review',
+*  'business_id': (encrypted business id),
+*  'user_id': (encrypted user id),
+*  'stars': (star rating),
+*  'text': (review text),
+*  'date': (date, formatted like '2012-03-14', %Y-%m-%d in strptime notation),
+*  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
+
 ## User
 Some user profiles are omitted from the data because they have elected not to have public profiles. Their reviews may still be in the data set if they are still visible on Yelp.
----
-{
-  'type': 'user',
-  'user_id': (encrypted user id),
-  'name': (first name),
-  'review_count': (review count),
-  'average_stars': (floating point average, like 4.31),
-  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
-}
----
+
+*  'type': 'user',
+*  'user_id': (encrypted user id),
+*  'name': (first name),
+*  'review_count': (review count),
+*  'average_stars': (floating point average, like 4.31),
+*  'votes': {'useful': (count), 'funny': (count), 'cool': (count)}
 
 ## Checkin
 If there are no checkins for a business, the entire record will be omitted.
----
-{
-  'type': 'checkin',
-  'business_id': (encrypted business id),
-  'checkin_info': {
-        '0-0': (number of checkins from 00:00 to 01:00 on all Sundays),
-        '1-0': (number of checkins from 01:00 to 02:00 on all Sundays), 
-        ... 
-        '14-4': (number of checkins from 14:00 to 15:00 on all Thursdays),
-        ...
-        '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
-  } # if there was no checkin for an hour-day block it will not be in the dict
-}
----
+*  'type': 'checkin',
+*  'business_id': (encrypted business id),
+*  'checkin_info' (example of checkin format)
+  *  '0-0': (number of checkins from 00:00 to 01:00 on all Sundays),
+  *  '1-0': (number of checkins from 01:00 to 02:00 on all Sundays), 
+  *  '14-4': (number of checkins from 14:00 to 15:00 on all Thursdays),
+  *  '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
 
-## Packages Used
----
-## data processing packages
-library(dplyr); library(tidyr);library(jsonlite);library(tidyverse);library(plyr);library(DT);library(spelling)
-##formatting packages
-library(knitr); library(kableExtra); library(default)
-##visualization packages
-library(ggplot2)
-##recommender packages
-library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
----
+If there was no checkin for an hour-day block it will not be in the dictionary,
 
-```{r include=FALSE}
+# Getting Started
+
+The following packages were used in `R` to complete our project. 
+
+```{r}
 ## data processing packages
 library(dplyr); library(tidyr);library(jsonlite);library(tidyverse);library(plyr);library(DT);library(spelling)
 ##formatting packages
@@ -97,28 +75,22 @@ library(ggplot2)
 library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 ```
 
-## Data Aquisition  {.tabset .tabset-fade .tabset-pills}
+## Data Aquisition
 
-@ Raj - Add textual explanation of process. What data is available? Explain variables we have to work with. 
-All the data is multiarray of Json, which means file is a collection of json data. We will use  *stream_in*  functions which can be used to parse line-by-line data from the json file. 
+All the data is multiarray of Json, which means file is a collection of json data. We will use  `stream_in` function, which parses json data line-by-line from our files stored within the data folder of our repository. 
 
 ```{r, message=F, warning=F}
-# Read JSON files from repository 
 # Business Data 
-business2<-stream_in(file("data/yelp_training_set_business.json"))
-
+business<-stream_in(file("data/yelp_training_set_business.json"),verbose = F)
 # user Data 
-user2 <-stream_in(file("data/yelp_training_set_user.json"))
-
+user <-stream_in(file("data/yelp_training_set_user.json"),verbose = F)
 # checkin Data 
-checkin2 <-stream_in(file("data/yelp_training_set_checkin.json"))
-
+checkin <-stream_in(file("data/yelp_training_set_checkin.json"),verbose = F)
 # review  Data 
-review2 <-stream_in(file("data/yelp_training_set_review.json"))
+review <-stream_in(file("data/yelp_training_set_review.json"),verbose = F)
 ```
 
-## Data Transformations {.tabset .tabset-fade .tabset-pills}
-@ Raj - Explain process. What was included/excluded? Why? Ie: 
+## Data Transformations 
 
 We changed the business and user columns name for clarity to better identify our variables. We have also dropped some fields and rearranged few of them. Only keeping following fields for by dataset:
 
@@ -129,7 +101,7 @@ We changed the business and user columns name for clarity to better identify our
 | bus_categories      | usr_review_count   | rev_stars    |           |
 | bus_name            | usr_type           | rev_date     |           |
 | bus_open            | usr_average_stars  | rev_text     |           |
-|  bus_review_count   | usr_funny          | rev_type     |           |
+| bus_review_count    | usr_funny          | rev_type     |           |
 | bus_state           | usr_useful         | business_id  |           |
 | bus_type            | usr_cool           | rev_funny    |           |
 | bus_stars           | rev_useful         |              |           |
@@ -140,10 +112,10 @@ Only "full_address" ,"longitude" and "latitude" were dropped from MAIN Data set 
 
 ### Given Data
 
-```{r include=FALSE}
+```{r}
 # Business Data
 # sort data by Business Name alphabetically
-df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,9,10,12,13,11)] %>% mutate(df_main_train_business,categories_all = as.character(categories)) 
+df_business<- business[ , order(names(business))] %>% .[,c(3,1,2,7,9,10,12,13,11)] %>% mutate(df_business,categories_all = as.character(categories)) 
 
 ## Keeping STARS for Training set at index 11
 # Changing the columns name for clarity so that we can identify business data and user data ( except the keys )
@@ -158,16 +130,16 @@ df_main_train_business<- business2[ , order(names(business2))] %>% .[,c(3,1,2,7,
                   "bus_type",
                   "bus_stars",
                   "bus_categories_all")
- names(df_main_train_business) <- HeaderName_bus
+ names(df_business) <- HeaderName_bus
 
 # User Data
 # Votes is dataframe in the user dataset , we will read this data and then bind columns with user data.
-df_main_train_user <- user2 %>% select( -votes) %>% bind_cols(.,user2$votes) %>% .[,c(1,2,4,5,3,6,7,8)]
-df_main_train_user_long <- gather(df_main_train_user,key= "mood", value = "rating",funny,useful,cool)
+df_user <- user %>% select( -votes) %>% bind_cols(.,user$votes) %>% .[,c(1,2,4,5,3,6,7,8)]
+df_user_long <- gather(df_user,key= "mood", value = "rating",funny,useful,cool)
 # Updating the name of the Users Votes column to user_funny , user_usefull, user_cool
 HeaderName_usr <- c("user_id","usr_name","usr_review_count", "usr_type","usr_average_stars","usr_funny","usr_useful","usr_cool")
 
-names(df_main_train_user) <- HeaderName_usr
+names(df_user) <- HeaderName_usr
 
 #checkins data
 
@@ -179,12 +151,12 @@ names(df_main_train_user) <- HeaderName_usr
 #         '23-6': (number of checkins from 23:00 to 00:00 on all Saturdays)
 
 # checkin_info is a dataframe with the above structure of the data, we would extract this info and append it to the Checkin Table against the Business ID.
-df_main_train_checkin <- checkin2  %>% select( -checkin_info) %>% bind_cols(.,checkin2$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
+df_main_train_checkin <- checkin  %>% select( -checkin_info) %>% bind_cols(.,checkin$checkin_info) # %>% .[,c(1,2,4,5,3,6,7,8)]
 
 
 #Reviews Data 
-df_review2_vote <- review2$votes
-df_main_train_review <- review2  %>% select( -votes) %>% bind_cols(.,df_review2_vote) 
+df_review_vote <- review$votes
+df_review <- review  %>% select( -votes) %>% bind_cols(.,df_review_vote) 
 HeaderName_rev <- c("user_id" ,
                 "review_id",
                 "rev_stars",
@@ -195,7 +167,7 @@ HeaderName_rev <- c("user_id" ,
                 "rev_funny"   ,
                 "rev_useful" ,
                 "rev_cool")
-names(df_main_train_review) <- HeaderName_rev
+names(df_review) <- HeaderName_rev
 ```
 
 ### Transformed Data 
@@ -212,10 +184,10 @@ We then joined our dataframes using the `Business_ID` and `User_ID` as unique ke
 #----------------------------------------------------------------------------------------------
 
 #Group all reviews that have a business with a star rating
-review_bus  <- inner_join(df_main_train_review,df_main_train_business,by=("business_id"))
+review_bus  <- inner_join(df_review,df_business,by=("business_id"))
 
 #Group all reviews that have and User's data
-review_user <-   inner_join(df_main_train_review,df_main_train_user,by=("user_id"))
+review_user <-   inner_join(df_review,df_user,by=("user_id"))
 
 # joining all the "Review and Users" information with  the "Review and Business"  Dataset. 
 # Moving Key in the Begning 
@@ -231,17 +203,17 @@ DF_MAIN_CHK <- inner_join(DF_MAIN,df_main_train_checkin[,-c(1)],by=("business_id
 ### Business
 This dataset list business information with average business rating, along with category of the Business.
 <center>**Business Train Data** </center>
- `r head(df_main_train_business)`
+ `r head(df_business)`
 ### Review
 Review is main dataset here, it holds link to Users and Business and the corresponding Text Reviews are listed along with ratings.
 <center>**Review Train Data** </center>
-`r head(df_main_train_review)`
+`r head(df_review)`
 
 ### User
 Users Holds all the information about user, average rating of the Users given so far, count of the review and different count of Votes on "Cool", "Useful" and "funny".
 
 <center>**User Train Data** </center>
-`r head(df_main_train_user) `
+`r head(df_user) `
 
 ### Checkin 
 Checkin information is round the clock and 7 days data of the Customer's checkin. Column name start with hour-Day 
@@ -269,19 +241,19 @@ head(DF_MAIN_CHK,10)
 ### Business Categories 
 
 ```{r}
-df_main_train_business_long<- df_main_train_business %>%  
-  unnest("bus_categories"= df_main_train_business$bus_categories ,.id= "id") %>% .[,c(2,3,4,5,6,9,10,1,8)] # Star column at index at 8
+df_business_long<- df_business %>%  
+  unnest("bus_categories"= df_business$bus_categories ,.id= "id") %>% .[,c(2,3,4,5,6,9,10,1,8)] # Star column at index at 8
 
-df_main_train_business_long
+df_business_long
 
 # All Business Catgories 
-df_main_train_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
+df_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
          geom_point()+
           theme(axis.text.x=element_text(angle=90, hjust=1))+
     xlab(label = "Business Categories")
 
 # Business Categories with 350+ Business
-df_main_train_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% unique() %>% dplyr::summarise(Count=n()) %>% arrange(.,desc(Count)) %>% filter (Count >= 350) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
+df_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% unique() %>% dplyr::summarise(Count=n()) %>% arrange(.,desc(Count)) %>% filter (Count >= 350) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=90, hjust=1))+
     xlab(label = "Categories with 350+ Business")+
@@ -296,7 +268,7 @@ gl_focus_category <- c("Food","Restaurants","Shopping")
 ```{r}
 
 # All Business By State
-df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_state) %>% group_by(bus_state) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_state, y = log(Count))) +
+df_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_state) %>% group_by(bus_state) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_state, y = log(Count))) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=20, hjust=1))+
     xlab(label = "Business State")+
@@ -304,7 +276,7 @@ df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus
 
 
 # All Business City
-df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_city) %>% group_by(bus_city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count)) +
+df_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_city) %>% group_by(bus_city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count)) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=90, hjust=1))+
     xlab(label = "Business City")+
@@ -312,7 +284,7 @@ df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus
 
 
 # All Business City by Focus Category
-df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (business_id, bus_city,bus_categories) %>% unique()%>% group_by(bus_city,bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count, fill=bus_categories)) +
+df_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (business_id, bus_city,bus_categories) %>% unique()%>% group_by(bus_city,bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count, fill=bus_categories)) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=70, hjust=1))+
     xlab(label = "Business in City by Focus Category")
@@ -322,7 +294,7 @@ df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_f
 ### Rating
 ```{r}
 # All Business Categories by Rating
-df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_city)) +
+df_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_city)) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=90, hjust=1))+
     xlab(label = "Stars Rating by City")
@@ -332,25 +304,25 @@ df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_f
 
 
 # All Business Categories by Rating
-df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_categories,bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_categories)) +
+df_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_categories,bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_categories)) +
          geom_bar(stat = "identity") +
           theme(axis.text.x=element_text(angle=00, hjust=1))+
     xlab(label = "Stars Rating by Focus Category")
 
 # Count of Business by Category 
-fct_count(df_main_train_business_long$bus_categories,sort = TRUE) %>% rename(.,c("f"= "Name","n"="Count"))
+fct_count(df_business_long$bus_categories,sort = TRUE) %>% rename(.,c("f"= "Name","n"="Count"))
 # library(forcats) 
 # 
-# plot(fct_count(df_main_train_business_long$bus_categories,sort = TRUE))
+# plot(fct_count(df_business_long$bus_categories,sort = TRUE))
 # 
-# unique(df_main_train_business_long$bus_state)
+# unique(df_business_long$bus_state)
 ```
 ### User {.tabset .tabset-fade .tabset-pills}
 
 ```{r}
 
 # Avg Rating Given by User
-df_main_train_user %>% select (user_id,usr_average_stars,usr_review_count) %>%
+df_user %>% select (user_id,usr_average_stars,usr_review_count) %>%
   # group_by(user_id,usr_average_stars,usr_funny) %>% 
   # dplyr::summarise(Count=n()) %>%   
   ggplot(aes(x = round(usr_average_stars), y = usr_average_stars)) +
@@ -366,7 +338,7 @@ df_main_train_user %>% select (user_id,usr_average_stars,usr_review_count) %>%
 ```{r}
 library(lubridate)
 # Avg Rating Given by User
-df_main_train_review %>% select (rev_stars,rev_date ) %>% 
+df_review %>% select (rev_stars,rev_date ) %>% 
   mutate(month = month(as_date(rev_date) )) %>% group_by(month) %>% 
   dplyr::summarise(Count=n()) %>%  
   ggplot(aes ( x= factor(month),y = Count)) +
@@ -375,7 +347,7 @@ df_main_train_review %>% select (rev_stars,rev_date ) %>%
   xlab(label = "Avg Rating Given by User")
 
 
-str_split(df_main_train_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
+str_split(df_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
 
 
 ```
@@ -449,7 +421,7 @@ ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE 
 # rating with these info and recommend some similar  Business to the Users.
 
 
-head(df_main_train_review[,c(7,8,9,10)])
+head(df_review[,c(7,8,9,10)])
 ```
 
 
