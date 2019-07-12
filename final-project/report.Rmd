@@ -66,11 +66,14 @@ The following packages were used in `R` to complete our project.
 
 ```{r}
 ## data processing packages
-library(dplyr); library(tidyr);library(jsonlite);library(tidyverse);library(plyr);library(DT);library(spelling)
+library(dplyr); library(tidyr);library(jsonlite);library(stringr)
+
 ##formatting packages
 library(knitr); library(kableExtra); library(default)
+
 ##visualization packages
 library(ggplot2)
+
 ##recommender packages
 library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 ```
@@ -90,7 +93,34 @@ checkin <-stream_in(file("data/yelp_training_set_checkin.json"),verbose = F)
 review <-stream_in(file("data/yelp_training_set_review.json"),verbose = F)
 ```
 
-## Data Transformations 
+
+## Data Transformations {.tabset .tabset-fade .tabset-pills}
+
+### Business
+
+There were 1224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which we filtered out and removed from our data. There were 508 unique category tags listed within our business data. We choose to limit the scope to our recommender system to only businesses with tags related to food and beverages.
+
+**Change filter to grep. Coersion warning. This will work for now**
+
+```{r, warning=F, comment=F}
+# dropped open, neighborhoods(no data), full address, and review count
+df_business<-business %>% filter(open == "TRUE") %>% select(-open, -neighborhoods, -full_address, -review_count, -business) %>% mutate(categories, sapply(categories, toString))
+
+# create category filter
+filter <- 'Argentine| Burmese| Cambodian| Cocktail Bars|Laotian|Lebanese|Live/Raw Food|Russian|African|Champagne Bars|Kosher|Modern European|Scandinavian|Taiwanese|Tapas/Small Plates|Afghan|Brazilian|Food Trucks|Shaved Ice|Wineries|Dim Sum|Ethiopian|Fondue|Hookah Bars|Persian/Iranian|Peruvian| Polish| Seafood Markets| Tapas Bars|Halal|British| Cheese Shops|German|Spanish|Cheesesteaks|Cuban|Do-It-Yourself Food|Gastropubs|Salad|Creperies|Soup|Chocolatiers & Shops|Filipino|Food Stands|Fruits & Veggies|Meat Shops|Mongolian|Soul Food|Comfort Food| Irish|Fish & Chips|Cajun/Creole|Caribbean|Pakistani|Southern|Candy Stores|Vegan|Latin American|Breweries|French|Gay Bars|Korean|Gluten-Free|Hawaiian|Farmers Market|Vegetarian|Middle Eastern|Ethnic Food|Indian|Pubs|Chicken Wings|Dive Bars| Juice Bars & Smoothies|Vietnamese|Cafes|Wine Bars|Bagels|Diners|Hot Dogs|Tex-Mex|Donuts|Greek|Thai| Desserts|Mediterranean|Beer| Wine & Spirits|Seafood|Sushi Bars| Lounges|Steakhouses|Buffets|Japanese|Sports Bars|Delis|Bakeries|Specialty Food|Breakfast & Brunch|Ice Cream & Frozen Yogurt|Burgers|Italian| Chinese|Coffee & Tea|American (New)|Sandwiches|Fast Food|Pizza|American (Traditional)|Bars|Mexican|Food| Restaurants'
+
+# filter businesses using filter
+df_business <- df_business %>% filter(str_detect(categories, filter))
+```
+```{r}
+df_business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling()
+```
+
+
+### User
+
+Insert changes here. 
+
 
 We changed the business and user columns name for clarity to better identify our variables. We have also dropped some fields and rearranged few of them. Only keeping following fields for by dataset:
 
