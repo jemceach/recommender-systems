@@ -333,13 +333,14 @@ ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE 
 
 
 ## Algorithm{.tabset .tabset-fade .tabset-pills}
+### User and Item 
 ```{r}
 # I am planning to see how I can use Business's rating and rev_funny,rev_useful,rev_cool
-# I would check cosine similarlty of user rating with these info and recommend some similar 
-# Business to the Users.
+# and see how users are rating against these parameters, I would check cosine similarlty of user 
+# rating with these info and recommend some similar  Business to the Users.
 
 
-head(DF_MAIN[,c(3,8,9,10)])
+head(df_main_train_review[,c(7,8,9,10)])
 ```
 
 
