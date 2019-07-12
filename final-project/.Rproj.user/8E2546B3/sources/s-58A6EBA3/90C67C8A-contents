@@ -275,9 +275,6 @@ str_split(df_main_train_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
 
 
 ## Data Preparation for Model {.tabset .tabset-fade .tabset-pills}
-```{r}
-
-```
 
 ## Matrix Building 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
@@ -336,6 +333,15 @@ ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE 
 
 
 ## Algorithm{.tabset .tabset-fade .tabset-pills}
+```{r}
+# I am planning to see how I can use Business's rating and rev_funny,rev_useful,rev_cool
+# I would check cosine similarlty of user rating with these info and recommend some similar 
+# Business to the Users.
+
+
+head(DF_MAIN[,c(3,8,9,10)])
+```
+
 
 
 ## Conclusion {.tabset .tabset-fade .tabset-pills} 

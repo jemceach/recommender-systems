@@ -275,9 +275,6 @@ str_split(df_main_train_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
 
 
 ## Data Preparation for Model {.tabset .tabset-fade .tabset-pills}
-```{r}
-
-```
 
 ## Matrix Building 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
