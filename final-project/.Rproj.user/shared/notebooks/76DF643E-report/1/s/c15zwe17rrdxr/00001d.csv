@@ -1,0 +1,5 @@
+"0","# All Business City by Focus Category"
+"0","df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (business_id, bus_city,bus_categories) %>% unique()%>% group_by(bus_city,bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count, fill=bus_categories)) +"
+"0","         geom_bar(stat = ""identity"") +"
+"0","          theme(axis.text.x=element_text(angle=70, hjust=1))+"
+"0","    xlab(label = ""Business in City by Focus Category"")"

@@ -157,23 +157,146 @@ head(DF_MAIN_CHK,10)
 
 ## Data Exploration {.tabset .tabset-fade .tabset-pills}
 
-WIP
+### Business Categories 
 
-## Data Visualizations {.tabset .tabset-fade .tabset-pills}
+```{r}
+df_main_train_business_long<- df_main_train_business %>%  
+  unnest("bus_categories"= df_main_train_business$bus_categories ,.id= "id") %>% .[,c(2,3,4,5,6,9,10,1,8)] # Star column at index at 8
 
-WIP
+df_main_train_business_long
+
+# All Business Catgories 
+df_main_train_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
+         geom_point()+
+          theme(axis.text.x=element_text(angle=90, hjust=1))+
+    xlab(label = "Business Categories")
+
+# Business Categories with 350+ Business
+df_main_train_business_long %>% filter (bus_open== TRUE) %>% select (business_id,bus_categories,bus_state) %>% group_by(bus_categories) %>% unique() %>% dplyr::summarise(Count=n()) %>% arrange(.,desc(Count)) %>% filter (Count >= 350) %>%   ggplot(aes(x = bus_categories, y = (Count))) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=90, hjust=1))+
+    xlab(label = "Categories with 350+ Business")+
+  geom_label(aes(label = Count),  color="white" , fill= "black",nudge_y = -0.02)
+
+
+## Focus Category 
+gl_focus_category <- c("Food","Restaurants","Shopping")
+```
+
+### Business States/City
+```{r}
+
+# All Business By State
+df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_state) %>% group_by(bus_state) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_state, y = log(Count))) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=20, hjust=1))+
+    xlab(label = "Business State")+
+  geom_label(aes(label = Count),  color="white" , fill= "black",nudge_y = -0.02)
+
+
+# All Business City
+df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_city) %>% group_by(bus_city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count)) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=90, hjust=1))+
+    xlab(label = "Business City")+
+  geom_text(aes(label = Count), colour = "blue", fontface = "bold" ,position = position_stack(vjust = 1.1),check_overlap=TRUE)
+
+
+# All Business City by Focus Category
+df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (business_id, bus_city,bus_categories) %>% unique()%>% group_by(bus_city,bus_categories) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_city, y = Count, fill=bus_categories)) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=70, hjust=1))+
+    xlab(label = "Business in City by Focus Category")
+  
+```
+
+### Rating
+```{r}
+# All Business Categories by Rating
+df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_city)) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=90, hjust=1))+
+    xlab(label = "Stars Rating by City")
+
+  # geom_text(aes(label = Count), colour = "blue", fontface = "bold" ,position = position_stack(vjust = 1.1),check_overlap=TRUE)
+
+
+
+# All Business Categories by Rating
+df_main_train_business_long %>% filter (bus_open== TRUE,bus_categories %in% gl_focus_category ) %>% select (bus_categories,bus_city, bus_stars) %>% unique()%>% group_by(bus_city, bus_categories,bus_stars) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_stars, y = Count,fill= bus_categories)) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=00, hjust=1))+
+    xlab(label = "Stars Rating by Focus Category")
+
+# Count of Business by Category 
+fct_count(df_main_train_business_long$bus_categories,sort = TRUE) %>% rename(.,c("f"= "Name","n"="Count"))
+# library(forcats) 
+# 
+# plot(fct_count(df_main_train_business_long$bus_categories,sort = TRUE))
+# 
+# unique(df_main_train_business_long$bus_state)
+```
+### User {.tabset .tabset-fade .tabset-pills}
+
+```{r}
+
+# Avg Rating Given by User
+df_main_train_user %>% select (user_id,usr_average_stars,usr_review_count) %>%
+  # group_by(user_id,usr_average_stars,usr_funny) %>% 
+  # dplyr::summarise(Count=n()) %>%   
+  ggplot(aes(x = round(usr_average_stars), y = usr_average_stars)) +
+         geom_bar(stat = "identity") +
+          theme(axis.text.x=element_text(angle=00, hjust=1))+
+    xlab(label = "Avg Rating Given by User")
+
+```
+
+### Review 
+
+
+```{r}
+library(lubridate)
+# Avg Rating Given by User
+df_main_train_review %>% select (rev_stars,rev_date ) %>% 
+  mutate(month = month(as_date(rev_date) )) %>% group_by(month) %>% 
+  dplyr::summarise(Count=n()) %>%  
+  ggplot(aes ( x= factor(month),y = Count)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(angle=00, hjust=1))+
+  xlab(label = "Avg Rating Given by User")
+
+
+str_split(df_main_train_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
+
+
+```
+
+
+
 
 ## Data Preparation for Model {.tabset .tabset-fade .tabset-pills}
+```{r}
+
+```
 
 ## Matrix Building 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms.
 
 ```{r}
 
-# create user item matrix with 500 items only as I was getting storage error.
+# create user item matrix with 500 items only as I was getting storage error while bulding user item matrix with all the item. We Decided  to use only category "Restaurant" & "Shopping" for our Recommndation .
+
+#---------------------------------TEAM NOTE:
+# I Thought we can use TWo category to make problem more close to the actual problem, where we handle more than one Category to recommend.
+#---------------------------------TEAM NOTE:
+
 # https://github.com/tidyverse/tidyr/issues/426
 
-ui_matrix_star <- DF_MAIN[1:500,]  %>% select(user_id, business_id, rev_stars) %>% 
+#Settting up the Business Category 
+str_Category <- "Restaurant|Shopping"
+
+# Creating User Item Matrix 
+ui_matrix_star <- DF_MAIN %>% filter(str_detect(bus_categories_all, str_Category)) %>% select(user_id, business_id, rev_stars) %>% 
   group_by_at(vars(-rev_stars)) %>%  #  # group by everything other than the value column.
   dplyr::mutate(row_id=1:n()) %>% ungroup() %>%  # build group index
   spread(key=business_id, value=rev_stars) %>%    # spread
@@ -183,6 +306,8 @@ rownames(ui_matrix_star)<-ui_matrix_star$user_id # set row names to user_id
 ui_matrix_star<-ui_matrix_star %>% select(-user_id) %>% as.matrix()# remove user_id from columns
 umat <- as(ui_matrix_star,"realRatingMatrix") # save real ratings for algo 
 real_ui_matrix_star <- as(ui_matrix_star,"realRatingMatrix") # save real ratings for algo 
+
+
 
 # preview matrices 
 as.data.frame.array(ui_matrix_star) %>% head() %>% kable(caption="Preview of User-Item Matrix (User-Business)") %>% kable_styling() %>% scroll_box()
@@ -199,7 +324,7 @@ Finally, our data was split into training and tests sets for model evaluation of
 # evaluation method with 90% of data for train and 10% for test
 set.seed(1000)
 
-evalu <- evaluationScheme(real_ui_matrix_star, method="split", train=0.8, given=0)
+evalu <- evaluationScheme(real_ui_matrix_star, method="split", train=0.5, given=0)
 
 # Prep data
 ratings_train <- getData(evalu, 'train')# Training Dataset 

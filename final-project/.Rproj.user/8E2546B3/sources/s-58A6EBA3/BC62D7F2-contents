@@ -1,0 +1,636 @@
+---
+title: "Final Project 607: Naive Bayes"
+author: "Rajwant Mishra"
+date: "May 8, 2019"
+output:
+  html_document:
+    code_folding: hide
+    fig_caption: yes
+    highlight: tango
+    keep_md: yes
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+<a href="https://rajwantmishra.shinyapps.io/SymptomsDiseasesRecommendation/"> Shiny App </a>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(DT)
+library(stringr)
+library(lubridate)
+library(corrr)
+library(psych)
+library(readxl)
+library(readr)
+library(plotly)
+library(lme4)
+library(lmerTest)
+library(tm)
+library(wordcloud)
+library(e1071)
+library(gmodels)
+
+library(mongolite)
+library(lubridate)
+library(gridExtra)
+fs_model <- gridfs(db = "MSDSProject5", url = "mongodb+srv://msds_user:msds@cluster0-bqyhe.gcp.mongodb.net/", prefix = "MOD",options = ssl_options())
+Mongo_Train_Cond_Corpus = mongo(collection = "Nav_TrainC_Cond", db = "MSDSProject5", url = "mongodb+srv://msds_user:msds@cluster0-bqyhe.gcp.mongodb.net/") # create connection, database and collection
+```
+
+## Prepare Data {.tabset .tabset-fade .tabset-pills}
+
+### Pacakge
+
+---
+library(tidyverse)
+library(ggplot2)
+library(DT)
+library(stringr)
+library(lubridate)
+library(corrr)
+library(psych)
+library(readxl)
+library(readr)
+library(plotly)
+library(lme4)
+library(lmerTest)
+library(tm)
+library(wordcloud)
+library(e1071)
+library(gmodels)
+library(mongolite)
+library(lubridate)
+library(gridExtra)
+---
+
+### Load data 
+
+```{r message=FALSE}
+
+# load data
+workDir <- getwd()
+
+
+filePath = paste0(workDir,"/Data")
+g_max <- 1048576
+
+train_Data<- read_tsv("https://raw.githubusercontent.com/Rajwantmishra/msds/master/607/Project5/607Project/data/drugLibTrain_raw.tsv")
+
+test_Data<- read_tsv("https://raw.githubusercontent.com/Rajwantmishra/msds/master/607/Project5/607Project/data/drugLibTest_raw.tsv")
+
+glimpse(train_Data)
+
+
+```
+
+
+
+### Working with One Row 
+```{r}
+NROW(unique(train_Data$X1)) # indicate X1 is unique 
+
+t(train_Data[1,])
+
+train_Data$condition[1]
+train_Data$sideEffects[1]
+train_Data$sideEffectsReview[1]
+train_Data$commentsReview[1]
+
+#
+#https://www.innerbody.com/diseases-conditions
+# https://kidspicturedictionary.com/english-through-pictures/people-english-through-pictures/human-body/
+```
+
+
+## Using SVM suport vector meothd . 
+
+Since data points were too high it was not possible to run the model with full data on the working machine. Result of this Methods were not accurate . All the valuses were calssifed as one.
+
+```{r}
+
+# library(e1071)
+t(train_Data[2,])
+# str_detect(train_Data$condition,"hirschsprungs")
+# t(conditionBuffer[1,])
+# 
+# str_detect(conditionBuffer$Dt.risknCause,"birth control")
+# t(conditionBuffer[21,])
+
+#---------------------------------------------------SVm Method 
+train_Data$urlDrugName <- as.factor(train_Data$urlDrugName)
+train_Data$effectiveness <- as.factor(train_Data$effectiveness)
+summary(train_Data)
+unique(train_Data$X1)
+fitdefaultRadial <- e1071::svm(urlDrugName~condition + effectiveness  ,train_Data[which(train_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),])
+fitdefaultRadial
+summary(fitdefaultRadial)
+
+fitdefaultpolynomial <- e1071::svm(urlDrugName~condition + effectiveness  ,data= train_Data[1:5,] , kernel= "polynomial")
+fitdefaultpolynomial
+summary(fitdefaultpolynomial)
+
+
+fitdefaultsigmoid <- e1071::svm(urlDrugName~condition + effectiveness  ,data= train_Data[1:5,] , kernel= "sigmoid")
+fitdefaultsigmoid
+summary(fitdefaultsigmoid)
+
+
+
+#----------------------------------------------------------------
+# Predict 
+  predictdefaultRad <- predict(fitdefaultRadial,train_Data[which(train_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),])
+  predictdefaultPloy <- predict(fitdefaultpolynomial,train_Data[1:5,])
+  predictdefaultSig <- predict(fitdefaultsigmoid,train_Data[1:5,])
+  
+ CrossTable(predictdefaultRad,train_Data[which(train_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),]$urlDrugName,prop.chisq = TRUE, prop.t = FALSE, dnn = c("Predicted","Actual"))
+  
+
+```
+
+
+
+## Preare for Naive Bayes  {.tabset .tabset-fade .tabset-pills}
+
+### TM Function 
+```{r}
+
+(funReplace <- content_transformer(function(x, pattern, rep="") str_replace(x,pattern,rep) ))
+# (getPattern <- content_transformer(  function(x,pattern)( str_extract_all(x, '<(.+?)>.+?</\\1>'))))
+(getPattern <- content_transformer(  function(x,pattern)( str_extract_all(x, pattern))))
+# EMail
+ regEmail <-"(?<=(From|Delivered-To:|To:){1} )(<?[[:alnum:]]+@[[:alnum:].?-?]+>?)"
+ (getEmail<- content_transformer(function(x,pattern)(str_extract_all(x,regEmail)))) 
+  # IP Address
+  regIP <- "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b"
+ (getIP<- content_transformer(function(x,pattern)(str_extract_all(x,regIP)))) 
+   # Email Type
+  # regEmailType <- "(?<=(Content-Type:){1} )([[:graph:]]+)"
+  regEmailType <- "(?<=(Content-Type:){1} )([[:alpha:]]+/[[:alpha:]]+)"
+(getEmailType <- content_transformer(function(x,pattern)(str_extract_all(x,regEmailType)))) 
+   #Subject
+  # Subject 
+regSub <- "(?<=(Subject:){1} )([[:graph:] [:graph:]]+)"
+
+(getSubject <- content_transformer(function(x,pattern)(str_extract_all(x,regSub))))
+(getBody<- content_transformer(function(x)(x[(str_which(x,regSub)):length(x)])))
+(getBodyLen <- content_transformer(function(x)( str_count(x))))
+
+# Remove HTML TAG from
+(cleanHTML <- content_transformer (function(x) {
+  return(gsub("<.*?>", "", x))
+}))
+
+```
+
+
+
+### Create Test/Train Data
+
+```{r eval=FALSE, include=FALSE}
+
+# Creat Test and Train data 
+train_back <- train_Data[which(train_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),]
+test_back <- test_Data[which(test_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),]
+
+masterBodyC
+conditionBuffer
+
+conditionBuffer[str_which(conditionBuffer$Dt.overview,"depression"),]
+
+
+test_Data[str_which(test$condition,"obesity"),]
+
+
+```
+
+
+### Using Term matrix and naiveBayes algorithm 
+
+```{r}
+
+#-------------------------------------------
+#--------------------------------TEST With 4 drug 
+#-------------------------------------------
+# Creat Test and Train data 
+train <- train_Data[which(train_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),]
+test <- test_Data[which(test_Data$urlDrugName %in% c("biaxin","lamictal","depakene","sarafem")),]
+
+
+
+# Chack Data 
+head(train)
+head(test)
+train$urlDrugName <- train$urlDrugName
+test$urlDrugName <- test$urlDrugName
+# prop.table(table(train$urlDrugName))
+forcats::fct_infreq(train$urlDrugName, ordered = TRUE)
+head(forcats::fct_count(train$urlDrugName, sort = TRUE))
+(forcats::fct_count(test$urlDrugName, sort = TRUE))
+
+# reate Datframe good for TERM MATRIX 
+## TRAIN...........................................
+tm_dt_comment <- data.frame(doc_id = train$urlDrugName,text = train$commentsReview)
+tm_dt_condition <- data.frame(doc_id = train$urlDrugName,text = train$condition)
+## Test...........................................
+tm_dte_comment <- data.frame(doc_id = test$urlDrugName,text = test$commentsReview)
+tm_dte_condition <- data.frame(doc_id = test$urlDrugName,text = test$condition)
+## ..........................................
+#Create VCorpus 
+## TRAIN...........................................
+corpus_commentsReview <- VCorpus(DataframeSource(tm_dt_comment))
+  # PCorpus(DataframeSource(tm_dt_comment),dbControl=list(useDb = TRUE,dbName = "texts.db",dbType = "DB1"))
+corpus_condition <-VCorpus(DataframeSource(tm_dt_condition))
+## TRAIN...........................................
+corpus_commentsReview_test <- VCorpus(DataframeSource(tm_dte_comment))
+corpus_condition_test <-VCorpus(DataframeSource(tm_dte_condition))
+## ..........................................
+
+#Cheack Corpus 
+print(corpus_commentsReview)
+summary(corpus_commentsReview)
+print(corpus_condition)
+summary(corpus_condition)
+meta(corpus_condition[[1]])
+# Inspect cosrpus
+inspect(corpus_commentsReview[2][[1]])
+inspect(corpus_condition[1][[1]])
+
+
+
+inspect(corpus_condition[1][[1]])
+inspect(corpus_condition[2][[1]])
+meta(corpus_condition[[1]])
+meta(corpus_condition[[2]])
+# meta(corpus_condition[[1]], "comment", type = c("indexed", "corpus", "local")) <- "TEST "
+
+
+# Clean Data
+# corpus_condition_clean <- tm_map(corpus_condition,tolower)
+# corpus_condition_clean <- tm_map(corpus_condition,removePunctuation)
+# corpus_condition_clean <- tm_map(corpus_condition,removeNumbers)
+# corpus_condition_clean <- tm_map(corpus_condition,stripWhitespace)
+# corpus_condition_clean <- tm_map(corpus_condition,removeWords,stopwords())
+
+# Create Document Term Matrix 
+## TRAIN...........................................
+corpus_condition_clean_dtm <-  DocumentTermMatrix(corpus_condition, control = 
+                                                    list(removePunctuation = TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+
+corpus_commentsReview_clean_dtm <-  DocumentTermMatrix(corpus_commentsReview, control = 
+                                                    list(removePunctuation = TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+
+## Test...........................................
+
+corpus_condition_test_dtm <-  DocumentTermMatrix(corpus_condition_test, control = 
+                                                    list(removePunctuation = TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+
+corpus_commentsReview_test_dtm <-  DocumentTermMatrix(corpus_commentsReview_test, control = 
+                                                    list(removePunctuation = TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+
+
+## .....................................................................................
+
+#condition Coprpus DTM
+corpus_condition_clean_dtm
+#Comments Corpus DTM
+corpus_commentsReview_clean_dtm
+inspect(corpus_condition_clean_dtm[1:2,])
+library(wordcloud)
+# wordcloud 
+suppressWarnings(wordcloud(corpus_condition,  min.freq=20, scale=c(5, .1), colors=brewer.pal(6, "Dark2")) ) 
+# suppressWarnings(wordcloud(corpus_condition_test,  min.freq=2, scale=c(3, .5), colors=brewer.pal(6, "Dark2")) )
+suppressWarnings(wordcloud(corpus_condition_test,  min.freq=10,scale=c(5, .1), colors=brewer.pal(6, "Dark2")) ) 
+
+# Organize terms by their frequency:
+
+corpus_condition_clean_dtm_freq <- colSums(as.matrix(corpus_condition_clean_dtm))  
+length(corpus_condition_clean_dtm_freq) 
+
+# Find Frequent term 
+dim(corpus_condition_clean_dtm[])
+inspect(corpus_condition_clean_dtm[1,])
+
+
+# We could create datapoint with most frequest terms used and then apply to the model for taining.. 
+# In this case Iwould be usingi n my data as it is . as its not a big data set .
+# but to avoid missing vlaue in test dat aset wwe would create a vector of most frequest words and drop every thing that is not in the vacotr. # from the test data for testin purpose to avoaid error at test time.
+ corpus_condition_clean_dtm_freq_term  <- findMostFreqTerms(corpus_condition_clean_dtm,20)
+ length(corpus_condition_clean_dtm_freq_term[])
+ corpus_condition_clean_dtm_freq_term[1:3]
+ 
+ # Organize terms by their frequency:
+
+corpus_condition_clean_dtm_freq <- colSums(as.matrix(corpus_condition_clean_dtm))  
+length(corpus_condition_clean_dtm_freq) 
+
+corpus_condition_test_dtm_freq <- colSums(as.matrix(corpus_condition_test_dtm))  
+length(corpus_condition_test_dtm_freq) 
+ 
+# $ Matrix to data frame
+reshape2::melt(sort(corpus_condition_clean_dtm_freq,decreasing = TRUE)[1:20])
+data.frame(word=names(corpus_condition_clean_dtm_freq), freq=corpus_condition_clean_dtm_freq)  
+
+dim(corpus_condition_clean_dtm)
+# Find terms with frequecy at least 5
+freq_words <- findFreqTerms(corpus_condition_clean_dtm,5)
+Mongo_freq_words <- findFreqTerms(corpus_condition_clean_dtm,1)
+freq_words
+
+
+ # corpus_condition_test_dtm_freqword <- 
+# https://www.youtube.com/watch?v=sujx3MjEH_0
+    corpus_condition_clean_dtm_freqword <-  corpus_condition_clean_dtm[,freq_words]
+    corpus_condition_test_dtm_freqword  <-   corpus_condition_test_dtm[,freq_words]
+    
+    #Build Trainng data set for Mongo 
+   Mongo_corpus_condition_clean_dtm_freqword <-  corpus_condition_clean_dtm[,Mongo_freq_words]
+  
+     
+    options(error=recover)
+    
+      
+ # corpus_condition_test_dtm_Testready <- corpus_condition_test[[1]]
+    
+    freq_y_n <- function(x){
+      y <- ifelse(x>0,1,0)
+      y <- factor(y, level=c(0,1),labels = c("No","Yes"))
+      y
+    }
+
+    new_train <- apply(corpus_condition_clean_dtm_freqword,2,freq_y_n)
+    new_test <- apply(corpus_condition_test_dtm_freqword,2,freq_y_n)
+    
+    # Converting Train Data for trainig into Yes and No
+    Mongo_Train_For_Model <- apply(Mongo_corpus_condition_clean_dtm_freqword,2,freq_y_n)
+    
+    new_test2 <- apply(corpus_condition_test_dtm_freqword,2,freq_y_n) 
+    corpus_condition_test_dtm_freqword[1:4,]
+```
+
+### Apply Naive Bayes
+```{r}
+  #-- Start usng librarat e1071
+    
+    train_classifier <- naiveBayes(new_train,train$urlDrugName)
+    # Will save Model Mong_train_classifier to Mongo
+    Mong_train_classifier <- naiveBayes(Mongo_Train_For_Model,train$urlDrugName)
+    class(train_classifier)
+  # Test 
+    test_predict <- predict(train_classifier, new_test)
+    
+    table (test_predict,test$urlDrugName)
+    
+ forcats::fct_count(test$urlDrugName)
+ forcats::fct_count(test_predict,sort = TRUE)
+ 
+ 
+ library(gmodels)
+ CrossTable(test_predict,test$urlDrugName,prop.chisq = TRUE, prop.t = FALSE, dnn = c("Predicted","Actual"))
+```
+ 
+
+
+## User Input Function
+```{r} 
+  #--------------------------------------------------------------------------------------
+ #----------------------------------User Input Functio ---------------------------------
+ #--------------------------------------------------------------------------------------
+ usr_ask <- name <- function(dtquestion ) {
+   
+
+ 
+ # tm_dte_condition <- data.frame(doc_id = test$urlDrugName,text = test$condition)
+ # tm_dte_condition_User <- data.frame(doc_id = c("NoDRUG", "NoNEWDRUG",""),text = 
+ #                                       c("I am in depression",
+ #                                         "I have sinus",
+ #                                         "I have throt infection"))
+   
+ tm_dte_condition_User <- data.frame(doc_id = c(rep("noDrug",1,length(dtquestion[,1]))),
+                                     text = dtquestion$text )
+ 
+corpus_condition_test_user <-VCorpus(DataframeSource(tm_dte_condition_User))
+ 
+ # Use only 5 most frequent words (fivefreq) to build the DTM
+# Find terms with frequecy at least 5
+freq_words_user <- findFreqTerms(corpus_condition_clean_dtm,1)
+freq_words_user
+dtm.train.nb <- DocumentTermMatrix(corpus_condition, control=list(dictionary = freq_words,
+                                                                        removePunctuation = TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+
+dim(dtm.train.nb)
+
+dtm.test.nb <- DocumentTermMatrix(corpus_condition_test_user, control=list(dictionary = freq_words,
+                                                                        removePunctuation = TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+dim(dtm.test.nb)
+
+# Function to convert the word frequencies to yes (presence) and no (absence) labels
+convert_count <- function(x) {
+  y <- ifelse(x > 0, 1,0)
+  y <- factor(y, levels=c(0,1), labels=c("No", "Yes"))
+  y
+}
+
+# Apply the convert_count function to get final training and testing DTMs
+trainNB <- apply(dtm.train.nb, 2, convert_count)
+testNB <- apply(dtm.test.nb, 2, convert_count)
+
+nav_lap <- naiveBayes(trainNB, train$urlDrugName, laplace = 1) 
+red_lap <- predict(nav_lap,testNB)
+
+
+
+fct_count(red_lap,sort = TRUE)
+ CrossTable(tm_dte_condition_User$text,red_lap,prop.chisq = FALSE, prop.t = FALSE, dnn = c("Problem","Drug"))
+ red_lap
+ }
+ 
+
+```
+
+### User Input test
+```{r}
+ #--------------------------------------------------------------------------------------
+ #----------------------------------User Input test ------------------------------------
+ #--------------------------------------------------------------------------------------
+ 
+ user_question <- data.frame(doc_id = c("NoDRUG", "NoNEWDRUG",""),text = 
+                                       c("I am in depression",
+                                         "I have sinus",
+                                         "I have throt infection"))
+ 
+ user_question <- data.frame(doc_id = c("NoDRUG"),text = 
+                                       c("I am in depression","sinus"
+                                        ))
+ 
+ usr_ask(user_question)
+ 
+ #----------Test REgualr 
+ user_question2 <- test[,c(1,6)]
+ names(user_question2) <- c("doc_id","text")
+res <- usr_ask(user_question2)
+
+CrossTable(res,test$urlDrugName,prop.chisq = TRUE, prop.t = FALSE, dnn = c("Predicted","Actual")) 
+
+ usr_ask(user_question2)
+```
+
+
+## Mongo Data for Model {.tabset .tabset-fade .tabset-pills}
+
+### STORE NAIVE MODEL to Mongo
+
+```{r eval=FALSE}
+# install.packages("gridExtra")
+
+
+# Mongo_Train_Cond_Corpus$drop()
+Mongo_Train_Cond_Corpus$count()
+
+#upload corpus_condition_clean_dtm
+
+Mongo_Train_Cond_Corpus$insert(as.data.frame(Mongo_freq_words))
+Mongo_Train_Cond_Corpus$index()
+
+# Read Freq words from Mongo 
+Mongo_Read_Freq <- Mongo_Train_Cond_Corpus$find()
+ 
+# Prepare for Test
+
+Nav_model <- Mong_train_classifier
+
+# Upload the Nav_Model to Mongo
+saveRDS(Nav_model,"model/Nav_model.rds")
+
+fs_model$remove('Nav_model.rds')
+fs_model$upload("model/Nav_model.rds")
+
+# Downlaod Model fromMOngo 
+fs_model$download("Nav_model.rds","mongo/MongoNav.rds")
+
+#------------------------------------------------------------
+```
+
+
+###  Mongo Test 
+```{r eval=FALSE}
+
+ # Mongo_tm_dte_condition <- data.frame(doc_id = test$urlDrugName,text = test$condition)
+ Mongo_tm_dte_condition_User <- data.frame(doc_id = c("NoDRUG", "NoNEWDRUG",""),text =
+                                       c("I am in depression",
+                                         "I have sinus",
+                                         "I have throt infection"))
+   
+
+dtquestion <- Mongo_tm_dte_condition_User
+ Mongo_tm_dte_condition_User <- data.frame(doc_id = c(rep("noDrug",1,length(dtquestion[,1]))),
+                                     text = dtquestion$text )
+ 
+
+Mongo_corpus_condition_test_user <-VCorpus(DataframeSource(Mongo_tm_dte_condition_User))
+
+# Create Document Term Matrix with only Freuest word as per train data  using Mongo_freq_words
+as.list(Mongo_Read_Freq)
+
+Mongo_dtm.test.nb <- DocumentTermMatrix(Mongo_corpus_condition_test_user, control=list(dictionary = 
+Mongo_Read_Freq$Mongo_freq_words,
+                                                                        removePunctuation = 
+TRUE,
+                                                         tolower = TRUE,
+                                                         stripWhitespace= TRUE,
+                                                         removeNumbers = TRUE,
+                                                         stopwords = TRUE))
+
+
+  
+
+
+dim(Mongo_dtm.test.nb)
+
+# Function to convert the word frequencies to yes (presence) and no (absence) labels
+convert_mongo <- function(x) {
+  y <- ifelse(x > 0, 1,0)
+  y <- factor(y, levels=c(0,1), labels=c("No", "Yes"))
+  y
+}
+
+Mongo_testNB <- apply(Mongo_dtm.test.nb, 2, convert_mongo)
+
+# Read Model from Mongo
+# Do Predict
+
+#------------------------------------------------------------
+
+# load the model
+saved_model <- readRDS("mongo/MongoNav.rds")
+
+
+MOngo_red_lap <- predict(Mong_train_classifier,Mongo_testNB)
+
+Mongo_Pred_lap <- predict(saved_model,Mongo_testNB)
+
+
+
+fct_count(MOngo_red_lap,sort = TRUE)
+ CrossTable(Mongo_tm_dte_condition_User$text,MOngo_red_lap,prop.chisq = FALSE, prop.t = FALSE, dnn = c("Problem","Drug"))
+ 
+ 
+
+```
+
+
+## Using laplace smoothing
+
+No change in result noted , mostly due to samll sample size. 
+
+```{r}
+#--------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------
+
+ 
+
+ # ------------- Using laplace 
+ train_classifier_lp <- naiveBayes(new_train,train$urlDrugName,laplace = 1)
+    
+    class(train_classifier)
+  # Test 
+    test_predict_lp <- predict(train_classifier_lp, new_test)
+    
+    table (test_predict,test$urlDrugName)
+    
+ forcats::fct_count(test$urlDrugName)
+ forcats::fct_count(test_predict,sort = TRUE)
+ 
+ 
+ CrossTable(test_predict,test$urlDrugName,prop.chisq = TRUE, prop.t = FALSE, dnn = c("Predicted","Actual"))
+ CrossTable(test_predict_lp,test$urlDrugName,prop.chisq = TRUE, prop.t = FALSE, dnn = c("Predicted","Actual"))
+
+    
+```

@@ -1,0 +1,3 @@
+"0","df_main_train_business_long<- df_main_train_business %>%  "
+"0","  unnest(""bus_categories""= df_main_train_business$bus_categories ,.id= ""id"") %>% .[,c(2,3,4,5,6,9,10,1,8)] # Star column at index at 8"
+"0","df_main_train_business_long"

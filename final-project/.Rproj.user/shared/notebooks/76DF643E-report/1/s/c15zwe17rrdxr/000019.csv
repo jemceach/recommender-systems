@@ -1,0 +1,6 @@
+"0","# All Business By State"
+"0","df_main_train_business %>% filter (bus_open== TRUE) %>% select (business_id, bus_state) %>% group_by(bus_state) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = bus_state, y = log(Count))) +"
+"0","         geom_bar(stat = ""identity"") +"
+"0","          theme(axis.text.x=element_text(angle=20, hjust=1))+"
+"0","    xlab(label = ""Business State"")+"
+"0","  geom_label(aes(label = Count),  color=""white"" , fill= ""black"",nudge_y = -0.02)"

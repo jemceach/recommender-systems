@@ -1,0 +1,7 @@
+"0","# evaluation method with 90% of data for train and 10% for test"
+"0","set.seed(1000)"
+"0","evalu <- evaluationScheme(real_ui_matrix_star, method=""split"", train=0.5, given=0)"
+"0","# Prep data"
+"0","ratings_train <- getData(evalu, 'train')# Training Dataset "
+"0","ratings_test_known <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN"
+"0","ratings_test_unknown <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation"

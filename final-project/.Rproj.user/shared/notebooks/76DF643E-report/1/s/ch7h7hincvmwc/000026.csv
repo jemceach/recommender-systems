@@ -1,0 +1,8 @@
+"0","# Avg Rating Given by User"
+"0","df_main_train_user %>% select (user_id,usr_average_stars,usr_review_count) %>%"
+"0","  # group_by(user_id,usr_average_stars,usr_funny) %>% "
+"0","  # dplyr::summarise(Count=n()) %>%   "
+"0","  ggplot(aes(x = round(usr_average_stars), y = usr_average_stars)) +"
+"0","         geom_bar(stat = ""identity"") +"
+"0","          theme(axis.text.x=element_text(angle=00, hjust=1))+"
+"0","    xlab(label = ""Avg Rating Given by User"")"
