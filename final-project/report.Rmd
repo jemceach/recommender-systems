@@ -244,11 +244,133 @@ test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluati
 ```
 
 ## Algorithm 1 (Raj)
-```{r}
+
+```{r eval=FALSE, include=FALSE}
+
+evalu_a2 <- evaluationScheme(ui_mat, method="split", train=0.1, given=0, goodRating=1, k=10)
+evalu_a2t <- evaluationScheme(ui_mat, method="split", train=0.95, given=0, goodRating=1, k=10)
+
+# Prep data
+ratings_train <- getData(evalu_a2, "train")  # Training Dataset 
+ratings_test_known <- getData(evalu_a2, "known")  # Test data from evaluationScheme of type KNOWN
+ratings_test_unknown <- getData(evalu_a2, "unknown")  # Unknow datset used for RMSE / model
+
+
+# Prep data
+ratings_train_t <- getData(evalu_a2t, "train")  # Training Dataset 
+ratings_test_known_t <- getData(evalu_a2t, "known")  # Test data from evaluationScheme of type KNOWN
+ratings_test_unknown_t <- getData(evalu_a2t, "unknown")  # Unknow datset used for RMSE / model
+
+
+# NORMALIZED Train Model
+svdn <- Recommender(data = ratings_train, method = "SVD", param = list(k = 10, 
+    normalize = "center"))
+svdz <- Recommender(data = ratings_train, method = "SVD", param = list(k = 10, 
+    normalize = "Z-score"))
+
+## Test/Evaluation Model Predication
+svd_predict <- predict(svdn, ratings_test_known_t, type = "ratings")
+svd_pred <- calcPredictionAccuracy(svd_predict, ratings_test_unknown_t)
+# svdz_predict <- predict(svdz, ratings_test_known, type = "ratings")
+# svdz_pred <- calcPredictionAccuracy(svdz_predict, ratings_test_unknown)
+# fsvd_predict <- predict(fsvd, ratings_test_known, verbose = F)
+# fsvd_predict <- as(fsvd_predict, "realRatingMatrix")
+# fsvd_pred = calcPredictionAccuracy(fsvd_predict, ratings_test_unknown)
+```
+
+```{r eval=FALSE, include=FALSE}
 # I am planning to see how I can use Business's rating and rev_funny,rev_useful,rev_cool
 # and see how users are rating against these parameters, I would check cosine similarlty of user 
 # rating with these info and recommend some similar  Business to the Users.
+head(matrix_data)
+head(df_main)
+
+df_main_2 <- df_main[,c(11,1,13)]
+
+# I first convert the ratings into a binary format to keep things simple. ratings of 4 and 5 are 
+# mapped to 1, representing likes, and ratings of 3 and below are mapped to -1, representing dislikes.
+
+
+
+# as(df_main_2,"realRatingMatrix") %>%
+
+# Columns are Busienss ID and Row is User_id
+binaryratings <- df_main[,c(11,1,13)] %>%  mutate(Type = case_when(stars == 1 ~ -1,
+                                       stars == 2 ~ -1,
+                                       stars == 3 ~ -1,
+                                       stars == 4 ~ 1,
+                                       stars == 5 ~ 1,
+                                       TRUE ~ 0)) %>% .[c(1,2,4)] %>%
+                                reshape2::dcast(., user_id~business_id, value.var = "Type", na.rm=FALSE)
+
+
+# search("9Ep4sguv3HH_8lWyzSogjw","-9mj_tVyNkDGF0KWhG19MQ")
+# 
+# which(binaryratings2 == "9Ep4sguv3HH_8lWyzSogjw", arr.ind = T)
+# 
+# binaryratings2[91,]
+
+#This basically transforms the data from a long format to a wide format with many NA values, as not every user rated every business, replce NA values with 0.
+
+# for (i in 1:ncol(binaryratings)){
+#   binaryratings[which(is.na(binaryratings[,i]) == TRUE),i] <- 0
+# }
+
+head(binaryratings)
+# binaryratings2 = binaryratings2[,-1] #remove movieIds col. Rows are movieIds, cols are userIds
+
+
+##_---------------------------------MAIN TASK
+
+
+evalu_binary <- evaluationScheme(ui_mat, method="split", train=0.3, given=1, goodRating=1, k=10)
+
+# Prep data
+train_binary<- getData(evalu_binary, 'train')# Training Dataset 
+dev_test_binary <- getData(evalu_binary, 'known') # Test data from evaluationScheme of type KNOWN
+test_binary <- getData(evalu_binary, 'unknown') # Unknow datset used for RMSE / model evaluation
+
+#Normalize the data
+ratingmat_norm <- Recommender(data = train_binary, method = "SVD", param = list(k = 1, 
+    normalize = "center"))
+
+
 ```
+
+Now that we have the user and Business Rating adjsusted where 0 indicates No Feedback, -1 Indicates Negative Feedback and 1 indicates postive feedback.
+
+I decided to use Jaccard Distance to measure the similarity between Busienss profiles, 
+```{r}
+
+```
+
+
+```{r eval=FALSE, include=FALSE}
+head(binaryratings[,-1])
+library(proxy)
+ # Sample of Jacard distance on head data.
+dist(head(binaryratings[,-1]), method = "Jaccard")
+#Calculate Jaccard distance between Buinesses and all Users Reviews
+
+sim_results <- binaryratings[,-1] %>% dist( method = "Jaccard")
+sim_results <- as.data.frame(as.matrix(sim_results[1:8552]))
+rows <- which(sim_results == min(sim_results))
+
+
+
+```
+
+```{r}
+
+
+
+
+
+
+
+
+```
+
 
 ## Algorithm 2 (Christina)
 
