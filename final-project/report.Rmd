@@ -94,11 +94,13 @@ user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
 
 ## Merge Data 
 
-Next, we created our main dataframe business and review dataframes using the `Business_ID` and `User_ID` as unique keys. This dataframe will be referenced later on when building our recommender matrices and algorithms. 
+Next, we created our main dataframe by merging business and reviews on `Business_ID`. This dataframe will serve as the source of data for our recommender algorithms. The user and business unique keys were simplified from characters to numeric user/item identifiers. 
 
-```{r merge, echo=F}
+This dataframe will be referenced later on when building our recommender matrices and algorithms. Review details were omitted in the preview for brevity. 
+
+```{r df, echo=F}
 #preview main df
-df %>% head() 
+df %>% select(-text) %>% head() %>% kable(caption="Preview main dataframe") %>% kable_styling()
 ```
 
 ## Visualize Data
@@ -271,12 +273,12 @@ Spark requires user/item ids to be numeric. Tidied data accordingly for proccess
 ```{r, eval=FALSE, include=FALSE}
 #install.packages("devtools")
 #devtools::install_github("rstudio/sparklyr")
+#spark_install(version = "2.0.2")
 
 library(sparklyr)
 
 # Connect to Spark/Hadoop locally
-spark_install(version = "2.1.0")
-sc <- spark_connect('local', version = "2.1.0")
+sc <- spark_connect(master = "local")
 
 spark_version(sc)
 ```
@@ -284,17 +286,14 @@ spark_version(sc)
 Train Test Splits 
 
 ```{r, eval=FALSE, include=FALSE}
-# Tidy data for spark
-user_item_data <- df %>% select(user_id, business_id, stars) %>% transform(u_id=match(user_id, unique(user_id)))%>% transform(i_id=match(business_id, unique(business_id)))
-
-spark_data <- user_item_data %>% select(stars, u_id, i_id) %>% mutate(rating=stars, user=u_id, item=i_id) %>% select(rating, user, item)
+spark_data <- df %>% select(userID, itemID, stars) %>% mutate(user=userID, item=itemID,rating=stars)
 
 # Import data to Spark cluster
-sprk_df <- sdf_copy_to(sc, spark_data, "sprk_df", overwrite = TRUE)
+sprk_tbl <- sdf_copy_to(sc, spark_data, "sprk_df", overwrite = TRUE)
 
 src_tbls(sc)
 
-fit <- ml_als(sprk_df, rating_col = "rating", user_col = "user", item_col = "item")
+fit <- ml_als(sprk_tbl)
 #summary(fit)
 ```
 
