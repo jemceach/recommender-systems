@@ -70,7 +70,8 @@ review$business_id <- as.character(review$business_id)
 ## filter data in business
 user <- user %>% 
   filter(user_id %in% review$user_id) %>% 
-  select(-type)
+  select(-type) %>%
+  mutate(user_id = as.character(user_id))
 
 ## randomly sample 10k
 set.seed(50)
@@ -112,5 +113,5 @@ user <- user %>% select(user_id, name) %>%
 
 df <- business %>% 
   inner_join(review, by="business_id") %>% 
-  transform(userID=match(user_id, unique(userID)))%>%
+  transform(userID=match(user_id, unique(user_id)))%>%
   transform(itemID=match(business_id, unique(business_id)))
