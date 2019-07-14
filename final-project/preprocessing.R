@@ -39,7 +39,7 @@ business <- business %>%
 ## Create category filter
 filter <- 'Argentine| Burmese| Cambodian| Cocktail Bars|Laotian|Lebanese|Live/Raw Food|Russian|African|Champagne Bars|Kosher|Modern European|Scandinavian|Taiwanese|Tapas/Small Plates|Afghan|Brazilian|Food Trucks|Shaved Ice|Wineries|Dim Sum|Ethiopian|Fondue|Hookah Bars|Persian/Iranian|Peruvian| Polish| Seafood Markets| Tapas Bars|Halal|British| Cheese Shops|German|Spanish|Cheesesteaks|Cuban|Do-It-Yourself Food|Gastropubs|Salad|Creperies|Soup|Chocolatiers & Shops|Filipino|Food Stands|Fruits & Veggies|Meat Shops|Mongolian|Soul Food|Comfort Food| Irish|Fish & Chips|Cajun/Creole|Caribbean|Pakistani|Southern|Candy Stores|Vegan|Latin American|Breweries|French|Gay Bars|Korean|Gluten-Free|Hawaiian|Farmers Market|Vegetarian|Middle Eastern|Ethnic Food|Indian|Pubs|Chicken Wings|Dive Bars| Juice Bars & Smoothies|Vietnamese|Cafes|Wine Bars|Bagels|Diners|Hot Dogs|Tex-Mex|Donuts|Greek|Thai| Desserts|Mediterranean|Beer| Wine & Spirits|Seafood|Sushi Bars| Lounges|Steakhouses|Buffets|Japanese|Sports Bars|Delis|Bakeries|Specialty Food|Breakfast & Brunch|Ice Cream & Frozen Yogurt|Burgers|Italian| Chinese|Coffee & Tea|American (New)|Sandwiches|Fast Food|Pizza|American (Traditional)|Bars|Mexican|Food| Restaurants'
 
-## Filter businesses using filter & 
+## Filter businesses using filter 
 business <- business %>% 
   filter(str_detect(categories, filter)) %>% 
   mutate(categories = as.factor(categories))
@@ -47,7 +47,6 @@ business <- business %>%
 #-------REVIEW--------#
 #Used business subset to filter out-of-scope reviews.
 #Deleted unused columns. 
-#Convert ratings dataframe (funny/useful/cool) into singular columns.
 #---------------------#
 
 ## filter data in business
@@ -55,15 +54,10 @@ review <- review %>%
   filter(business_id %in% business$business_id) %>% 
   select(-type)
 
-## remove factor from user_id
-review$user_id <- as.character(review$user_id)
-review$business_id <- as.character(review$business_id)
-
 #--------USER---------#
 #Used business subset to filter out-of-scope reviews.
 #Deleted unused columns.
 #Took random sample of 10k users.
-#Filter review/business from user subset. 
 #Dropped aggregate data and recalculated avgs based on subset. 
 #---------------------#
 
@@ -76,20 +70,6 @@ user <- user %>%
 ## randomly sample 10k
 set.seed(50)
 user<-sample_n(user, 10000)
-
-## filter review data from user subset (121329 reviews were reomved)
-review <- review %>% 
-  filter(user_id %in% user$user_id) 
-
-## assemble ratings data (funny/useful/cool) into singular columns.
-review <- do.call(data.frame, review)
-
-## assemble ratings data (funny/useful/cool) into singular columns.
-user <- do.call(data.frame, user)
-
-## filter business data from new review/user subset (496 businesses were removed)
-business <- business %>% 
-  filter(business_id %in% review$business_id) 
 
 ## Recalculate aggregate votes/average stars/review counts.
 
@@ -104,6 +84,27 @@ user <- user %>% select(user_id, name) %>%
             avg_votes_cool = round(mean(votes.cool, na.rm = TRUE)), 
             avg_user_stars = round(mean(stars),1)) %>%
   ungroup()
+
+# FILTER REVIEW/BUSINESS FROM USER SAMPLE 
+
+## filter review data from user subset (121329 reviews were reomved)
+review <- review %>% 
+  filter(user_id %in% user$user_id) 
+
+## assemble ratings data (funny/useful/cool) into singular columns.
+review <- do.call(data.frame, review)
+
+## assemble ratings data (funny/useful/cool) into singular columns.
+user <- do.call(data.frame, user)
+
+## change factors to character
+user$user_id <- as.character(user$user_id)
+review$user_id<-as.character(review$user_id)
+review$business_id<-as.character(review$business_id)
+
+## filter business data from new review/user subset (496 businesses were removed)
+business <- business %>% 
+  filter(business_id %in% review$business_id) 
 
 # MERGE DATAFRAME
 
