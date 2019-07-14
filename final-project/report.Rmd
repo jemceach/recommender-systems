@@ -268,13 +268,17 @@ Algo
 
 ## Algorithm 3 (Juliann)
 
-Spark requires user/item ids to be numeric. Tidied data accordingly for proccessing. Retained unique keys. May be something to conisder doing in the initial transformations but this will do for now.
+Set up: 
 
-```{r}
+```{r initiate-spark}
 #install.packages("devtools")
 #devtools::install_github("rstudio/sparklyr")
-#spark_install(version = "2.3.0")
+#spark_install(version = "2.1.0")
 
+
+library(sparklyr)
+
+# configure/initiate connection 
 config <- spark_config()
 config$spark.executor.memory <- "8G"
 config$spark.executor.cores <- 2
@@ -285,75 +289,60 @@ sc <- spark_connect(master = "local", config=config, version = "2.1.0")
 
 spark_version(sc)
 
-
-spark_data <- df %>% select(userID, itemID, stars) 
+# prepare data 
+spark_data <- df %>% select(user_id, itemID, name, stars) %>% mutate(item = paste(itemID, "-", name)) %>% select(user_id, item, stars)
 
 user_item_ratings <- sdf_copy_to(sc, spark_data, "user_item_ratings", overwrite = TRUE) 
 
 user_item_ratings <- user_item_ratings %>%
-  ft_string_indexer(input_col = "userID", output_col = "user_index") %>%
-  ft_string_indexer(input_col = "itemID", output_col = "item_index")
+  ft_string_indexer(input_col = "user_id", output_col = "user_index") %>%
+  ft_string_indexer(input_col = "item", output_col = "item_index")
 
 partition <- sdf_random_split(user_item_ratings, training = 0.8, testing = 0.2)
-sdf_register(partition, c("spark_train", "spark_test"))
-  
+spark_test <- sdf_register(partition$testing, "spark_test")
+spark_train <- sdf_register(partition$training, "spark_train")
+
 tidy_train <- tbl(sc, "spark_train") %>%
   select(user_index, item_index, stars)
+```
 
+ALS predictions
+
+```{r spark-als}
 sparkALS <- ml_als(tidy_train, max_iter = 5, nonnegative = TRUE, 
                    rating_col = "stars", user_col = "user_index", item_col = "item_index")
 
 spark_test <- tbl(sc, "spark_test")
 
 predictions <- ml_predict(sparkALS, spark_test)
+
 prediction <- collect(predictions)
-head(prediction)
+
+# Remove NaN due to data set splitting
+prediction <- prediction[!is.na(prediction$prediction), ] 
+
+# Metrics 
+mseSpark <- mean((prediction$stars - prediction$prediction)^2)
+rmseSpark <- sqrt(mseSpark)
+maeSpark <- mean(abs(prediction$stars - prediction$prediction))
 ```
 
-Train Test Splits 
-
-```{r, eval=FALSE, include=FALSE}
-user_item_ratings %>% 
-  
-  
-
-item <- ft_string_indexer(sc,input_col="ProductID",output_col="product_index")
-user <- ft_string_indexer(sc,input_col="UserID",output_col="user_index")
-
-# Import data to Spark cluster
-
-
-src_tbls(sc)
-
-is_ml_estimator(sprk_tbl$item)
+Prediction output. 
+```{r prediction-view, echo=F}
+#view 
+prediction %>% arrange(user_index) %>% select(-user_index,-item_index) %>% mutate(prediction=round(prediction,1)) %>% head() %>% kable(caption = "Preview of prediction output") %>% kable_styling()
 ```
 
-```{r, eval=FALSE, include=FALSE}
-model <- ml_als(sprk_df, rating_col = "rating", user_col =  "user", item_col = "item")
+Evaluate performance metrics. 
+
+```{r spark-metrics}
+rbind(mseSpark,rmseSpark,maeSpark)
 ```
 
-
-
-
-
-```{r, eval=FALSE, include=FALSE}
-# Partition train/test data sets 
-partitions <- sdf_random_split(sprk_df, training = 0.8, test = 0.2, seed = 1000)
-
-# Set train/test data
-train <- partitions$training
-test <- partitions$test
-
-# View data split size for validation (delete later)
-count(train)
-count(test)
-
-#fit <- ml_als(train, rating_col= "rating", user_col = "user", item_col= "item")
+```{r}
+# disconnect
+spark_disconnect(sc)
 ```
-
-Modeling section. 
-
-
 
 ## Analysis
 
@@ -369,4 +358,4 @@ Final conlusion. Explain limitations of system. Make recommendations for future 
 
 # References
 * [**Data Overview**: ](https://www.kaggle.com/c/yelp-recsys-2013/overview) Kagle Yelp Challenge 2013
-
+* [**Spark Reference: **](http://rstudio-pubs-static.s3.amazonaws.com/509443_eb2deb1148034dd29dcf71832fe7b3ff.html) Reference
