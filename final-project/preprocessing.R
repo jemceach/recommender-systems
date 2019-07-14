@@ -79,10 +79,10 @@ user <- user %>% select(user_id, name) %>%
   group_by(user_id,name) %>% 
   rename(user_name = name) %>%
   summarize(review_count = n(), 
-            avg_votes_funny = round(mean(votes.funny, na.rm = TRUE)), 
-            avg_votes_useful = round(mean(votes.useful, na.rm = TRUE)), 
-            avg_votes_cool = round(mean(votes.cool, na.rm = TRUE)), 
-            avg_user_stars = round(mean(stars),1)) %>%
+            votes.funny = round(mean(votes.funny, na.rm = TRUE)), 
+            votes.useful = round(mean(votes.useful, na.rm = TRUE)), 
+            votes.cool = round(mean(votes.cool, na.rm = TRUE)), 
+            average_stars = round(mean(stars),2)) %>%
   ungroup()
 
 # FILTER REVIEW/BUSINESS FROM USER SAMPLE 
