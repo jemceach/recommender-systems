@@ -18,16 +18,21 @@ Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included
 
 ```{r,echo=F,comment=F,message=F,warning=F,prompt=F}
 ## data processing packages
-library(dplyr); library(tidyr);library(jsonlite);library(stringr)
+library(dplyr)
 
 ##formatting packages
-library(knitr); library(kableExtra); library(default); library(hrbrthemes)
+library(knitr); library(kableExtra); library(default)
 
 ##visualization packages
 library(ggplot2)
 
 ##recommender packages
 library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
+
+
+##preprocessing data
+try(setwd("~/GitHub/612-group/final-project"))
+suppressWarnings(source("preprocessing.R"))
 
 # global options
 
@@ -44,112 +49,47 @@ default(scroll_box) <- list(width = "100%")
 ```
 
 
-## Data Aquisition
+## Data Aquisition & Transformations {.tabset .tabset-fade .tabset-pills}
 
-All the data is multiarray of Json, which means file is a collection of json data. We will use  `stream_in` function, which parses json data line-by-line from our files stored within the data folder of our repository. 
+Data was acquired and transformed in the `preprocessing.R` file located within our repositories final-project folder. Our data source was provided as multiarray Json files, meaning each file is a collection of json data. We used  `stream_in` function, which parses json data line-by-line from the data folder of our repository. The collections included three, large data for Yelp businesses, users, and reviews. 
 
-```{r, message=F, warning=F}
-# Business Data 
-business<-stream_in(file("data/yelp_training_set_business.json"),verbose = F)
-# user Data 
-user <-stream_in(file("data/yelp_training_set_user.json"),verbose = F)
-# checkin Data 
-checkin <-stream_in(file("data/yelp_training_set_checkin.json"),verbose = F)
-# review  Data 
-review <-stream_in(file("data/yelp_training_set_review.json"),verbose = F)
-```
-
-
-## Data Transformations {.tabset .tabset-fade .tabset-pills}
+Once obtained, we prepared our data for our recommender system using the following transformations:
 
 ### Business
 
 We choose to limit the scope to our recommender system to only businesses with tags related to food and beverages. There were originally 508 unique category tags listed within our business data. We manually filtered 112 targeted categories to subset our data. 
 
-We applied additional transformation to remove unnessacary data. There were 1224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which were subsequently removed from our data. There were also 3 businesses in our dataset from outside of AZ that we allso removed. 
+We applied additional transformation to remove unnessacary data. There were 1,224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which were subsequently removed from our data. There were also 3 businesses in our dataset from outside of AZ that we also removed. 
 
-As a result of our transformations, our recommender data now consists of 4828 unique businesses. This data is previewed below: 
-
-```{r, warning=F, comment=F}
-# dropped open, neighborhoods(no data), full address, and review count, type (all business)
-df_business<-business %>% filter(open == "TRUE", state=="AZ") %>% select(-open, -neighborhoods, -full_address, -review_count, -type, -stars) %>% mutate(categories = sapply(categories, toString)) 
-
-# create category filter
-filter <- 'Argentine| Burmese| Cambodian| Cocktail Bars|Laotian|Lebanese|Live/Raw Food|Russian|African|Champagne Bars|Kosher|Modern European|Scandinavian|Taiwanese|Tapas/Small Plates|Afghan|Brazilian|Food Trucks|Shaved Ice|Wineries|Dim Sum|Ethiopian|Fondue|Hookah Bars|Persian/Iranian|Peruvian| Polish| Seafood Markets| Tapas Bars|Halal|British| Cheese Shops|German|Spanish|Cheesesteaks|Cuban|Do-It-Yourself Food|Gastropubs|Salad|Creperies|Soup|Chocolatiers & Shops|Filipino|Food Stands|Fruits & Veggies|Meat Shops|Mongolian|Soul Food|Comfort Food| Irish|Fish & Chips|Cajun/Creole|Caribbean|Pakistani|Southern|Candy Stores|Vegan|Latin American|Breweries|French|Gay Bars|Korean|Gluten-Free|Hawaiian|Farmers Market|Vegetarian|Middle Eastern|Ethnic Food|Indian|Pubs|Chicken Wings|Dive Bars| Juice Bars & Smoothies|Vietnamese|Cafes|Wine Bars|Bagels|Diners|Hot Dogs|Tex-Mex|Donuts|Greek|Thai| Desserts|Mediterranean|Beer| Wine & Spirits|Seafood|Sushi Bars| Lounges|Steakhouses|Buffets|Japanese|Sports Bars|Delis|Bakeries|Specialty Food|Breakfast & Brunch|Ice Cream & Frozen Yogurt|Burgers|Italian| Chinese|Coffee & Tea|American (New)|Sandwiches|Fast Food|Pizza|American (Traditional)|Bars|Mexican|Food| Restaurants'
-
-# filter businesses using filter & factor categories
-df_business <- df_business %>% filter(str_detect(categories, filter)) %>% mutate(categories = as.factor(categories))
-```
-
+As a result of our transformations, our recommender data was shortened 4,828 unique businesses. This was further limited to 4,332 after randomly sampling our user-data. The output of which can be previewed below: 
 
 ```{r, echo=F}
 #preview business
-df_business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling()
+business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling()
 ```
 
 ### Review
 
-We subset our review data from the subset of food and beverage businesses. This dropped our review data from 229,907 to 165,823 reviews. 
-
-```{r}
-#subset reviews & remove columns (type)
-df_review <- review %>% filter(business_id %in% df_business$business_id)%>% select(-type)
-
-# assemble ratings data (funny/useful/cool) into singular columns.
-df_review <- do.call(data.frame, df_review)
-
-# remove factor from user_id
-df_review$user_id <- as.character(df_review$user_id)
-df_review$business_id <- as.character(df_review$business_id)
-```
+We subset our review data from the subset of food and beverage businesses. This dropped our review data from 229,907 to 165,823 reviews. We later applied another filter to the data to only use reviews from 10,000 randomly sampled users. This further decreases reviews to 44,494 observations. Our review data can be previewed in two parts below:
 
 ```{r, echo=F}
 #preview reviews
-df_review %>% select(-text) %>% head() %>% kable(caption="Preview Review Data (without Review Text)") %>% kable_styling()
+review %>% select(-text) %>% head() %>% kable(caption="Preview Review Data (without Review Text)") %>% kable_styling()
 
 #preview review text
 
-df_review %>% select(text) %>% head(1) %>% kable(caption="Preview of a Singular Review Text") %>% kable_styling()
+review %>% select(text) %>% head(1) %>% kable(caption="Preview of a Singular Review Text") %>% kable_styling()
 ```
-
 
 ### User 
 
-We applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. 
+Last, we applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. Do to processing constraints in R, we choose to randomly sample 10,000 users from these unique profiles. 
 
 The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
 
 ```{r, echo=F}
-#subset user & remove columns (type)
-df_user <- user %>% filter(user_id %in% df_review$user_id) %>% select(-type)
-
-# assemble ratings data (funny/useful/cool) into singular columns.
-df_user <- do.call(data.frame, df_user)
-```
-
-```{r, echo=F}
 #preview users
-df_user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
-```
-
-### Checkins
-
-Lastly, we evaluated our checkins data and applied our business filter once more. This decreased our checkin observations from 8282 to 4423. This change tells us that no checkin data is available for 8.4% of businesses in our subset. 
-
-```{r, echo=F}
-#subset checkin & remove columns (type)
-df_checkin <- checkin %>% filter(business_id %in% df_business$business_id) %>% select(-type)
-
-# unpack checkin_info into singular columns.
-### there are 168 checkin column variables. wait to see how data is used before unpacking with do.call.
-#df_checkin <- do.call(data.frame, df_user)
-```
-
-```{r, echo=F}
-#preview users
-df_checkin %>% head() 
-
-### unable to apply kable style without unpacking checkin_info TBD
+user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
 ```
 
 ## Merge Data 
@@ -157,61 +97,17 @@ df_checkin %>% head()
 Next, we created our main dataframe business and review dataframes using the `Business_ID` and `User_ID` as unique keys. This dataframe will be referenced later on when building our recommender matrices and algorithms. 
 
 ```{r}
-df_main <-df_business %>% inner_join(df_review, by="business_id")
+df <-business %>% inner_join(review, by="business_id")
 ```
 
 ```{r, echo=F}
 #preview main df
-df_main %>% head() 
+df %>% head() 
 ```
 
 ## Visualize Data
 
-**CLEAN UP SECTION**
-
-The graphs below show geographic trends in our data as well as our most popular categories. 
-
-```{r}
-# All Business City
-df_business %>% select (business_id, city) %>% group_by(city) %>% dplyr::summarise(Count=n()) %>%   ggplot(aes(x = city, y = Count)) +
-         geom_bar(stat = "identity") +
-          theme(axis.text.x=element_text(angle=90, hjust=1))+
-    xlab(label = "Business City")+
-  geom_text(aes(label = Count), colour = "blue", fontface = "bold" ,position = position_stack(vjust = 1.1),check_overlap=TRUE)
-
-
-# All Business City by Focus Category
-
-## add graph later
-  
-```
-
-CONSIDER Including plot showing something like number of reviews for each business. Review date by month is pretty consistant and not telling of much on its own. 
-```{r, echo=F}
-library(lubridate)
-# Avg Rating Given by User
-df_review %>% select (stars,date) %>% 
-  mutate(month = month(as_date(date))) %>% group_by(month) %>% 
-  dplyr::summarise(Count=n()) %>%  
-  ggplot(aes ( x= factor(month),y = Count)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x=element_text(angle=00, hjust=1))+
-  xlab(label = "Avg Rating Given by User")
-
-
-str_split(df_review$rev_date[1],"-",n=3,simplify = TRUE)[2]
-```
-
-The plot below shows the distribution of our average ratings given by all users. 
-```{r, echo=F}
-# Avg Rating Given by User
-df_user %>% select (user_id,average_stars,review_count) %>%
-  ggplot(aes(x = round(average_stars), y = review_count)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x=element_text(angle=00, hjust=1))+
-  xlab(label = "Avg Rating Given by User")
-```
-
+Add data visualizations. 
 
 # Recommender Algorithm
 
@@ -222,9 +118,20 @@ We tested 3 recommender algorithms to see which had the best performance metrics
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms. The matrix was saved as a realRatingMatrix for processing purposes later on using the `recommenderlab` package. 
 
 ```{r}
-matrix_data <- df_main %>% select(user_id, business_id, stars) %>% mutate(user_id=as.factor(user_id), business_id=as.factor(business_id), stars=as.numeric(stars))
+# spread data from long to wide format 
+matrix_data <- df %>% select(userID, itemID, stars) %>% mutate(userID=as.factor(userID), itemID=as.factor(itemID), stars=as.numeric(stars)) %>% spread(itemID, stars)
+# set row names to userid
+rownames(matrix_data)<-matrix_data$userID 
+# remove userid from columns 
+matrix_data <-matrix_data %>% select(-userID) 
+# convert to matrix
+ui_mat <- matrix_data %>% as.matrix()
+# store matrix as realRatingMatrix
+ui_mat <- as(uimat,"realRatingMatrix")
+```
 
-ui_mat <- as(matrix_data,"realRatingMatrix")
+```{r}
+matrix_data
 ```
 
 **Train and Test Splits**
@@ -235,7 +142,7 @@ Our data was split into training and tests sets for model evaluation of both two
 # evaluation method with 80% of data for train and 20% for test
 set.seed(1000)
 
-evalu <- evaluationScheme(ui_mat, method="split", train=0.8, given=0, goodRating=1, k=10)
+evalu <- evaluationScheme(ui_mat, method="split", train=0.8, given=1, goodRating=1, k=10)
 
 # Prep data
 train <- getData(evalu, 'train')# Training Dataset 
@@ -283,19 +190,19 @@ svd_pred <- calcPredictionAccuracy(svd_predict, ratings_test_unknown_t)
 # and see how users are rating against these parameters, I would check cosine similarlty of user 
 # rating with these info and recommend some similar  Business to the Users.
 head(matrix_data)
-head(df_main)
+head(df)
 
-df_main_2 <- df_main[,c(11,1,13)]
+df_2 <- df[,c(11,1,13)]
 
 # I first convert the ratings into a binary format to keep things simple. ratings of 4 and 5 are 
 # mapped to 1, representing likes, and ratings of 3 and below are mapped to -1, representing dislikes.
 
 
 
-# as(df_main_2,"realRatingMatrix") %>%
+# as(df_2,"realRatingMatrix") %>%
 
 # Columns are Busienss ID and Row is User_id
-binaryratings <- df_main[,c(11,1,13)] %>%  mutate(Type = case_when(stars == 1 ~ -1,
+binaryratings <- df[,c(11,1,13)] %>%  mutate(Type = case_when(stars == 1 ~ -1,
                                        stars == 2 ~ -1,
                                        stars == 3 ~ -1,
                                        stars == 4 ~ 1,
@@ -378,7 +285,66 @@ Algo
 
 ## Algorithm 3 (Juliann)
 
-Algo 
+Spark requires user/item ids to be numeric. Tidied data accordingly for proccessing. Retained unique keys. May be something to conisder doing in the initial transformations but this will do for now.
+
+```{r}
+#install.packages("devtools")
+#devtools::install_github("rstudio/sparklyr")
+
+library(sparklyr)
+
+# Connect to Spark/Hadoop locally
+spark_install(version = "2.1.0")
+sc <- spark_connect('local', version = "2.1.0")
+
+spark_version(sc)
+```
+
+Train Test Splits 
+
+```{r eval=T}
+# Tidy data for spark
+user_item_data <- df %>% select(user_id, business_id, stars) %>% transform(u_id=match(user_id, unique(user_id)))%>% transform(i_id=match(business_id, unique(business_id)))
+
+spark_data <- user_item_data %>% select(stars, u_id, i_id) %>% mutate(rating=stars, user=u_id, item=i_id) %>% select(rating, user, item)
+
+# Import data to Spark cluster
+sprk_df <- sdf_copy_to(sc, spark_data, "sprk_df", overwrite = TRUE)
+
+src_tbls(sc)
+
+fit <- ml_als(sprk_df, rating_col = "rating", user_col = "user", item_col = "item")
+#summary(fit)
+```
+
+```{r}
+model <- ml_als(sprk_df, rating_col = "rating", user_col =  "user", item_col = "item")
+```
+
+
+
+
+
+```{r}
+# Partition train/test data sets 
+partitions <- sdf_random_split(sprk_df, training = 0.8, test = 0.2, seed = 1000)
+
+# Set train/test data
+train <- partitions$training
+test <- partitions$test
+
+# View data split size for validation (delete later)
+count(train)
+count(test)
+
+#fit <- ml_als(train, rating_col= "rating", user_col = "user", item_col= "item")
+```
+Modeling section. 
+
+```{r}
+
+```
+
 
 ## Analysis
 
