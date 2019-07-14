@@ -270,31 +270,62 @@ Algo
 
 Spark requires user/item ids to be numeric. Tidied data accordingly for proccessing. Retained unique keys. May be something to conisder doing in the initial transformations but this will do for now.
 
-```{r, eval=FALSE, include=FALSE}
+```{r}
 #install.packages("devtools")
 #devtools::install_github("rstudio/sparklyr")
-#spark_install(version = "2.0.2")
+#spark_install(version = "2.3.0")
 
-library(sparklyr)
+config <- spark_config()
+config$spark.executor.memory <- "8G"
+config$spark.executor.cores <- 2
+config$spark.executor.instances <- 3
+config$spark.dynamicAllocation.enabled <- "false"
 
-# Connect to Spark/Hadoop locally
-sc <- spark_connect(master = "local")
+sc <- spark_connect(master = "local", config=config, version = "2.1.0")
 
 spark_version(sc)
+
+
+spark_data <- df %>% select(userID, itemID, stars) 
+
+user_item_ratings <- sdf_copy_to(sc, spark_data, "user_item_ratings", overwrite = TRUE) 
+
+user_item_ratings <- user_item_ratings %>%
+  ft_string_indexer(input_col = "userID", output_col = "user_index") %>%
+  ft_string_indexer(input_col = "itemID", output_col = "item_index")
+
+partition <- sdf_random_split(user_item_ratings, training = 0.8, testing = 0.2)
+sdf_register(partition, c("spark_train", "spark_test"))
+  
+tidy_train <- tbl(sc, "spark_train") %>%
+  select(user_index, item_index, stars)
+
+sparkALS <- ml_als(tidy_train, max_iter = 5, nonnegative = TRUE, 
+                   rating_col = "stars", user_col = "user_index", item_col = "item_index")
+
+spark_test <- tbl(sc, "spark_test")
+
+predictions <- ml_predict(sparkALS, spark_test)
+prediction <- collect(predictions)
+head(prediction)
 ```
 
 Train Test Splits 
 
 ```{r, eval=FALSE, include=FALSE}
-spark_data <- df %>% select(userID, itemID, stars) %>% mutate(user=userID, item=itemID,rating=stars)
+user_item_ratings %>% 
+  
+  
+
+item <- ft_string_indexer(sc,input_col="ProductID",output_col="product_index")
+user <- ft_string_indexer(sc,input_col="UserID",output_col="user_index")
 
 # Import data to Spark cluster
-sprk_tbl <- sdf_copy_to(sc, spark_data, "sprk_df", overwrite = TRUE)
+
 
 src_tbls(sc)
 
-fit <- ml_als(sprk_tbl)
-#summary(fit)
+is_ml_estimator(sprk_tbl$item)
 ```
 
 ```{r, eval=FALSE, include=FALSE}
