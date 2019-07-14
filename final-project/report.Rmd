@@ -358,4 +358,3 @@ Final conlusion. Explain limitations of system. Make recommendations for future 
 
 # References
 * [**Data Overview**: ](https://www.kaggle.com/c/yelp-recsys-2013/overview) Kagle Yelp Challenge 2013
-* [**Spark Reference: **](http://rstudio-pubs-static.s3.amazonaws.com/509443_eb2deb1148034dd29dcf71832fe7b3ff.html) Reference
