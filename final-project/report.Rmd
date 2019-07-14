@@ -16,7 +16,7 @@ output:
 
 Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews, ratings, and check-in data for a wide-range of businesses. 
 
-```{r,echo=F,comment=F,message=F,warning=F,prompt=F}
+```{r dependencies,echo=F,comment=F,message=F,warning=F,prompt=F}
 ## data processing packages
 library(dplyr)
 
@@ -63,7 +63,7 @@ We applied additional transformation to remove unnessacary data. There were 1,22
 
 As a result of our transformations, our recommender data was shortened 4,828 unique businesses. This was further limited to 4,332 after randomly sampling our user-data. The output of which can be previewed below: 
 
-```{r, echo=F}
+```{r business, echo=F}
 #preview business
 business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling()
 ```
@@ -72,7 +72,7 @@ business %>% head() %>% kable(caption="Preview Business Data") %>% kable_styling
 
 We subset our review data from the subset of food and beverage businesses. This dropped our review data from 229,907 to 165,823 reviews. We later applied another filter to the data to only use reviews from 10,000 randomly sampled users. This further decreases reviews to 44,494 observations. Our review data can be previewed in two parts below:
 
-```{r, echo=F}
+```{r review, echo=F}
 #preview reviews
 review %>% select(-text) %>% head() %>% kable(caption="Preview Review Data (without Review Text)") %>% kable_styling()
 
@@ -87,7 +87,7 @@ Last, we applied a similar filter to users to subset our data based on only our 
 
 The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
 
-```{r, echo=F}
+```{r user, echo=F}
 #preview users
 user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
 ```
@@ -96,11 +96,7 @@ user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
 
 Next, we created our main dataframe business and review dataframes using the `Business_ID` and `User_ID` as unique keys. This dataframe will be referenced later on when building our recommender matrices and algorithms. 
 
-```{r}
-df <-business %>% inner_join(review, by="business_id")
-```
-
-```{r, echo=F}
+```{r merge, echo=F}
 #preview main df
 df %>% head() 
 ```
@@ -117,9 +113,11 @@ We tested 3 recommender algorithms to see which had the best performance metrics
 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms. The matrix was saved as a realRatingMatrix for processing purposes later on using the `recommenderlab` package. 
 
-```{r}
+The matrix data can be viewed below. 
+
+```{r matrix-building}
 # spread data from long to wide format 
-matrix_data <- df %>% select(userID, itemID, stars) %>% mutate(userID=as.factor(userID), itemID=as.factor(itemID), stars=as.numeric(stars)) %>% spread(itemID, stars)
+matrix_data <- df %>% select(userID, itemID, stars) %>% spread(itemID, stars)
 # set row names to userid
 rownames(matrix_data)<-matrix_data$userID 
 # remove userid from columns 
@@ -127,10 +125,8 @@ matrix_data <-matrix_data %>% select(-userID)
 # convert to matrix
 ui_mat <- matrix_data %>% as.matrix()
 # store matrix as realRatingMatrix
-ui_mat <- as(uimat,"realRatingMatrix")
-```
-
-```{r}
+ui_mat <- as(ui_mat,"realRatingMatrix")
+# view matrix data 
 matrix_data
 ```
 
@@ -247,10 +243,6 @@ ratingmat_norm <- Recommender(data = train_binary, method = "SVD", param = list(
 Now that we have the user and Business Rating adjsusted where 0 indicates No Feedback, -1 Indicates Negative Feedback and 1 indicates postive feedback.
 
 I decided to use Jaccard Distance to measure the similarity between Busienss profiles, 
-```{r}
-
-```
-
 
 ```{r eval=FALSE, include=FALSE}
 head(binaryratings[,-1])
@@ -267,17 +259,6 @@ rows <- which(sim_results == min(sim_results))
 
 ```
 
-```{r}
-
-
-
-
-
-
-
-
-```
-
 
 ## Algorithm 2 (Christina)
 
@@ -287,7 +268,7 @@ Algo
 
 Spark requires user/item ids to be numeric. Tidied data accordingly for proccessing. Retained unique keys. May be something to conisder doing in the initial transformations but this will do for now.
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 #install.packages("devtools")
 #devtools::install_github("rstudio/sparklyr")
 
@@ -302,7 +283,7 @@ spark_version(sc)
 
 Train Test Splits 
 
-```{r eval=T}
+```{r, eval=FALSE, include=FALSE}
 # Tidy data for spark
 user_item_data <- df %>% select(user_id, business_id, stars) %>% transform(u_id=match(user_id, unique(user_id)))%>% transform(i_id=match(business_id, unique(business_id)))
 
@@ -317,7 +298,7 @@ fit <- ml_als(sprk_df, rating_col = "rating", user_col = "user", item_col = "ite
 #summary(fit)
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 model <- ml_als(sprk_df, rating_col = "rating", user_col =  "user", item_col = "item")
 ```
 
@@ -325,7 +306,7 @@ model <- ml_als(sprk_df, rating_col = "rating", user_col =  "user", item_col = "
 
 
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 # Partition train/test data sets 
 partitions <- sdf_random_split(sprk_df, training = 0.8, test = 0.2, seed = 1000)
 
@@ -339,11 +320,9 @@ count(test)
 
 #fit <- ml_als(train, rating_col= "rating", user_col = "user", item_col= "item")
 ```
+
 Modeling section. 
 
-```{r}
-
-```
 
 
 ## Analysis
@@ -359,5 +338,5 @@ Test system
 Final conlusion. Explain limitations of system. Make recommendations for future improvements.  
 
 # References
-* [**Data Overview**](https://www.kaggle.com/c/yelp-recsys-2013/overview)
+* [**Data Overview**: ](https://www.kaggle.com/c/yelp-recsys-2013/overview) Kagle Yelp Challenge 2013
 

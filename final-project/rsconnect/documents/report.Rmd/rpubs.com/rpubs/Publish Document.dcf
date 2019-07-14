@@ -6,5 +6,5 @@ server: rpubs.com
 hostUrl: rpubs.com
 appId: https://api.rpubs.com/api/v1/document/512296/f5225c9780e94906b231c7e797e98e93
 bundleId: https://api.rpubs.com/api/v1/document/512296/f5225c9780e94906b231c7e797e98e93
-url: http://rpubs.com/publish/claim/512296/a5e352de2b8842ed811d60173583f7ce
-when: 1562979236.45225
+url: http://rpubs.com/jemceach/512296
+when: 1563069014.04949
