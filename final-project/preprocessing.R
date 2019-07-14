@@ -71,6 +71,18 @@ user <- user %>%
 set.seed(50)
 user<-sample_n(user, 10000)
 
+# FILTER REVIEW/BUSINESS FROM USER SAMPLE 
+
+## filter review data from user subset (121329 reviews were reomved)
+review <- review %>% 
+  filter(user_id %in% user$user_id) 
+
+## assemble ratings data (funny/useful/cool) into singular columns.
+review <- do.call(data.frame, review)
+
+## assemble ratings data (funny/useful/cool) into singular columns.
+user <- do.call(data.frame, user)
+
 ## Recalculate aggregate votes/average stars/review counts.
 
 user <- user %>% select(user_id, name) %>% 
@@ -84,18 +96,6 @@ user <- user %>% select(user_id, name) %>%
             votes.cool = round(mean(votes.cool, na.rm = TRUE)), 
             average_stars = round(mean(stars),2)) %>%
   ungroup()
-
-# FILTER REVIEW/BUSINESS FROM USER SAMPLE 
-
-## filter review data from user subset (121329 reviews were reomved)
-review <- review %>% 
-  filter(user_id %in% user$user_id) 
-
-## assemble ratings data (funny/useful/cool) into singular columns.
-review <- do.call(data.frame, review)
-
-## assemble ratings data (funny/useful/cool) into singular columns.
-user <- do.call(data.frame, user)
 
 ## change factors to character
 user$user_id <- as.character(user$user_id)
