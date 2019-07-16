@@ -96,7 +96,7 @@ user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
 
 Next, we created our main dataframe by merging business and reviews on `Business_ID`. This dataframe will serve as the source of data for our recommender algorithms. The user and business unique keys were simplified from characters to numeric user/item identifiers. 
 
-This dataframe will be referenced later on when building our recommender matrices and algorithms. Review details were omitted in the preview for brevity. 
+This dataframe will be referenced later on when building our recommender matrices and algorithms. 
 
 ```{r df, echo=F}
 df %>% select(-text,-business_id, -user_id,-review_id) %>% head() %>% kable(caption="Preview main dataframe") %>% kable_styling()
@@ -127,9 +127,13 @@ matrix_data <-matrix_data %>% select(-userID)
 ui_mat <- matrix_data %>% as.matrix()
 # store matrix as realRatingMatrix
 ui_mat <- as(ui_mat,"realRatingMatrix")
-# view matrix data 
-matrix_data
 ```
+
+```{r view-matrix, echo=F}
+# view matrix data 
+matrix_data %>% head() 
+```
+
 
 **Train and Test Splits**
 
@@ -257,7 +261,9 @@ als_mae_train <- mean(abs(als_predict_train$stars - als_predict_train$prediction
 als_mse_test <- mean((als_predict_test$stars - als_predict_test$prediction)^2)
 als_rmse_test <- sqrt(als_mse_test)
 als_mae_test <- mean(abs(als_predict_test$stars - als_predict_test$prediction))
+```
 
+```{r view-als, echo=F}
 # View metrics 
 als_train_metrics<- cbind(als_rmse_train,als_mse_train, als_mae_train) 
 als_test_metrics<-cbind(als_rmse_test, als_mse_test, als_mae_test) 
@@ -265,6 +271,9 @@ als_metrics <- as.data.frame(rbind(als_train_metrics,als_test_metrics), row.name
 als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train, mae=als_mae_train)
 ```
 
+### ALS Recommendations
+
+Show example predictions using ml_recommend
 
 ```{r disconnect, echo=F}
 # disconnect
@@ -387,10 +396,16 @@ rows <- which(sim_results == min(sim_results))
 
 # Conclusion
 
-Given the size of our data, Spark performed the fastest. However, the results for our three algorithms yielded very similiar results. 
+**Analysis:**
+Given the size of our data, Spark performed the fastest. However, our selected algorithms yielded very similiar results. 
 
+**Limitations:**
+The size of our data significantly limited our performance using certain packages in R. Functions in Recommenderlab took ~15 minutes to run in comparision to Sparklyr, which took approximately ~2 minutes. Sparklyr would have been able to handle our full dataset, whereas our personal computers would have lacked the computational memory when solely using Recommenderlab. 
 
-Add more to final conlusion. Explain limitations of system. Make recommendations for future improvements.  
+Cold start issue.
+
+**Recommendations:**
+We would recommend for future attempts performing natural language processing on the review text sentiment and analyzing the term-frequency of our categories to see how these variables could improve our recommendations.
 
 -------
 
