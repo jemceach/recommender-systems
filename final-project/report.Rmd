@@ -281,157 +281,119 @@ spark_disconnect(sc)
 ## Algorithm with Binary Rating  {.tabset .tabset-fade .tabset-pills}
 
 + In the approach we will work with Bianry dataset and see how Business can be Recommended for the Given Business.
-+ We wil Group our Rating in two categroy , 1-3 will be set as `0` and rest is `1`
 
 
-### Binary Rating 
+### Binary Rating Matrix
+
+ + I first convert the ratings into a binary format to keep things simple. ratings of 4 and 5 are 
+ + mapped to 1, representing likes, and ratings of 3 and below are mapped to 0, representing dislikes.
+ 
 ```{r}
-
-ratings_matrix  = df[,c(11,1,13)] %>%  # Select only needed variables
-                    # Add a column of 1s an 0s
-                    mutate(Type = case_when(stars == 1 ~ 0,
+# Columns are Busienss ID and Row is User_id
+dat_binaryRatingMatrix <- df[,c(11,1,13)] %>%  mutate(Type = case_when(stars == 1 ~ 0,
                                        stars == 2 ~ 0,
                                        stars == 3 ~ 0,
                                        stars == 4 ~ 1,
                                        stars == 5 ~ 1,
-                                       TRUE ~ 0)) %>% .[c(1,2,4)] %>% 
-                    # Convert to recommenderlab class 'binaryRatingsMatrix'
-                    as("binaryRatingMatrix")
+                                       TRUE ~ 0)) %>% .[c(1,2,4)] %>% as("binaryRatingMatrix")
+
+# Creation of Sample dataset. for Evalution Scheme
+evalu_a2 <- evaluationScheme(dat_binaryRatingMatrix, method="split", train=0.9, given=1)
+
+# Prep data
+ratings_train <- getData(evalu_a2, "train")  # Training Dataset 
+ratings_test_known <- getData(evalu_a2, "known")  # Test data from evaluationScheme of type KNOWN
+ratings_test_unknown <- getData(evalu_a2, "unknown")  # Unknow datset used for RMSE / model
+
+head(as(dat_binaryRatingMatrix[1:5,1:3],"matrix"))
+
 
 ```
 
+### Evaluating the Model
 
-We have splited the data into a train and a test set by selecting train = 0.8 for a 80/20 train/test split. I have also set method = “cross” and k = 5 for a 5-fold cross validation. This means that the data is divided into k subsets of equal size, with 80% of the data used for training and the remaining 20% used for evaluation. The models are recursively estimated 5 times, each time using a different train/test split, which ensures that all users and items are considered for both training and testing. The results can then be averaged to produce a single evaluation set.
++ In this section we are trying to see how "POPULAR" method and User Based Collaborative Filtering UBCF can recommend the top n items.
++ Its also important to note that Binary ratings are not well evaluated with the help of Precision and Recall .
 
-Note: Selecting given = -1 means that for the test users ‘all but 1’ randomly selected item is withheld for evaluation.
 
 ```{r}
-scheme <- ratings_matrix %>% 
-  evaluationScheme(method = "cross",
-                   k      = 5, 
-                   train  = 0.8,  
-                   given  = -1)
+# creation of recommender model based on ubcf
+Rec.ubcf <- Recommender(ratings_train, "UBCF")
+#Creating POPULAR recommender model for comparison
+Rec.pop <- Recommender(ratings_train, "POPULAR")
+# making predictions on the test data set witj Top 2, 3, 5, and 10
+pred_ubcf2 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=2)
+pred_ubcf3 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=3)
+pred_ubcf5 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=5)
+pred_ubcf10 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=10)
+# SAVE IT FOR LATTER USE
+saveRDS(pred_ubcf2,"pred_ubcf2.rds")
+saveRDS(pred_ubcf3,"pred_ubcf3.rds")
+saveRDS(pred_ubcf5,"pred_ubcf5.rds")
+saveRDS(pred_ubcf10,"pred_ubcf10.rds")
 
-scheme 
+# making predictions on the test data set witj Top 2, 3, 5, and 10
+pred_pop2 <- predict(Rec.pop, ratings_test_known, type="topNList",n=2)
+pred_pop3 <- predict(Rec.pop, ratings_test_known, type="topNList",n=3)
+pred_pop5 <- predict(Rec.pop, ratings_test_known, type="topNList",n=5)
+pred_pop10 <- predict(Rec.pop, ratings_test_known, type="topNList",n=10)
+
+saveRDS(pred_pop2,"pred_pop2.rds")
+saveRDS(pred_pop3,"pred_pop3.rds")
+saveRDS(pred_pop5,"pred_pop5.rds")
+saveRDS(pred_pop10,"pred_pop10.rds")
+
+
+# Evaluting the Result of UBCF
+error.ubcf2<-calcPredictionAccuracy(pred_ubcf2, ratings_test_unknown,given=0)
+error.ubcf3<-calcPredictionAccuracy(pred_ubcf3, ratings_test_unknown,given=0)
+error.ubcf5<-calcPredictionAccuracy(pred_ubcf5, ratings_test_unknown,given=0)
+error.ubcf10<-calcPredictionAccuracy(pred_ubcf10, ratings_test_unknown,given=0)
+
+# Evaluting the Result of Popular predictor
+error.pop2<-calcPredictionAccuracy(pred_pop2, ratings_test_unknown,given=0)
+error.pop3<-calcPredictionAccuracy(pred_pop3, ratings_test_unknown,given=0)
+error.pop5<-calcPredictionAccuracy(pred_pop5, ratings_test_unknown,given=0)
+error.pop10<-calcPredictionAccuracy(pred_pop10, ratings_test_unknown,given=0)
+# error.ibcf<-calcPredictionAccuracy(p.ibcf, ratings_test_unknown)
+
+error <- rbind(error.ubcf2,error.ubcf3,error.ubcf5,error.ubcf10,
+               error.pop2,error.pop3,error.pop5,error.pop10) %>% cbind("TopN"=c(2,3,5,10,2,3,5,10),"Type"=c("UBCF","UBCF","UBCF","UBCF","POP","POP","POP","POP")) 
 ```
 
-### Set up List of Algorithms
-Recommenderlab  gives the ability to estimate multiple algorithms in one go. First, I created a list with the algorithms I want to estimate, specifying all the models parameters. Here, I consider schemes which evaluate on a binary rating matrix. 
+**Precision-Recall**
+Below plot displays the Precesion and Recall of the POPULAR and UBCF Model, We are looking for higher recall with maximum precision, and to our surprise POPULAR (Popular items/Business in our case) MODEL is doing well compare to UBCF. It could be due to the SAMPLE size. 
 
-```{r eval=FALSE, include=FALSE}
-algorithms <- list(
-  # "association rules" = list(name  = "AR", 
-  #                       param = list(supp = 0.01, conf = 0.01)), # Binary Matrix is not supported
-  "random items"      = list(name  = "RANDOM",  param = NULL),
-  "popular items"     = list(name  = "POPULAR", param = NULL),
-  "item-based CF"     = list(name  = "IBCF", param = list(k = 5)),
-  "user-based CF"     = list(name  = "UBCF", 
-                        param = list(method = "Cosine", nn = 500))
-                   )
-```
-
-### Estimate the Models
-All I have to do now is to pass scheme and algoritms to the evaluate() function, select type = topNList to evaluate a Top N List of product recommendations and specify how many recommendations to calculate with the parameter n = c(1, 3, 5, 10, 15, 20).
-
-Note: Model was saved to file system after running it once to save time in next run. 
-```{r eval=FALSE, include=FALSE}
-results <- recommenderlab::evaluate(scheme, 
-                                    algorithms, 
-                                    type  = "topNList", 
-                                    n     = c(1, 3, 5, 10, 15, 20)
-                                    )
-
-saveRDS(result,"resulta2.rds")
-```
-
-### Visualising The Model
 ```{r}
-# Pull into a list all confusion matrix information for one model 
-result = readRDS("resulta2.rds")
-tmp <- results$`user-based CF` %>%
-  getConfusionMatrix()  %>%  
-  as.list() 
-
-# Calculate average value of 5 cross-validation rounds 
-  as.data.frame( Reduce("+",tmp) / length(tmp)) %>% 
-# Add a column to mark the number of recommendations calculated
-  mutate(n = c(1, 3, 5, 10, 15, 20)) %>%
-# Select only columns needed and sorting out order 
-  select('n', 'precision', 'recall', 'TPR', 'FPR')
-  
-  
-avg_conf_matr <- function(results) {
-  tmp <- results %>%
-    getConfusionMatrix()  %>%  
-    as.list() 
-    as.data.frame(Reduce("+",tmp) / length(tmp)) %>% 
-    mutate(n = c(1, 3, 5, 10, 15, 20)) %>%
-    select('n', 'precision', 'recall', 'TPR', 'FPR') 
-}
-library(purrr)
-library(tibble)
-library(forcats)
-# Using map() to iterate function across all models
-results_tbl <- results %>%
-  map(avg_conf_matr) %>% 
-# Turning into an unnested tibble
-  enframe() %>%
-# Unnesting to have all variables on same level
-  unnest()
-results_tbl
+as_data_frame(error) %>% ggplot(aes(recall, precision,color=Type))+
+  geom_line() +
+  geom_label(aes(label = TopN))  +
+  labs(title = "Precision-Recall for Top N", colour = "Model") +
+  theme_grey(base_size = 14)+
+theme(axis.text.x = element_text(angle = 70, hjust = 1))
 
 ```
 
-**ROC curve**
----
- Classification models performance can be compared using the ROC curve, which plots the true positive rate (TPR) against the false positive rate (FPR).
- The User-based collaborative filtering model is the clear winner as it achieves the highest TPR for any given level of FPR. This means that the model is producing the highest number of relevant recommendations (true positives) for the same level of non-relevant recommendations (false positives).
- In theory, if TPR ~1 is Good means close to 100% Accuracy  and if FPR ~0 , Mean number of False Positive business is close to zero. 
-For Ref:
-  TPR <- recall
-  FPR <- FP / (FP + TN)
----
+** ROC Curve TPR vs FPR**
+Below Graph is showing the how much is TPR i.e TRUE Positive (Valid Item/business is getting recommended ,which are more likely to be visited by users) vs same amount of FPR i.e not a relevent recommndation . In this case Our focus is to find Max TPR for any given lvel of FPR.
 
-```{r echo=FALSE}
-
-results_tbl %>%
-  ggplot(aes(FPR, TPR, 
-             colour = fct_reorder2(as.factor(name), 
-                      FPR, TPR))) +
+```{r}
+as_data_frame(error) %>% ggplot(aes(FPR, TPR,color=Type))+
   geom_line() +
-  geom_label(aes(label = n))  +
-  labs(title = "ROC curves", colour = "Model") +
-  theme_grey(base_size = 14)
-```
+  geom_label(aes(label = TopN))  +
+  labs(title = "ROC Curve / TPR vs FPR", colour = "Model") +
+  theme_grey(base_size = 14)+
+theme(axis.text.x = element_text(angle = 70, hjust = 1))
 
-**Precision-Recall curve**
-
-Other way to compare classification models performance is with Precision Vs Recall curves. Precision shows how sensitive models are to False Positives (i.e. recommending an Business  not very likely to be visited) whereas Recall (which is just another name for the TPR) looks at how sensitive models are to False Negatives (i.e. do not suggest an Business which is More likely to be visited).
- So we want to maximise Recall (or minimise FNs) for the same level of Precision.
-For Ref:
-  precision <- TP / (TP + FP)
-  recall <- TP / (TP + FN)
-
-The plot confirms that User-based Collaborative Filter (UBCF) is the best model because it has higher Recall for any given level of Precision. This means that UBCF minimises FNs (i.e. not suggesting an item highly likely to be purchased) for all level of FPs.
-
-```{r echo=FALSE}
-results_tbl %>%
-  ggplot(aes(recall, precision, 
-             colour = fct_reorder2(as.factor(name),  
-                      precision, recall))) +
-  geom_line() +
-  geom_label(aes(label = n))  +
-  labs(title = "Precision-Recall curves", colour = "Model") +
-  theme_grey(base_size = 14)
 ```
 
 ### Predictions For a New User
-
 He we will build the persona of User by visting to a Business (`business_id`)
 
-Function to fidn top 10 Business for the Given Business. 
-```{r echo=TRUE}
+Function to find top 10 Business for the Given Business. 
 
+```{r include=FALSE}
+# Predictions For a New User
 REC_TOP_BUSINESS <- function(bus_id = "usAsSV36QmUej8--yvN-dg") {
   
 
@@ -465,8 +427,7 @@ new_cust_rat_matrx <- df[,c(11,1,13)] %>%  # Select only needed variables
 
 
 # Creating UBCF Model again:
-recomm <- Recommender(getData(scheme, 'train'),method  = "UBCF", 
-                        param = list(method = "Cosine", nn = 500))
+recomm <- Recommender(getData(evalu_a2, 'train'),method  = "POPULAR")
 recomm
 
 #I can pass the Recommender and the made-up user's visits  to the predict function to create a top 10 recommendation list for the new customer.
@@ -479,16 +440,11 @@ pred_result <- data.frame(as(pred, 'list') )  %>% rename('business_id'=X1) %>% l
 pred_result
   
 }
-
 ```
 
-Finding top 10 for Business simialr to "SvdlC39JGPI_Tj3pS0ruzw"
 ```{r}
-
 suppressWarnings(REC_TOP_BUSINESS("SvdlC39JGPI_Tj3pS0ruzw"))
 ```
-
-
 
 # Conclusion
 
@@ -502,7 +458,7 @@ Cold start issue.
 
 Binarymatrix can be best evaluted with the help of Precision and Recall, here Precison stands for predicting Business which is more likely to get the Visits. Precision shows how sensitive models are to False Positives (i.e. recommending a Busniess not very likely to be visited) 
 
-We noted the user-based Collaborative Filter (UBCF) model gave good result with high recall and same level of Precisions. When compared with all the models for n = 1,3,5,15,20 for top n items, as number of top n increases we  noted Decrese in the Precison and increase in Recall, since Recall sesitive to False Negatives (i.e. do not suggest an Business which is highly likely to be visited), so in contrast we aim for higher Recall with maxium Precision.
+We noted the POPULAR Item method (POPULAR) model gave good result with high recall and same level of Precisions. When compared with all the models for n = 1,2,3,10 for top n items, as number of top n increases we  noted Decrease in the Precison and increase in Recall, since Recall is sesitive to False Negatives (i.e. do not suggest an Business which is highly likely to be visited), so in contrast we aim for higher Recall with maxium Precision.
 
 
 **Recommendations:**
