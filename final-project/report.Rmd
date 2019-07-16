@@ -558,6 +558,9 @@ suppressWarnings(REC_TOP_BUSINESS("SvdlC39JGPI_Tj3pS0ruzw"))
 
 Given the size of our data, Spark performed the fastest. However, the results for our three algorithms yielded very similiar results. 
 
+Binarymatrix can be best evaluted with the help of Precision and Recall, here Precison stands for predicting Business which is more likely to get the Visits. Precision shows how sensitive models are to False Positives (i.e. recommending a Busniess not very likely to be visited) 
+
+We noted the user-based Collaborative Filter (UBCF) model gave good result with high recall and same level of Precisions. When compared with all the models for n = 1,3,5,15,20 for top n items, as number of top n increases we  noted Decrese in the Precison and increase in Recall, since Recall sesitive to False Negatives (i.e. do not suggest an Business which is highly likely to be visited), so in contrast we aim for higher Recall with maxium Precision.
 
 Add more to final conlusion. Explain limitations of system. Make recommendations for future improvements.  
 
@@ -566,3 +569,7 @@ Add more to final conlusion. Explain limitations of system. Make recommendations
 # References
 
 * [**Data Overview**: ](https://www.kaggle.com/c/yelp-recsys-2013/overview) Kagle Yelp Challenge 2013
+* [**AR Not supported for binaryRatingMatrix**](https://github.com/mhahsler/recommenderlab/issues/29)
+* [**Accuracy Code**](https://github.com/mhahsler/recommenderlab/blob/master/R/calcPredictionAccuracy.R)
+* [**Precision vs Recall acceptable Limits**](https://stats.stackexchange.com/questions/323154/precision-vs-recall-acceptable-limits)
+* [**Recommenderlab Package Vignette**](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf)
