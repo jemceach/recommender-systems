@@ -29,6 +29,8 @@ library(ggplot2)
 ##recommender packages
 library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 
+## timing script execution
+library(tictoc)
 
 ##preprocessing data
 try(setwd("~/GitHub/612-group/final-project"))
@@ -74,11 +76,7 @@ We subset our review data from the subset of food and beverage businesses. This 
 
 ```{r review, echo=F}
 #preview reviews
-review %>% select(-text) %>% head() %>% kable(caption="Preview Review Data (without Review Text)") %>% kable_styling()
-
-#preview review text
-
-review %>% select(text) %>% head(1) %>% kable(caption="Preview of a Singular Review Text") %>% kable_styling()
+review %>% select() %>% head(1) %>% kable(caption="Preview Review Data (without Review Text)") %>% kable_styling()
 ```
 
 ### User 
@@ -261,11 +259,13 @@ rows <- which(sim_results == min(sim_results))
 
 ```
 
+## RecommenderLab
 
-## Algorithm 2: User-based CF and Item-based CF
+User-based CF and Item-based CF
+
+
 
 ```{r}
-
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
@@ -275,8 +275,9 @@ p@data@x[p@data@x[] < 1] <- 1
 p@data@x[p@data@x[] > 5] <- 5
 
 calcPredictionAccuracy(p, getData(evalu, "unknown"))
-
 ```
+
+
 
 ```{r}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
@@ -288,80 +289,152 @@ p1@data@x[p1@data@x[] < 1] <- 1
 p1@data@x[p1@data@x[] > 5] <- 5
 
 calcPredictionAccuracy(p1, getData(evalu, "unknown"))
-
 ```
 
-## Algorithm 3 (Juliann)
+## Spark ALS {.tabset .tabset-fade .tabset-pills}
 
-Set up: 
+Due to the size of our data, we choose to use Spark in R to avoid input/output (I/O) bottleneck issues and maximize the performance speed of our recommender algorithm calculations.
+
+### Connecting
+
+We initiated a local connection with Spark (V2.4.3). Our yelp data was inputted into a spark table and split for training and testing purposes. 
 
 ```{r initiate-spark}
 #install.packages("devtools")
 #devtools::install_github("rstudio/sparklyr")
-#spark_install(version = "2.1.0")
-
+#spark_install(version = "2.4.3")
 
 library(sparklyr)
 
-# configure/initiate connection 
+# configure spark connection
 config <- spark_config()
 config$spark.executor.memory <- "8G"
 config$spark.executor.cores <- 2
 config$spark.executor.instances <- 3
 config$spark.dynamicAllocation.enabled <- "false"
 
-sc <- spark_connect(master = "local", config=config, version = "2.1.0")
+# initiate connection
+sc <- spark_connect(master = "local", config=config, version = "2.4.3")
 
-spark_version(sc)
+# unhash to verify version: 
+# spark_version(sc)
 
-# prepare data 
-spark_data <- df %>% select(user_id, itemID, name, stars) %>% mutate(item = paste(itemID, "-", name)) %>% select(user_id, item, stars)
+# select data for spark and create spark table 
+spark_data <- df %>% select(stars, user_id, business_id, name, city, categories)
 
-user_item_ratings <- sdf_copy_to(sc, spark_data, "user_item_ratings", overwrite = TRUE) 
+yelp <- sdf_copy_to(sc, spark_data, "yelp", overwrite = TRUE) 
 
-user_item_ratings <- user_item_ratings %>%
+# Transform features
+yelp <- yelp %>%
   ft_string_indexer(input_col = "user_id", output_col = "user_index") %>%
-  ft_string_indexer(input_col = "item", output_col = "item_index")
+  ft_string_indexer(input_col = "business_id", output_col = "item_index") %>%
+  select(-user_id, -business_id)%>%
+  sdf_register("yelp")
 
-partition <- sdf_random_split(user_item_ratings, training = 0.8, testing = 0.2)
-spark_test <- sdf_register(partition$testing, "spark_test")
-spark_train <- sdf_register(partition$training, "spark_train")
+# randomly split / train test data
+split <- sdf_random_split(yelp, training = 0.8, testing = 0.2, seed=1)
 
-tidy_train <- tbl(sc, "spark_train") %>%
-  select(user_index, item_index, stars)
+# store training / test sets
+train <- sdf_register(split$training, "train")
+test <- sdf_register(split$testing, "test")
+
+# tidy train for algoritms that require only user/item inputs
+ui_train <- tbl(sc, "train") %>% select(user_index, item_index, stars)
+ui_test <- tbl(sc, "test") %>% select(user_index, item_index, stars)
 ```
 
-ALS predictions
+
+### ALS 
+
+Once connected, we applied the alternating least squares (ALS) for our recommender predictions.
 
 ```{r spark-als}
-sparkALS <- ml_als(tidy_train, max_iter = 5, nonnegative = TRUE, 
-                   rating_col = "stars", user_col = "user_index", item_col = "item_index")
+# build model using user/business/ratings
+als_fit <- ml_als(ui_train, max_iter = 5, nonnegative = TRUE, 
+                   rating_col = "stars", 
+                   user_col = "user_index", 
+                   item_col = "item_index")
 
-spark_test <- tbl(sc, "spark_test")
 
-predictions <- ml_predict(sparkALS, spark_test)
+# predict from the model for the training data
+als_predict_train <- ml_predict(als_fit, ui_train) %>% collect()
+als_predict_test <- ml_predict(als_fit, ui_test) %>% collect()
 
-prediction <- collect(predictions)
+# Remove NaN (result of test/train splits - not data)
+als_predict_train <- als_predict_train[!is.na(als_predict_train$prediction), ] 
+als_predict_test <- als_predict_test[!is.na(als_predict_test$prediction), ] 
 
-# Remove NaN due to data set splitting
-prediction <- prediction[!is.na(prediction$prediction), ] 
+# Calculate MSE/RMSE/MAE 
+als_mse_train <- mean((als_predict_train$stars - als_predict_train$prediction)^2)
+als_rmse_train <- sqrt(als_mse_train)
+als_mae_train <- mean(abs(als_predict_train$stars - als_predict_train$prediction))
 
-# Metrics 
-mseSpark <- mean((prediction$stars - prediction$prediction)^2)
-rmseSpark <- sqrt(mseSpark)
-maeSpark <- mean(abs(prediction$stars - prediction$prediction))
+als_mse_test <- mean((als_predict_test$stars - als_predict_test$prediction)^2)
+als_rmse_test <- sqrt(als_mse_test)
+als_mae_test <- mean(abs(als_predict_test$stars - als_predict_test$prediction))
 ```
 
-Prediction output. 
-```{r prediction-view, echo=F}
-#view 
-prediction %>% arrange(user_index) %>% select(-user_index,-item_index) %>% mutate(prediction=round(prediction,1)) %>% head() %>% kable(caption = "Preview of prediction output") %>% kable_styling()
+# Random Forest
+
+Our random forest model had very low accuracy. This method would not produce a good recommender system for how our data is currently set up.  
+
+```{r}
+# build model using user/business index, category, and city
+rf_fit <- ml_random_forest(
+  train, # the training partion
+  response = "stars",
+  features = colnames(train)[2:4], 
+  impurity = "entropy",
+  type = "classification",
+  seed = 1)
+
+# identify important features in model
+rf_importance1 <- ml_tree_feature_importance(sc = sc, model = rf_fit) 
+rf_importance2<- rf_importance1 %>% mutate(importance = round(importance,2)) %>% filter(importance>0) 
+
+# percent of terms found important
+
+nrow(rf_importance2)/nrow(rf_importance1) 
+
+# view importance
+rf_importance2 %>% kable() %>% kable_styling()
+```
+Accuracy metrics for Random Forest: 
+```{r}
+# make predictions 
+rf_predict_train <- ml_predict(rf_fit, train)  
+rf_predict_test <- ml_predict(rf_fit, test)
+
+
+# calculate accuracy 
+rf_eval_train <- rf_predict_train %>% 
+  ml_multiclass_classification_evaluator(label = "stars", metric = "accuracy") 
+
+##UNABLE TO GET TEST ACCURACY
+#rf_eval_test <- rf_predict_test %>% 
+#  ml_multiclass_classification_evaluator(label = "stars", metric = "accuracy") 
+
+rf_eval_train
 ```
 
-Evaluate performance metrics. 
+```{r, include=F, eval=F}
+## NOT INCLUDED: UNABLE TO COLLECT PREDICTIONS FOR RMSE/ETC COMPARISION
+# predict from the model for the training data
+rf_predict_train <- ml_predict(rf_fit, train)  %>% collect()
+rf_predict_test <- ml_predict(rf_fit, test) %>% collect()
 
-```{r spark-metrics}
-rbind(mseSpark,rmseSpark,maeSpark)
+# Remove NaN (result of test/train splits - not data)
+rf_predict_train <- rf_predict_train[!is.na(rf_predict_train$prediction), ] 
+rf_predict_test <- rf_predict_test[!is.na(rf_predict_test$prediction), ] 
+
+# Calculate MSE/RMSE/MAE 
+rf_mse_train <- mean((rf_predict_train$stars - rf_predict_train$prediction)^2)
+rf_rmse_train <- sqrt(rf_mse_train)
+rf_mae_train <- mean(abs(rf_predict_train$stars - rf_predict_train$prediction))
+
+rf_mse_test <- mean((rf_predict_test$stars - rf_predict_test$prediction)^2)
+rf_rmse_test <- sqrt(rf_mse_test)
+rf_mae_test <- mean(abs(rf_predict_test$stars - rf_predict_test$prediction))
 ```
 
 ```{r}
@@ -369,6 +442,13 @@ rbind(mseSpark,rmseSpark,maeSpark)
 spark_disconnect(sc)
 ```
 
+
+```{r}
+rbind(als_mse_train, als_rmse_train, als_mae_train) 
+rbind(als_mse_test, als_rmse_test, als_mae_test) 
+rbind(rf_mse_train, rf_rmse_train, rf_mae_train) 
+rbind(rf_mse_test, rf_rmse_test, rf_mae_test) 
+```
 ## Analysis
 
 Compare algorithms performance. Select most effective to build recommender system.
