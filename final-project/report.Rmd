@@ -102,15 +102,15 @@ This dataframe will be referenced later on when building our recommender matrice
 df %>% select(-text,-business_id, -user_id,-review_id) %>% head() %>% kable(caption="Preview main dataframe") %>% kable_styling()
 ```
 
-# Recommender Algorithm
+# Recommender Algorithms
 
 We tested recommender algorithms using `recommenderlab` and `sparklyr` to see which performed the best on our recommender system data. To test the algorithsm, we first had to create a user-item matrix and then split our data into training and test sets. 
 
-**Matrix Building**
+### RealRatingsMatrix {.tabset .tabset-fade .tabset-pills}
+
+**Matrix Building: **  
 
 We converted our raw ratings data into a user-item matrix to test and train our subsequent recommender system algorithms. The matrix was saved as a realRatingMatrix for processing purposes later on using the `recommenderlab` package. 
-
-The matrix data can be viewed below. 
 
 ```{r matrix-building, cache=T}
 # spread data from long to wide format 
@@ -130,10 +130,9 @@ ui_mat <- as(ui_mat,"realRatingMatrix")
 matrix_data %>% head() 
 ```
 
-
 **Train and Test Splits**
 
-Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds using the `recommenderlab` package. 80% of data was retained for training and 20% for testing purposes.
+Our data was split into training and tests sets for model evaluation of both two recommender algorithms. We split our data with 10 k-folds. 80% of data was retained for training and 20% for testing purposes.
 
 ```{r train-test}
 # evaluation method with 80% of data for train and 20% for test
@@ -147,10 +146,7 @@ dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KN
 test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 ```
 
-
-## RecommenderLab {.tabset .tabset-fade .tabset-pills}
-
-### User-based CF
+#### User-based CF
 
 ```{r ub, cache=T}
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
@@ -164,7 +160,7 @@ p@data@x[p@data@x[] > 5] <- 5
 calcPredictionAccuracy(p, getData(evalu, "unknown"))
 ```
 
-### Item-based CF
+#### Item-based CF
 
 ```{r ib, cache=T}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
@@ -178,112 +174,7 @@ p1@data@x[p1@data@x[] > 5] <- 5
 calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ```
 
-## Sparklyr {.tabset .tabset-fade .tabset-pills}
-
-Due to the size of our data, we choose to use Spark in R to avoid input/output (I/O) bottleneck issues and maximize the performance speed of our recommender algorithm calculations.
-
-### Connecting
-
-We initiated a local connection with Spark (V2.4.3). Our yelp data was inputted into a spark table and split for training and testing purposes. We uploaded our training and test splits to minimize the variance in our comparisons.
-
-```{r initiate-spark}
-# configure spark connection
-config <- spark_config()
-config$spark.executor.memory <- "8G"
-config$spark.executor.cores <- 2
-config$spark.executor.instances <- 3
-config$spark.dynamicAllocation.enabled <- "false"
-
-# initiate connection
-sc <- spark_connect(master = "local", config=config, version = "2.4.3")
-
-# unhash to verify version: 
-# spark_version(sc)
-
-# select data for spark and create spark table 
-spark_train <- as(train,"data.frame")
-spark_test<- as(test,"data.frame") 
-
-spark_train <- sdf_copy_to(sc, spark_train, "spark_train", overwrite = TRUE) 
-spark_test <- sdf_copy_to(sc, spark_test, "spark_test", overwrite = TRUE) 
-
-# Transform features
-spark_train <- spark_train %>%
-  ft_string_indexer(input_col = "user", output_col = "user_index") %>%
-  ft_string_indexer(input_col = "item", output_col = "item_index") %>%
-  sdf_register("spark_train")
-  
-spark_test <- spark_test %>%
-  ft_string_indexer(input_col = "user", output_col = "user_index") %>%
-  ft_string_indexer(input_col = "item", output_col = "item_index") %>%
-  sdf_register("spark_test")
-```
-
-### ALS 
-
-Once connected, we applied the alternating least squares (ALS) for our recommender predictions.
-
-```{r spark-als}
-# build model using user/business/ratings
-als_fit <- ml_als(spark_train, max_iter = 5, nonnegative = TRUE, 
-                   rating_col = "rating", 
-                   user_col = "user_index", 
-                   item_col = "item_index")
-
-# predict from the model for the training data
-als_predict_train <- ml_predict(als_fit, spark_train) %>% collect()
-als_predict_test <- ml_predict(als_fit, spark_test) %>% collect()
-
-# Remove NaN (result of test/train splits - not data)
-als_predict_train <- als_predict_train[!is.na(als_predict_train$prediction), ] 
-als_predict_test <- als_predict_test[!is.na(als_predict_test$prediction), ] 
-
-# View results
-als_predict_test %>% head() %>% kable() %>% kable_styling()
-```
-
-### Performance 
-
-Our ALS calculations for RMSE, MSE, and MAE can be viewed below: 
-
-```{r als-performance}
-# Calculate RMSE/MSE/MAE 
-als_mse_train <- mean((als_predict_train$rating - als_predict_train$prediction)^2)
-als_rmse_train <- sqrt(als_mse_train)
-als_mae_train <- mean(abs(als_predict_train$rating - als_predict_train$prediction))
-
-als_mse_test <- mean((als_predict_test$rating - als_predict_test$prediction)^2)
-als_rmse_test <- sqrt(als_mse_test)
-als_mae_test <- mean(abs(als_predict_test$rating - als_predict_test$prediction))
-```
-
-```{r view-als, echo=F}
-# View metrics 
-als_train_metrics<- cbind(als_rmse_train,als_mse_train, als_mae_train) 
-als_test_metrics<-cbind(als_rmse_test, als_mse_test, als_mae_test) 
-als_metrics <- as.data.frame(rbind(als_train_metrics,als_test_metrics), row.names = c("ALS_train, ALS_test"))
-als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train, mae=als_mae_train)
-```
-
-### Recommend
-
-The `ml_recommend` function allows us to see the top *n* user/item recommendations for each user/item. Below, we use this funcion and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
-
-```{r als-recommend}
-als_user_recommend<-ml_recommend(als_fit, type="users", n=10)
-```
-
-```{r, echo=F}
-als_user_recommend %>% head(10) %>% collect() %>% select(-recommendations)
-```
-
-
-```{r disconnect, echo=F}
-# disconnect
-spark_disconnect(sc)
-```
-
-## Rajwant's Method
+## Binary Ratings
 
 ```{r eval=FALSE, include=FALSE}
 
@@ -397,17 +288,133 @@ rows <- which(sim_results == min(sim_results))
 ```
 
 
+
+## Sparklyr {.tabset .tabset-fade .tabset-pills}
+
+Due to the size of our data, we choose to use Spark in R to avoid input/output (I/O) bottleneck issues and maximize the performance speed of our recommender algorithm calculations.
+
+### Connecting
+
+We initiated a local connection with Spark (V2.4.3). Our yelp data was inputted into a spark table and split for training and testing purposes. We uploaded our training and test splits to minimize the variance in our comparisons.
+
+```{r initiate-spark}
+# configure spark connection
+config <- spark_config()
+config$spark.executor.memory <- "8G"
+config$spark.executor.cores <- 2
+config$spark.executor.instances <- 3
+config$spark.dynamicAllocation.enabled <- "false"
+
+# initiate connection
+sc <- spark_connect(master = "local", config=config, version = "2.4.3")
+
+# unhash to verify version: 
+# spark_version(sc)
+
+# select data for spark and create spark table 
+spark_train <- as(train,"data.frame")
+spark_test<- as(test,"data.frame") 
+
+spark_train <- sdf_copy_to(sc, spark_train, "spark_train", overwrite = TRUE) 
+spark_test <- sdf_copy_to(sc, spark_test, "spark_test", overwrite = TRUE) 
+
+# Transform features
+spark_train <- spark_train %>%
+  ft_string_indexer(input_col = "user", output_col = "user_index") %>%
+  ft_string_indexer(input_col = "item", output_col = "item_index") %>%
+  sdf_register("spark_train")
+  
+spark_test <- spark_test %>%
+  ft_string_indexer(input_col = "user", output_col = "user_index") %>%
+  ft_string_indexer(input_col = "item", output_col = "item_index") %>%
+  sdf_register("spark_test")
+```
+
+### ALS 
+
+Once connected, we applied the alternating least squares (ALS) for our recommender predictions.
+
+```{r spark-als}
+# build model using user/business/ratings
+als_fit <- ml_als(spark_train, max_iter = 5, nonnegative = TRUE, 
+                   rating_col = "rating", 
+                   user_col = "user_index", 
+                   item_col = "item_index")
+
+# predict from the model for the training data
+als_predict_train <- ml_predict(als_fit, spark_train) %>% collect()
+als_predict_test <- ml_predict(als_fit, spark_test) %>% collect()
+
+# Remove NaN (result of test/train splits - not data)
+als_predict_train <- als_predict_train[!is.na(als_predict_train$prediction), ] 
+als_predict_test <- als_predict_test[!is.na(als_predict_test$prediction), ] 
+
+# View results
+als_predict_test %>% head() %>% kable() %>% kable_styling()
+```
+
+### Performance 
+
+Our ALS calculations for RMSE, MSE, and MAE can be viewed below: 
+
+```{r als-performance}
+# Calculate RMSE/MSE/MAE 
+als_mse_train <- mean((als_predict_train$rating - als_predict_train$prediction)^2)
+als_rmse_train <- sqrt(als_mse_train)
+als_mae_train <- mean(abs(als_predict_train$rating - als_predict_train$prediction))
+
+als_mse_test <- mean((als_predict_test$rating - als_predict_test$prediction)^2)
+als_rmse_test <- sqrt(als_mse_test)
+als_mae_test <- mean(abs(als_predict_test$rating - als_predict_test$prediction))
+```
+
+```{r view-als, echo=F}
+# View metrics 
+als_train_metrics<- cbind(als_rmse_train,als_mse_train, als_mae_train) 
+als_test_metrics<-cbind(als_rmse_test, als_mse_test, als_mae_test) 
+als_metrics <- as.data.frame(rbind(als_train_metrics,als_test_metrics), row.names = c("ALS_train, ALS_test"))
+als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train, mae=als_mae_train)
+```
+
+### Recommend
+
+The `ml_recommend` function allows us to see the top *n* user/item recommendations for each user/item. Below, we use this funcion and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
+
+```{r als-recommend}
+als_user_recommend<-ml_recommend(als_fit, type="users", n=10)
+```
+
+```{r, echo=F}
+als_user_recommend %>% head(10) %>% collect() %>% select(-recommendations)
+```
+
+
+```{r disconnect, echo=F}
+# disconnect
+spark_disconnect(sc)
+```
+
 # Conclusion
 
-**Analysis:**
-Given the size of our data, Spark performed the fastest. However, our selected algorithms yielded very similiar results. 
+**Analysis:**   
 
-**Limitations:**
-The size of our data significantly limited our performance using certain packages in R. Functions in Recommenderlab took ~15 minutes to run in comparision to Sparklyr, which took approximately ~2 minutes. Sparklyr would have been able to handle our full dataset, whereas our personal computers would have lacked the computational memory when solely using Recommenderlab. 
+Through this project, we took an all-encompassing look at the different recommender methods we have learned this semester. We designed BinaryRating Matrix / RealRating Matrices in RecommendLab, then compared this approach to running the ALS algorithm in Sparkly. We found that the BinaryRating performed [better/worse] than our RealRating models. We can reasonably assume the difference in the performance can be attributed to [XYZ]. 
 
-Cold start issue.
+Our transition to Sparklyr showed us how effective cloud computing can be for large datasets. Our algorithm and prediction performance speeds signficantly improved when using Spark's service, even on a local channel. ALS in Sparklyr was the clear winner for efficiency, however all our selected algorithms yielded very similiar results. 
 
-**Recommendations:**
+```{r}
+#metrics
+```
+
+
+**Limitations:**  
+
+The size of our data significantly limited our performance using certain packages in R. Functions in Recommenderlab took ~15 minutes to run in comparision to Sparklyr, which took approximately ~2 minutes. Sparklyr would have been able to handle our full dataset, whereas our personal computers would have lacked the computational memory to solely use Recommenderlab. 
+
+Cold start issue?
+
+**Recommendations:**  
+
 We would recommend for future attempts performing natural language processing on the review text sentiment and analyzing the term-frequency of our categories to see how these variables could improve our recommendations.
 
 -------
