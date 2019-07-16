@@ -16,7 +16,7 @@ output:
 
 Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included a subset of Yelp data from the metropolitan area of Phoenix, Arizona. Our data takes into account user reviews, ratings, and check-in data for a wide-range of businesses. 
 
-```{r dependencies,echo=F,comment=F,message=F,warning=F,prompt=F}
+```{r dependencies,echo=F,comment=F,message=F,warning=F,prompt=F, cache=T}
 ## data processing packages
 library(dplyr)
 
@@ -102,10 +102,6 @@ This dataframe will be referenced later on when building our recommender matrice
 df %>% select(-text,-business_id, -user_id,-review_id) %>% head() %>% kable(caption="Preview main dataframe") %>% kable_styling()
 ```
 
-## Visualize Data
-
-Add data visualizations. 
-
 # Recommender Algorithm
 
 We tested recommender algorithms using `recommenderlab` and `sparklyr` to see which performed the best on our recommender system data. To test the algorithsm, we first had to create a user-item matrix and then split our data into training and test sets. 
@@ -116,7 +112,7 @@ We converted our raw ratings data into a user-item matrix to test and train our 
 
 The matrix data can be viewed below. 
 
-```{r matrix-building}
+```{r matrix-building, cache=T}
 # spread data from long to wide format 
 matrix_data <- df %>% select(userID, itemID, stars) %>% spread(itemID, stars)
 # set row names to userid
@@ -141,7 +137,7 @@ Our data was split into training and tests sets for model evaluation of both two
 
 ```{r train-test}
 # evaluation method with 80% of data for train and 20% for test
-set.seed(1000)
+set.seed(0)
 
 evalu <- evaluationScheme(ui_mat, method="split", train=0.8, given=1, goodRating=1, k=10)
 
@@ -156,7 +152,7 @@ test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluati
 
 ### User-based CF
 
-```{r ub}
+```{r ub, cache=T}
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
@@ -170,7 +166,7 @@ calcPredictionAccuracy(p, getData(evalu, "unknown"))
 
 ### Item-based CF
 
-```{r ib}
+```{r ib, cache=T}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
@@ -252,13 +248,13 @@ Our ALS calculations for RMSE, MSE, and MAE can be viewed below:
 
 ```{r als-performance}
 # Calculate RMSE/MSE/MAE 
-als_mse_train <- mean((als_predict_train$stars - als_predict_train$prediction)^2)
+als_mse_train <- mean((als_predict_train$rating - als_predict_train$prediction)^2)
 als_rmse_train <- sqrt(als_mse_train)
-als_mae_train <- mean(abs(als_predict_train$stars - als_predict_train$prediction))
+als_mae_train <- mean(abs(als_predict_train$rating - als_predict_train$prediction))
 
-als_mse_test <- mean((als_predict_test$stars - als_predict_test$prediction)^2)
+als_mse_test <- mean((als_predict_test$rating - als_predict_test$prediction)^2)
 als_rmse_test <- sqrt(als_mse_test)
-als_mae_test <- mean(abs(als_predict_test$stars - als_predict_test$prediction))
+als_mae_test <- mean(abs(als_predict_test$rating - als_predict_test$prediction))
 ```
 
 ```{r view-als, echo=F}
