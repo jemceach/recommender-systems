@@ -165,7 +165,6 @@ p <- predict(UB, getData(evalu, "known"), type="ratings")
 p@data@x[p@data@x[] < 1] <- 1
 p@data@x[p@data@x[] > 5] <- 5
 
-calcPredictionAccuracy(p, getData(evalu, "train"))
 calcPredictionAccuracy(p, getData(evalu, "unknown"))
 ```
 
@@ -180,7 +179,6 @@ p1 <- predict(IB, getData(evalu, "known"), type="ratings")
 p1@data@x[p1@data@x[] < 1] <- 1
 p1@data@x[p1@data@x[] > 5] <- 5
 
-calcPredictionAccuracy(p1, getData(evalu, "train"))
 calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ```
 
@@ -232,7 +230,7 @@ Once connected, we applied the alternating least squares (ALS) for our recommend
 ```{r spark-als}
 # build model using user/business/ratings
 als_fit <- ml_als(spark_train, max_iter = 5, nonnegative = TRUE, 
-                   rating_col = "stars", 
+                   rating_col = "rating", 
                    user_col = "user_index", 
                    item_col = "item_index")
 
@@ -271,7 +269,7 @@ als_metrics <- as.data.frame(rbind(als_train_metrics,als_test_metrics), row.name
 als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train, mae=als_mae_train)
 ```
 
-### ALS Recommendations
+### Recommend
 
 Show example predictions using ml_recommend
 
