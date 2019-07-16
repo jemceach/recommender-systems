@@ -145,20 +145,36 @@ train <- getData(evalu, 'train')# Training Dataset
 dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
 test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 ```
+
+## RecommenderLab {.tabset .tabset-fade .tabset-pills}
+
 ### User-based CF
 
+In our first example, user-based CF is used to create recommendations with the recommeder lab package in R. We start by training our recommender with the train set, with our data being normalized with the Z-score and using cosine similarity for comparisons. 
+
+We then create our predictions using the dev-test set with ratings as our prediction output. It is imperative to set a floor and ceiling as sometimes predictions will fall outside of our ratings scale of 1-5.
+
+Finally we calculated the prediction accuracy against the test data
 ```{r ub, cache=T}
+# using recommender lab, create UBCF recommender with z-score normalized data using cosine similarity
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
+# create rating predictions and store
 p <- predict(UB, getData(evalu, "known"), type="ratings")
 
+# set floor and ceiling for ratings that fall outside scale
 p@data@x[p@data@x[] < 1] <- 1
 p@data@x[p@data@x[] > 5] <- 5
 
-calcPredictionAccuracy(p, getData(evalu, "unknown"))
+# calculate the prediction accurary based on our test data
+UB_acc <- calcPredictionAccuracy(p, getData(evalu, "unknown"))
+UB_acc
 ```
+
 ### Item-based CF
+
+This is the same process as above except this time we are using an item-based CF to create our recommendations.
 
 ```{r ib, cache=T}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
@@ -169,8 +185,21 @@ p1 <- predict(IB, getData(evalu, "known"), type="ratings")
 p1@data@x[p1@data@x[] < 1] <- 1
 p1@data@x[p1@data@x[] > 5] <- 5
 
-calcPredictionAccuracy(p1, getData(evalu, "unknown"))
+IB_acc <- calcPredictionAccuracy(p1, getData(evalu, "unknown"))
+IB_acc
 ```
+
+### Results
+```{r}
+# print out errors in table
+error <- rbind(
+UB_acc,
+IB_acc
+)
+
+kable(error)
+```
+
 ## Binary Ratings Matrix  {.tabset .tabset-fade .tabset-pills}
 
 + In the approach we will work with Bianry dataset and see how Business can be Recommended for the Given Business.
