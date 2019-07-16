@@ -83,7 +83,7 @@ review %>% select() %>% head(1) %>% kable(caption="Preview Review Data (without 
 
 ### User 
 
-Last, we applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. Do to processing constraints in R, we choose to randomly sample 10,000 users from these unique profiles. 
+Next, we applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. Do to processing constraints in R, we choose to randomly sample 10,000 users from these unique profiles. 
 
 The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
 
@@ -92,9 +92,9 @@ The dataframe preview below shows aggregate user data for all reviews an individ
 user %>% head() %>% kable(caption="Preview User Data") %>% kable_styling()
 ```
 
-## Merge Data 
+### Merged Dataframe 
 
-Next, we created our main dataframe by merging business and reviews on `Business_ID`. This dataframe will serve as the source of data for our recommender algorithms. The user and business unique keys were simplified from characters to numeric user/item identifiers. 
+Last, we created our main dataframe by merging business and reviews on `Business_ID`. This dataframe will serve as the source of data for our recommender algorithms. The user and business unique keys were simplified from characters to numeric user/item identifiers. 
 
 This dataframe will be referenced later on when building our recommender matrices and algorithms. 
 
@@ -239,7 +239,7 @@ als_predict_train <- als_predict_train[!is.na(als_predict_train$prediction), ]
 als_predict_test <- als_predict_test[!is.na(als_predict_test$prediction), ] 
 
 # View results
-als_predict_test %>% head %>% kable() %>% kable_styling()
+als_predict_test %>% head() %>% kable() %>% kable_styling()
 ```
 
 ### Performance 
@@ -267,7 +267,16 @@ als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train, mae=als_mae_t
 
 ### Recommend
 
-Show example predictions using ml_recommend
+The `ml_recommend` function allows us to see the top *n* user/item recommendations for each user/item. Below, we use this funcion and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
+
+```{r als-recommend}
+als_user_recommend<-ml_recommend(als_fit, type="users", n=10)
+```
+
+```{r, echo=F}
+als_user_recommend %>% head(10) %>% collect() %>% select(-recommendations)
+```
+
 
 ```{r disconnect, echo=F}
 # disconnect
