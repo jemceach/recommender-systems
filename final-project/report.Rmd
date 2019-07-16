@@ -18,7 +18,7 @@ Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included
 
 ```{r dependencies,echo=F,comment=F,message=F,warning=F,prompt=F, cache=T}
 ## data processing packages
-library(dplyr)
+library(dplyr);library(tibble);library(forcats)
 
 ##formatting packages
 library(knitr); library(kableExtra); library(default)
@@ -27,7 +27,7 @@ library(knitr); library(kableExtra); library(default)
 library(ggplot2)
 
 ##recommender packages
-library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
+library(recommenderlab); library(Metrics); library(lsa); library(diveRsity);library(purrr)
 
 ## Sparklyr 
 #install.packages("devtools")
@@ -106,7 +106,7 @@ df %>% select(-text,-business_id, -user_id,-review_id) %>% head() %>% kable(capt
 
 We tested recommender algorithms using `recommenderlab` and `sparklyr` to see which performed the best on our recommender system data. To test the algorithsm, we first had to create a user-item matrix and then split our data into training and test sets. 
 
-### RealRatingsMatrix {.tabset .tabset-fade .tabset-pills}
+## RealRatingsMatrix {.tabset .tabset-fade .tabset-pills}
 
 **Matrix Building: **  
 
@@ -145,8 +145,7 @@ train <- getData(evalu, 'train')# Training Dataset
 dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
 test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 ```
-
-#### User-based CF
+### User-based CF
 
 ```{r ub, cache=T}
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
@@ -159,8 +158,7 @@ p@data@x[p@data@x[] > 5] <- 5
 
 calcPredictionAccuracy(p, getData(evalu, "unknown"))
 ```
-
-#### Item-based CF
+### Item-based CF
 
 ```{r ib, cache=T}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
@@ -173,121 +171,173 @@ p1@data@x[p1@data@x[] > 5] <- 5
 
 calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ```
+## Binary Ratings Matrix  {.tabset .tabset-fade .tabset-pills}
 
-## Binary Ratings
++ In the approach we will work with Bianry dataset and see how Business can be Recommended for the Given Business.
 
-```{r eval=FALSE, include=FALSE}
 
-evalu_a2 <- evaluationScheme(ui_mat, method="split", train=0.1, given=0, goodRating=1, k=10)
-evalu_a2t <- evaluationScheme(ui_mat, method="split", train=0.95, given=0, goodRating=1, k=10)
+### Binary Rating Matrix
+
+ + I first convert the ratings into a binary format to keep things simple. ratings of 4 and 5 are 
+ + mapped to 1, representing likes, and ratings of 3 and below are mapped to 0, representing dislikes.
+ 
+```{r}
+# Columns are Busienss ID and Row is User_id
+dat_binaryRatingMatrix <- df[,c(11,1,13)] %>%  mutate(Type = case_when(stars == 1 ~ 0,
+                                       stars == 2 ~ 0,
+                                       stars == 3 ~ 0,
+                                       stars == 4 ~ 1,
+                                       stars == 5 ~ 1,
+                                       TRUE ~ 0)) %>% .[c(1,2,4)] %>% as("binaryRatingMatrix")
+
+# Creation of Sample dataset. for Evalution Scheme
+evalu_a2 <- evaluationScheme(dat_binaryRatingMatrix, method="split", train=0.9, given=1)
 
 # Prep data
 ratings_train <- getData(evalu_a2, "train")  # Training Dataset 
 ratings_test_known <- getData(evalu_a2, "known")  # Test data from evaluationScheme of type KNOWN
 ratings_test_unknown <- getData(evalu_a2, "unknown")  # Unknow datset used for RMSE / model
 
-
-# Prep data
-ratings_train_t <- getData(evalu_a2t, "train")  # Training Dataset 
-ratings_test_known_t <- getData(evalu_a2t, "known")  # Test data from evaluationScheme of type KNOWN
-ratings_test_unknown_t <- getData(evalu_a2t, "unknown")  # Unknow datset used for RMSE / model
-
-
-# NORMALIZED Train Model
-svdn <- Recommender(data = ratings_train, method = "SVD", param = list(k = 10, 
-    normalize = "center"))
-svdz <- Recommender(data = ratings_train, method = "SVD", param = list(k = 10, 
-    normalize = "Z-score"))
-
-## Test/Evaluation Model Predication
-svd_predict <- predict(svdn, ratings_test_known_t, type = "ratings")
-svd_pred <- calcPredictionAccuracy(svd_predict, ratings_test_unknown_t)
-# svdz_predict <- predict(svdz, ratings_test_known, type = "ratings")
-# svdz_pred <- calcPredictionAccuracy(svdz_predict, ratings_test_unknown)
-# fsvd_predict <- predict(fsvd, ratings_test_known, verbose = F)
-# fsvd_predict <- as(fsvd_predict, "realRatingMatrix")
-# fsvd_pred = calcPredictionAccuracy(fsvd_predict, ratings_test_unknown)
-```
-
-```{r eval=FALSE, include=FALSE}
-# I am planning to see how I can use Business's rating and rev_funny,rev_useful,rev_cool
-# and see how users are rating against these parameters, I would check cosine similarlty of user 
-# rating with these info and recommend some similar  Business to the Users.
-head(matrix_data)
-head(df)
-
-df_2 <- df[,c(11,1,13)]
-
-# I first convert the ratings into a binary format to keep things simple. ratings of 4 and 5 are 
-# mapped to 1, representing likes, and ratings of 3 and below are mapped to -1, representing dislikes.
-
-
-
-# as(df_2,"realRatingMatrix") %>%
-
-# Columns are Busienss ID and Row is User_id
-binaryratings <- df[,c(11,1,13)] %>%  mutate(Type = case_when(stars == 1 ~ -1,
-                                       stars == 2 ~ -1,
-                                       stars == 3 ~ -1,
-                                       stars == 4 ~ 1,
-                                       stars == 5 ~ 1,
-                                       TRUE ~ 0)) %>% .[c(1,2,4)] %>%
-                                reshape2::dcast(., user_id~business_id, value.var = "Type", na.rm=FALSE)
-
-
-# search("9Ep4sguv3HH_8lWyzSogjw","-9mj_tVyNkDGF0KWhG19MQ")
-# 
-# which(binaryratings2 == "9Ep4sguv3HH_8lWyzSogjw", arr.ind = T)
-# 
-# binaryratings2[91,]
-
-#This basically transforms the data from a long format to a wide format with many NA values, as not every user rated every business, replce NA values with 0.
-
-# for (i in 1:ncol(binaryratings)){
-#   binaryratings[which(is.na(binaryratings[,i]) == TRUE),i] <- 0
-# }
-
-head(binaryratings)
-# binaryratings2 = binaryratings2[,-1] #remove movieIds col. Rows are movieIds, cols are userIds
-
-
-##_---------------------------------MAIN TASK
-
-
-evalu_binary <- evaluationScheme(ui_mat, method="split", train=0.3, given=1, goodRating=1, k=10)
-
-# Prep data
-train_binary<- getData(evalu_binary, 'train')# Training Dataset 
-dev_test_binary <- getData(evalu_binary, 'known') # Test data from evaluationScheme of type KNOWN
-test_binary <- getData(evalu_binary, 'unknown') # Unknow datset used for RMSE / model evaluation
-
-#Normalize the data
-ratingmat_norm <- Recommender(data = train_binary, method = "SVD", param = list(k = 1, 
-    normalize = "center"))
+head(as(dat_binaryRatingMatrix[1:5,1:3],"matrix"))
 
 
 ```
 
-Now that we have the user and Business Rating adjsusted where 0 indicates No Feedback, -1 Indicates Negative Feedback and 1 indicates postive feedback.
+### Evaluating the Model
 
-I decided to use Jaccard Distance to measure the similarity between Busienss profiles, 
-
-```{r eval=FALSE, include=FALSE}
-head(binaryratings[,-1])
-library(proxy)
- # Sample of Jacard distance on head data.
-dist(head(binaryratings[,-1]), method = "Jaccard")
-#Calculate Jaccard distance between Buinesses and all Users Reviews
-
-sim_results <- binaryratings[,-1] %>% dist( method = "Jaccard")
-sim_results <- as.data.frame(as.matrix(sim_results[1:8552]))
-rows <- which(sim_results == min(sim_results))
++ In this section we are trying to see how "POPULAR" method and User Based Collaborative Filtering UBCF can recommend the top n items.
++ Its also important to note that Binary ratings are not well evaluated with the help of Precision and Recall .
 
 
+```{r}
+# creation of recommender model based on ubcf
+Rec.ubcf <- Recommender(ratings_train, "UBCF")
+#Creating POPULAR recommender model for comparison
+Rec.pop <- Recommender(ratings_train, "POPULAR")
+# making predictions on the test data set witj Top 2, 3, 5, and 10
+pred_ubcf2 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=2)
+pred_ubcf3 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=3)
+pred_ubcf5 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=5)
+pred_ubcf10 <- predict(Rec.ubcf, ratings_test_known, type="topNList",n=10)
+# SAVE IT FOR LATTER USE
+saveRDS(pred_ubcf2,"pred_ubcf2.rds")
+saveRDS(pred_ubcf3,"pred_ubcf3.rds")
+saveRDS(pred_ubcf5,"pred_ubcf5.rds")
+saveRDS(pred_ubcf10,"pred_ubcf10.rds")
+
+# making predictions on the test data set witj Top 2, 3, 5, and 10
+pred_pop2 <- predict(Rec.pop, ratings_test_known, type="topNList",n=2)
+pred_pop3 <- predict(Rec.pop, ratings_test_known, type="topNList",n=3)
+pred_pop5 <- predict(Rec.pop, ratings_test_known, type="topNList",n=5)
+pred_pop10 <- predict(Rec.pop, ratings_test_known, type="topNList",n=10)
+
+saveRDS(pred_pop2,"pred_pop2.rds")
+saveRDS(pred_pop3,"pred_pop3.rds")
+saveRDS(pred_pop5,"pred_pop5.rds")
+saveRDS(pred_pop10,"pred_pop10.rds")
+
+
+# Evaluting the Result of UBCF
+error.ubcf2<-calcPredictionAccuracy(pred_ubcf2, ratings_test_unknown,given=0)
+error.ubcf3<-calcPredictionAccuracy(pred_ubcf3, ratings_test_unknown,given=0)
+error.ubcf5<-calcPredictionAccuracy(pred_ubcf5, ratings_test_unknown,given=0)
+error.ubcf10<-calcPredictionAccuracy(pred_ubcf10, ratings_test_unknown,given=0)
+
+# Evaluting the Result of Popular predictor
+error.pop2<-calcPredictionAccuracy(pred_pop2, ratings_test_unknown,given=0)
+error.pop3<-calcPredictionAccuracy(pred_pop3, ratings_test_unknown,given=0)
+error.pop5<-calcPredictionAccuracy(pred_pop5, ratings_test_unknown,given=0)
+error.pop10<-calcPredictionAccuracy(pred_pop10, ratings_test_unknown,given=0)
+# error.ibcf<-calcPredictionAccuracy(p.ibcf, ratings_test_unknown)
+
+error <- rbind(error.ubcf2,error.ubcf3,error.ubcf5,error.ubcf10,
+               error.pop2,error.pop3,error.pop5,error.pop10) %>% cbind("TopN"=c(2,3,5,10,2,3,5,10),"Type"=c("UBCF","UBCF","UBCF","UBCF","POP","POP","POP","POP")) 
+```
+
+**Precision-Recall**
+Below plot displays the Precesion and Recall of the POPULAR and UBCF Model, We are looking for higher recall with maximum precision, and to our surprise POPULAR (Popular items/Business in our case) MODEL is doing well compare to UBCF. It could be due to the SAMPLE size. 
+
+```{r}
+as_data_frame(error) %>% ggplot(aes(recall, precision,color=Type))+
+  geom_line() +
+  geom_label(aes(label = TopN))  +
+  labs(title = "Precision-Recall for Top N", colour = "Model") +
+  theme_grey(base_size = 14)+
+theme(axis.text.x = element_text(angle = 70, hjust = 1))
 
 ```
 
+** ROC Curve TPR vs FPR**
+Below Graph is showing the how much is TPR i.e TRUE Positive (Valid Item/business is getting recommended ,which are more likely to be visited by users) vs same amount of FPR i.e not a relevent recommndation . In this case Our focus is to find Max TPR for any given lvel of FPR.
 
+```{r}
+as_data_frame(error) %>% ggplot(aes(FPR, TPR,color=Type))+
+  geom_line() +
+  geom_label(aes(label = TopN))  +
+  labs(title = "ROC Curve / TPR vs FPR", colour = "Model") +
+  theme_grey(base_size = 14)+
+theme(axis.text.x = element_text(angle = 70, hjust = 1))
+
+```
+
+### Predictions For a New User
+He we will build the persona of User by visting to a Business (`business_id`)
+
+Function to find top 10 Business for the Given Business. 
+
+```{r include=FALSE}
+# Predictions For a New User
+REC_TOP_BUSINESS <- function(bus_id = "usAsSV36QmUej8--yvN-dg") {
+  
+
+# Generating a prediction with the best performing model. 
+
+# Creating an user visiting to a business :
+# # customer_visit <- c("usAsSV36QmUej8--yvN-dg", # Food, Grocery--Phoenix
+#                      "PzOqRohWw7F7YEPBz6AubA", # Food, Bagels, Delis, Restaurants--Glendale Az
+#                      "JxVGJ9Nly2FFIs_WpJvkug") # Pizza, Restaurants--Scottsdale
+
+customer_visit <- c(bus_id)
+
+
+# put this order in a format that recommenderlab accept: As shown below
+# --5jkZ3-nUPZxUvtcbr8Uw --BlvDO_RG2yElKu9XA1_g -_JBgygYYD_UkuD-GVTp6A .....
+#                      0                      0                      0 .....
+
+new_cust_rat_matrx <- df[,c(11,1,13)] %>%  # Select only needed variables
+                    # Add a column of 1s an 0s
+# Select Business Name
+  select(business_id) %>% 
+  unique() %>% 
+# Add a 'value' column with 1's for Users Visited Business
+  mutate(value = as.numeric(business_id %in% customer_visit)) %>% 
+# Spread into sparse matrix format
+  spread(key = business_id, value = value) %>% 
+# Change to a matrix
+  as.matrix() %>% 
+# Convert to recommenderlab class 'binaryRatingsMatrix'
+  as("binaryRatingMatrix")  
+
+
+# Creating UBCF Model again:
+recomm <- Recommender(getData(evalu_a2, 'train'),method  = "POPULAR")
+recomm
+
+#I can pass the Recommender and the made-up user's visits  to the predict function to create a top 10 recommendation list for the new customer.
+pred <- predict(recomm, 
+                newdata = new_cust_rat_matrx, 
+                n       = 10)
+
+pred_result <- data.frame(as(pred, 'list') )  %>% rename('business_id'=X1) %>% left_join(df[,c('business_id','categories','city','name')],by='business_id') %>% unique()
+
+pred_result
+  
+}
+```
+
+```{r}
+suppressWarnings(REC_TOP_BUSINESS("SvdlC39JGPI_Tj3pS0ruzw"))
+```
 
 ## Sparklyr {.tabset .tabset-fade .tabset-pills}
 
@@ -394,18 +444,22 @@ als_user_recommend %>% head(10) %>% collect() %>% select(-recommendations)
 spark_disconnect(sc)
 ```
 
+
 # Conclusion
 
 **Analysis:**   
 
 Through this project, we took an all-encompassing look at the different recommender methods we have learned this semester. We designed BinaryRating Matrix / RealRating Matrices in RecommendLab, then compared this approach to running the ALS algorithm in Sparkly. We found that the BinaryRating performed [better/worse] than our RealRating models. We can reasonably assume the difference in the performance can be attributed to [XYZ]. 
 
+Binarymatrix can be best evaluted with the help of Precision and Recall, here Precison stands for predicting Business which is more likely to get the Visits. Precision shows how sensitive models are to False Positives (i.e. recommending a Busniess not very likely to be visited) 
+
+We noted the POPULAR Item method (POPULAR) model gave good result with high recall and same level of Precisions. When compared with all the models for n = 1,2,3,10 for top n items, as number of top n increases we  noted Decrease in the Precison and increase in Recall, since Recall is sesitive to False Negatives (i.e. do not suggest an Business which is highly likely to be visited), so in contrast we aim for higher Recall with maxium Precision.
+
 Our transition to Sparklyr showed us how effective cloud computing can be for large datasets. Our algorithm and prediction performance speeds signficantly improved when using Spark's service, even on a local channel. ALS in Sparklyr was the clear winner for efficiency, however all our selected algorithms yielded very similiar results. 
 
 ```{r}
 #metrics
 ```
-
 
 **Limitations:**  
 
@@ -422,3 +476,7 @@ We would recommend for future attempts performing natural language processing on
 # References
 
 * [**Data Overview**: ](https://www.kaggle.com/c/yelp-recsys-2013/overview) Kagle Yelp Challenge 2013
+* [**AR Not supported for binaryRatingMatrix**](https://github.com/mhahsler/recommenderlab/issues/29)
+* [**Accuracy Code**](https://github.com/mhahsler/recommenderlab/blob/master/R/calcPredictionAccuracy.R)
+* [**Precision vs Recall acceptable Limits**](https://stats.stackexchange.com/questions/323154/precision-vs-recall-acceptable-limits)
+* [**Recommenderlab Package Vignette**](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf)
