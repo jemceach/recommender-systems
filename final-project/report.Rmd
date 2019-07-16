@@ -156,7 +156,7 @@ In our first example, user-based CF is used to create recommendations with the r
 
 We then create our predictions using the dev-test set with ratings as our prediction output. It is imperative to set a floor and ceiling as sometimes predictions will fall outside of our ratings scale of 1-5.
 
-Finally we calculate the prediction accuracy against the test data
+Finally we calculated the prediction accuracy against the test data
 ```{r ub, cache=T}
 # using recommender lab, create UBCF recommender with z-score normalized data using cosine similarity
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
@@ -189,6 +189,17 @@ p1@data@x[p1@data@x[] > 5] <- 5
 
 IB_acc <- calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 IB_acc
+```
+
+### Results
+```{r}
+# print out errors in table
+error <- rbind(
+UB_acc,
+IB_acc
+)
+
+kable(error)
 ```
 
 
@@ -326,7 +337,6 @@ ratings_test_unknown <- getData(evalu_a2, "unknown")  # Unknow datset used for R
 
 head(as(dat_binaryRatingMatrix[1:5,1:3],"matrix"))
 
-
 ```
 
 ### Evaluating the Model
@@ -361,7 +371,6 @@ saveRDS(pred_pop2,"pred_pop2.rds")
 saveRDS(pred_pop3,"pred_pop3.rds")
 saveRDS(pred_pop5,"pred_pop5.rds")
 saveRDS(pred_pop10,"pred_pop10.rds")
-
 
 # Evaluting the Result of UBCF
 error.ubcf2<-calcPredictionAccuracy(pred_ubcf2, ratings_test_unknown,given=0)
