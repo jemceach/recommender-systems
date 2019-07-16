@@ -36,7 +36,6 @@ library(recommenderlab); library(Metrics); library(lsa); library(diveRsity)
 library(sparklyr)
 
 ##preprocessing data
-try(setwd("~/612-group/final-project"))
 suppressWarnings(source("preprocessing.R"))
 
 # global options
@@ -100,7 +99,7 @@ Next, we created our main dataframe by merging business and reviews on `Business
 This dataframe will be referenced later on when building our recommender matrices and algorithms. Review details were omitted in the preview for brevity. 
 
 ```{r df, echo=F}
-df %>% select(-text) %>% head() %>% kable(caption="Preview main dataframe") %>% kable_styling()
+df %>% select(-text,-business_id, -user_id,-review_id) %>% head() %>% kable(caption="Preview main dataframe") %>% kable_styling()
 ```
 
 ## Visualize Data
@@ -142,7 +141,7 @@ set.seed(1000)
 
 evalu <- evaluationScheme(ui_mat, method="split", train=0.8, given=1, goodRating=1, k=10)
 
-# Prep data
+# prep data
 train <- getData(evalu, 'train')# Training Dataset 
 dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KNOWN
 test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
@@ -153,7 +152,7 @@ test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluati
 
 ### User-based CF
 
-```{r}
+```{r ub}
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
@@ -162,12 +161,13 @@ p <- predict(UB, getData(evalu, "known"), type="ratings")
 p@data@x[p@data@x[] < 1] <- 1
 p@data@x[p@data@x[] > 5] <- 5
 
+calcPredictionAccuracy(p, getData(evalu, "train"))
 calcPredictionAccuracy(p, getData(evalu, "unknown"))
 ```
 
 ### Item-based CF
 
-```{r}
+```{r ib}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
@@ -176,6 +176,7 @@ p1 <- predict(IB, getData(evalu, "known"), type="ratings")
 p1@data@x[p1@data@x[] < 1] <- 1
 p1@data@x[p1@data@x[] > 5] <- 5
 
+calcPredictionAccuracy(p1, getData(evalu, "train"))
 calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ```
 
@@ -185,7 +186,7 @@ Due to the size of our data, we choose to use Spark in R to avoid input/output (
 
 ### Connecting
 
-We initiated a local connection with Spark (V2.4.3). Our yelp data was inputted into a spark table and split for training and testing purposes. 
+We initiated a local connection with Spark (V2.4.3). Our yelp data was inputted into a spark table and split for training and testing purposes. We uploaded our training and test splits to minimize the variance in our comparisons.
 
 ```{r initiate-spark}
 # configure spark connection
@@ -202,29 +203,23 @@ sc <- spark_connect(master = "local", config=config, version = "2.4.3")
 # spark_version(sc)
 
 # select data for spark and create spark table 
-spark_data <- df %>% select(stars, user_id, business_id, name, city, categories)
+spark_train <- as(train,"data.frame")
+spark_test<- as(test,"data.frame") 
 
-yelp <- sdf_copy_to(sc, spark_data, "yelp", overwrite = TRUE) 
+spark_train <- sdf_copy_to(sc, spark_train, "spark_train", overwrite = TRUE) 
+spark_test <- sdf_copy_to(sc, spark_test, "spark_test", overwrite = TRUE) 
 
 # Transform features
-yelp <- yelp %>%
-  ft_string_indexer(input_col = "user_id", output_col = "user_index") %>%
-  ft_string_indexer(input_col = "business_id", output_col = "item_index") %>%
-  select(-user_id, -business_id)%>%
-  sdf_register("yelp")
-
-# randomly split / train test data
-split <- sdf_random_split(yelp, training = 0.8, testing = 0.2, seed=1)
-
-# store training / test sets
-train <- sdf_register(split$training, "train")
-test <- sdf_register(split$testing, "test")
-
-# tidy train for algoritms that require only user/item inputs
-ui_train <- tbl(sc, "train") %>% select(user_index, item_index, stars)
-ui_test <- tbl(sc, "test") %>% select(user_index, item_index, stars)
+spark_train <- spark_train %>%
+  ft_string_indexer(input_col = "user", output_col = "user_index") %>%
+  ft_string_indexer(input_col = "item", output_col = "item_index") %>%
+  sdf_register("spark_train")
+  
+spark_test <- spark_test %>%
+  ft_string_indexer(input_col = "user", output_col = "user_index") %>%
+  ft_string_indexer(input_col = "item", output_col = "item_index") %>%
+  sdf_register("spark_test")
 ```
-
 
 ### ALS 
 
@@ -232,14 +227,14 @@ Once connected, we applied the alternating least squares (ALS) for our recommend
 
 ```{r spark-als}
 # build model using user/business/ratings
-als_fit <- ml_als(ui_train, max_iter = 5, nonnegative = TRUE, 
+als_fit <- ml_als(spark_train, max_iter = 5, nonnegative = TRUE, 
                    rating_col = "stars", 
                    user_col = "user_index", 
                    item_col = "item_index")
 
 # predict from the model for the training data
-als_predict_train <- ml_predict(als_fit, ui_train) %>% collect()
-als_predict_test <- ml_predict(als_fit, ui_test) %>% collect()
+als_predict_train <- ml_predict(als_fit, spark_train) %>% collect()
+als_predict_test <- ml_predict(als_fit, spark_test) %>% collect()
 
 # Remove NaN (result of test/train splits - not data)
 als_predict_train <- als_predict_train[!is.na(als_predict_train$prediction), ] 
@@ -249,11 +244,11 @@ als_predict_test <- als_predict_test[!is.na(als_predict_test$prediction), ]
 als_predict_test %>% head %>% kable() %>% kable_styling()
 ```
 
-### Metrics 
+### Performance 
 
 Our ALS calculations for RMSE, MSE, and MAE can be viewed below: 
 
-```{r}
+```{r als-performance}
 # Calculate RMSE/MSE/MAE 
 als_mse_train <- mean((als_predict_train$stars - als_predict_train$prediction)^2)
 als_rmse_train <- sqrt(als_mse_train)
@@ -264,78 +259,12 @@ als_rmse_test <- sqrt(als_mse_test)
 als_mae_test <- mean(abs(als_predict_test$stars - als_predict_test$prediction))
 
 # View metrics 
-cbind(als_rmse_train,als_mse_train, als_mae_train) 
-cbind(als_rmse_test, als_mse_test, als_mae_test) 
+als_train_metrics<- cbind(als_rmse_train,als_mse_train, als_mae_train) 
+als_test_metrics<-cbind(als_rmse_test, als_mse_test, als_mae_test) 
+als_metrics <- as.data.frame(rbind(als_train_metrics,als_test_metrics), row.names = c("ALS_train, ALS_test"))
+als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train, mae=als_mae_train)
 ```
 
-
-## Random Forest
-
-We wanted to test out other machine learning options in Spark. We tried using random forest decision trees, however this method yielded very low accuracy on our training data. This method would not produce a good recommender system for businesses or users in our dataset.  
-
-```{r rf}
-# build model using user/business index, category, and city
-rf_fit <- ml_random_forest(
-  train, # the training partion
-  response = "stars",
-  features = colnames(train)[2:4], 
-  impurity = "entropy",
-  type = "classification",
-  seed = 1)
-
-# identify important features in model
-rf_importance1 <- ml_tree_feature_importance(sc = sc, model = rf_fit) 
-rf_importance2<- rf_importance1 %>% mutate(importance = round(importance,2)) %>% filter(importance>0) 
-
-# percent of terms found important
-
-nrow(rf_importance2)/nrow(rf_importance1) 
-
-# view importance
-rf_importance2 %>% kable() %>% kable_styling()
-```
-
-Accuracy metrics for Random Forest: 
-
-```{r rf-metrics}
-# make predictions 
-rf_predict_train <- ml_predict(rf_fit, train)  
-rf_predict_test <- ml_predict(rf_fit, test)
-
-
-# calculate accuracy 
-rf_eval_train <- rf_predict_train %>% 
-  ml_multiclass_classification_evaluator(label = "stars", metric = "accuracy") 
-
-##UNABLE TO GET TEST ACCURACY
-# rf_eval_test <- rf_predict_test %>% 
-# ml_multiclass_classification_evaluator(label = "stars", metric = "accuracy") 
-
-rf_eval_train
-```
-
-```{r rf-rmse, include=F, eval=F}
-## NOT INCLUDED: UNABLE TO COLLECT PREDICTIONS FOR RMSE/ETC COMPARISION
-# predict from the model for the training data
-rf_predict_train <- ml_predict(rf_fit, train)  %>% collect()
-rf_predict_test <- ml_predict(rf_fit, test) %>% collect()
-
-# Remove NaN (result of test/train splits - not data)
-rf_predict_train <- rf_predict_train[!is.na(rf_predict_train$prediction), ] 
-rf_predict_test <- rf_predict_test[!is.na(rf_predict_test$prediction), ] 
-
-# Calculate MSE/RMSE/MAE 
-rf_mse_train <- mean((rf_predict_train$stars - rf_predict_train$prediction)^2)
-rf_rmse_train <- sqrt(rf_mse_train)
-rf_mae_train <- mean(abs(rf_predict_train$stars - rf_predict_train$prediction))
-
-rf_mse_test <- mean((rf_predict_test$stars - rf_predict_test$prediction)^2)
-rf_rmse_test <- sqrt(rf_mse_test)
-rf_mae_test <- mean(abs(rf_predict_test$stars - rf_predict_test$prediction))
-
-#rbind(rf_mse_train, rf_rmse_train, rf_mae_train) 
-#rbind(rf_mse_test, rf_rmse_test, rf_mae_test) 
-```
 
 ```{r disconnect, echo=F}
 # disconnect
