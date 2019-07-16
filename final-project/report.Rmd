@@ -372,13 +372,35 @@ als_mae_train <- mean(abs(als_predict_train$stars - als_predict_train$prediction
 als_mse_test <- mean((als_predict_test$stars - als_predict_test$prediction)^2)
 als_rmse_test <- sqrt(als_mse_test)
 als_mae_test <- mean(abs(als_predict_test$stars - als_predict_test$prediction))
+
+# View metrics 
+rbind(als_mse_train, als_rmse_train, als_mae_train) 
+rbind(als_mse_test, als_rmse_test, als_mae_test) 
 ```
 
-# Random Forest
-
-Our random forest model had very low accuracy. This method would not produce a good recommender system for how our data is currently set up.  
+### Metrics 
 
 ```{r}
+# Calculate MSE/RMSE/MAE 
+als_mse_train <- mean((als_predict_train$stars - als_predict_train$prediction)^2)
+als_rmse_train <- sqrt(als_mse_train)
+als_mae_train <- mean(abs(als_predict_train$stars - als_predict_train$prediction))
+
+als_mse_test <- mean((als_predict_test$stars - als_predict_test$prediction)^2)
+als_rmse_test <- sqrt(als_mse_test)
+als_mae_test <- mean(abs(als_predict_test$stars - als_predict_test$prediction))
+
+# View metrics 
+rbind(als_mse_train, als_rmse_train, als_mae_train) 
+rbind(als_mse_test, als_rmse_test, als_mae_test) 
+```
+
+
+## Random Forest
+
+We wanted to test out other machine learning options in Spark. We tried using random forest decision trees, however this method yielded very low accuracy on our training data. This method would not produce a good recommender system for businesses or users in our dataset.  
+
+```{r rf}
 # build model using user/business index, category, and city
 rf_fit <- ml_random_forest(
   train, # the training partion
@@ -399,8 +421,10 @@ nrow(rf_importance2)/nrow(rf_importance1)
 # view importance
 rf_importance2 %>% kable() %>% kable_styling()
 ```
+
 Accuracy metrics for Random Forest: 
-```{r}
+
+```{r rf-metrics}
 # make predictions 
 rf_predict_train <- ml_predict(rf_fit, train)  
 rf_predict_test <- ml_predict(rf_fit, test)
@@ -417,7 +441,7 @@ rf_eval_train <- rf_predict_train %>%
 rf_eval_train
 ```
 
-```{r, include=F, eval=F}
+```{r rf-rmse, include=F, eval=F}
 ## NOT INCLUDED: UNABLE TO COLLECT PREDICTIONS FOR RMSE/ETC COMPARISION
 # predict from the model for the training data
 rf_predict_train <- ml_predict(rf_fit, train)  %>% collect()
@@ -435,29 +459,21 @@ rf_mae_train <- mean(abs(rf_predict_train$stars - rf_predict_train$prediction))
 rf_mse_test <- mean((rf_predict_test$stars - rf_predict_test$prediction)^2)
 rf_rmse_test <- sqrt(rf_mse_test)
 rf_mae_test <- mean(abs(rf_predict_test$stars - rf_predict_test$prediction))
+
+#rbind(rf_mse_train, rf_rmse_train, rf_mae_train) 
+#rbind(rf_mse_test, rf_rmse_test, rf_mae_test) 
 ```
 
-```{r}
+```{r disconnect, echo=F}
 # disconnect
 spark_disconnect(sc)
 ```
 
 
-```{r}
-rbind(als_mse_train, als_rmse_train, als_mae_train) 
-rbind(als_mse_test, als_rmse_test, als_mae_test) 
-rbind(rf_mse_train, rf_rmse_train, rf_mae_train) 
-rbind(rf_mse_test, rf_rmse_test, rf_mae_test) 
-```
-## Analysis
-
-Compare algorithms performance. Select most effective to build recommender system.
-
-# Recommender System
-
-Test system
-
 # Conclusion
+
+Given the size of our data, Spark performed the fastest. However, Recommenderlab methods for user-based and item-based yieled better results.
+
 
 Final conlusion. Explain limitations of system. Make recommendations for future improvements.  
 
