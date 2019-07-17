@@ -66,7 +66,7 @@ Once obtained, we prepared our data for our recommender system using the followi
 
 We choose to limit the scope to our recommender system to only businesses with tags related to food and beverages. There were originally 508 unique category tags listed within our business data. We manually filtered 112 targeted categories to subset our data. 
 
-We applied additional transformation to remove unnessacary data. There were 1,224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which were subsequently removed from our data. There were also 3 businesses in our dataset from outside of AZ that we also removed. 
+We applied additional transformation to remove unnecessary data. There were 1,224 business in our data that were permanently closed. These companies accounted for 9.8% of all businesses, which were subsequently removed from our data. There were also 3 businesses in our data set from outside of AZ that we also removed. 
 
 As a result of our transformations, our recommender data was shortened 4,828 unique businesses. This was further limited to 4,332 after randomly sampling our user-data. The output of which can be previewed below: 
 
@@ -88,7 +88,7 @@ review
 
 Next, we applied a similar filter to users to subset our data based on only our selected businesses. This decreased our user data from 43,873 to 35,268 distinct user_id observations. Do to processing constraints in R, we choose to randomly sample 10,000 users from these unique profiles. 
 
-The dataframe preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
+The data frame preview below shows aggregate user data for all reviews an individual user provided for yelp within our data selection. 
 
 ```{r user, echo=F}
 #preview users
@@ -97,9 +97,9 @@ user
 
 ### Merged Dataframe 
 
-Last, we created our main dataframe by merging business and reviews on `Business_ID`. This dataframe will serve as the source of data for our recommender algorithms. The user and business unique keys were simplified from characters to numeric user/item identifiers. 
+Last, we created our main data frame by merging business and reviews on `Business_ID`. This data frame will serve as the source of data for our recommender algorithms. The user and business unique keys were simplified from characters to numeric user/item identifiers. 
 
-This dataframe will be referenced later on when building our recommender matrices and algorithms. 
+This data frame will be referenced later on when building our recommender matrices and algorithms. 
 
 ```{r df, echo=F}
 df %>% select(-text,-business_id, -user_id,-review_id) 
@@ -107,7 +107,7 @@ df %>% select(-text,-business_id, -user_id,-review_id)
 
 # Recommender Algorithms
 
-We tested recommender algorithms using `recommenderlab` and `sparklyr` to see which performed the best on our recommender system data. To test the algorithsm, we first had to create a user-item matrix and then split our data into training and test sets. 
+We tested recommender algorithms using `recommenderlab` and `sparklyr` to see which performed the best on our recommender system data. To test the algorithms, we first had to create a user-item matrix and then split our data into training and test sets. 
 
 ## RecommenderLab {.tabset .tabset-fade .tabset-pills}
 
@@ -150,25 +150,35 @@ dev_test <- getData(evalu, 'known') # Test data from evaluationScheme of type KN
 test <- getData(evalu, 'unknown') # Unknow datset used for RMSE / model evaluation
 ```
 
+## RecommenderLab {.tabset .tabset-fade .tabset-pills}
+
 ### User-based CF
 
-We used the user-based collaborative filtering approach. Our data was normalized using z-score to center the data with a cosine-similarity method. 
+In our first example, user-based CF is used to create recommendations with the recommender lab package in R. We start by training our recommender with the train set, with our data being normalized with the Z-score and using cosine similarity for comparisons. 
+
+We then create our predictions using the dev-test set with ratings as our prediction output. It is imperative to set a floor and ceiling as sometimes predictions will fall outside of our ratings scale of 1-5.
+
+Finally we calculated the prediction accuracy against the test data
 
 ```{r ub, cache=T}
+# using recommender lab, create UBCF recommender with z-score normalized data using cosine similarity
 UB <- Recommender(getData(evalu, "train"), "UBCF", 
       param=list(normalize = "Z-score",method="Cosine"))
 
+# create rating predictions and store
 p <- predict(UB, getData(evalu, "known"), type="ratings")
 
+# set floor and ceiling for ratings that fall outside scale
 p@data@x[p@data@x[] < 1] <- 1
 p@data@x[p@data@x[] > 5] <- 5
 
-calcPredictionAccuracy(p, getData(evalu, "unknown"))
+# calculate the prediction accurary based on our test data
+UB_acc <- calcPredictionAccuracy(p, getData(evalu, "unknown"))
 ```
 
 ### Item-based CF
 
-We used a similiar approach for our second `recommenderlab` function. The item-based colaborative filtering approach followed the same methods as our user-based algorithm. 
+This is the same process as above except this time we are using an item-based collaborative filtering to create our recommendations.
 
 ```{r ib, cache=T}
 IB <- Recommender(getData(evalu, "train"), "IBCF", 
@@ -179,10 +189,16 @@ p1 <- predict(IB, getData(evalu, "known"), type="ratings")
 p1@data@x[p1@data@x[] < 1] <- 1
 p1@data@x[p1@data@x[] > 5] <- 5
 
-calcPredictionAccuracy(p1, getData(evalu, "unknown"))
+IB_acc <- calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ```
+### Results
 
-## Hybrid Recommender
+After our analysis we see that User-based CF outperforms Item-based CF in all error metrics. Considering the size of our data set the RMSE is relatively low. 
+```{r}
+# print out errors in table
+error <- rbind(UB_acc,IB_acc)
+error
+```
 
 ## Sparklyr {.tabset .tabset-fade .tabset-pills}
 
@@ -284,7 +300,7 @@ cbind(type, als_metrics) %>% kable(caption="ALS Performance") %>% kable_styling(
 
 ### Recommend
 
-The `ml_recommend` function allows us to see the top *n* user/item recommendations for each user/item. Below, we use this funcion and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
+The `ml_recommend` function allows us to see the top *n* user/item recommendations for each user/item. Below, we use this function and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
 
 ```{r als-recommend}
 als_user_recommend<-ml_recommend(als_fit, type="users", n=10)
@@ -305,13 +321,13 @@ spark_disconnect(sc)
 
 ## Analysis
 
-Through this project, we took an all-encompassing look at the different recommender methods we have learned this semester. We built a RealRating Matrix in RecommendLab and performed several algorithms on our data. We then compared this approach to running the training and test data in Spark using `sparklyr`'s ALS algorithm. We found that the Userbased recommender algorithm performed the best and had the lowest RMSE. However, our ALS calculations performed very similiarly to this. Our item-based reommender produced our highest error score. 
+Through this project, we took an all-encompassing look at the different recommender methods we have learned this semester. We built a RealRating Matrix in RecommendLab and performed several algorithms on our data. We then compared this approach to running the training and test data in Spark using `sparklyr`'s ALS algorithm. We found that the Userbased recommender algorithm performed the best and had the lowest RMSE, however our ALS calculations performed very similiarly to this. Our item-based reommender produced our highest error score. 
 
 Our transition to Sparklyr showed us how effective cloud computing can be for large datasets. Our algorithm and prediction performance speeds signficantly improved when using Spark's service, even on a local channel. ALS in Sparklyr was the clear winner for efficiency.
 
 ## Limitations 
 
-The size of our data significantly limited our performance using certain packages in R. Functions in Recommenderlab took ~15 minutes to run in comparision to Sparklyr, which took approximately ~2 minutes. Sparklyr would have been able to handle our full dataset, whereas our personal computers would have lacked the computational memory to solely use Recommenderlab. 
+The size of our data significantly limited our performance using certain packages in R. Functions in Recommenderlab took ~15 minutes to run in comparison to Sparklyr, which took approximately ~2 minutes. Sparklyr would have been able to handle our full data set, whereas our personal computers would have lacked the computational memory to solely use Recommenderlab. However, Sparklyr packages lacks in comparison to the built-in functions recommenderlab has to use and evaluate recommender algorithms functions. 
 
 ## Recommendations
 
