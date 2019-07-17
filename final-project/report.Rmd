@@ -21,7 +21,7 @@ Our project used data from Kaggle's 2013 Yelp Challenge. This challenge included
 
 ```{r dependencies,echo=F,comment=F,message=F,warning=F,prompt=F, cache=T}
 ## data processing packages
-library(tidyr); library(dplyr)
+library(tidyverse)
 
 ##formatting packages
 library(knitr); library(kableExtra); library(default)
@@ -30,7 +30,7 @@ library(knitr); library(kableExtra); library(default)
 library(ggplot2)
 
 ##recommender packages
-library(recommenderlab); library(Metrics); library(lsa); library(diveRsity);library(purrr)
+library(recommenderlab); library(Metrics)
 
 ## Sparklyr 
 #install.packages("devtools")
@@ -100,10 +100,7 @@ Last, we created our main data frame by merging business and reviews on `Busines
 This data frame will be referenced later on when building our recommender matrices and algorithms. 
 
 ```{r df, echo=F}
-# randomize dataframe 
-set.seed(1)
-df <- df <- df[sample(nrow(df)),]
-df 
+df
 ```
 
 ## Algorthim Data Preparation {.tabset .tabset-fade .tabset-pills}
@@ -119,6 +116,9 @@ matrix_data <- df %>% select(userID, itemID, stars) %>% spread(itemID, stars)
 rownames(matrix_data)<-matrix_data$userID 
 # remove userid from columns 
 matrix_data <-matrix_data %>% select(-userID) 
+# randomize dataframe
+set.seed(1)
+matrix_data <- matrix_data[sample(nrow(matrix_data)),]
 # convert to matrix
 ui_mat <- matrix_data %>% as.matrix()
 # store matrix as realRatingMatrix
@@ -137,7 +137,7 @@ Our data was split into training and tests sets for model evaluation of both two
 
 ```{r train-test}
 # evaluation method with 80% of data for train and 20% for test
-set.seed(0)
+set.seed(1)
 
 evalu <- evaluationScheme(ui_mat, method="split", train=0.8, given=1, goodRating=4, k=5)
 
@@ -197,6 +197,7 @@ IB_acc <- calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ### Results
 
 After our analysis we see that User-based CF outperforms Item-based CF in all error metrics. Considering the size of our data set the RMSE is relatively low. 
+
 ```{r}
 # print out errors in table
 error <- rbind(UB_acc,IB_acc)
@@ -250,10 +251,13 @@ Once connected, we applied the alternating least squares (ALS) for our recommend
 
 ```{r spark-als}
 # build model using user/business/ratings
-als_fit <- ml_als(spark_train, max_iter = 5, nonnegative = TRUE, 
-                   rating_col = "rating", 
-                   user_col = "user_index", 
-                   item_col = "item_index")
+als_fit <- ml_als(spark_train, 
+                  max_iter = 5, 
+                  nonnegative = TRUE, 
+                  rank = 2,
+                  rating_col = "rating", 
+                  user_col = "user_index", 
+                  item_col = "item_index")
 
 # predict from the model for the training data
 als_predict_train <- ml_predict(als_fit, spark_train) %>% collect()

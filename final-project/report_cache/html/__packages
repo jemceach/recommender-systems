@@ -20,3 +20,5 @@ stringr
 tibble
 forcats
 purrr
+tidyverse
+readr
