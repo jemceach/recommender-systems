@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/W32TeX) (preloaded format=pdflatex 2019.3.13)  11 JUL 2019 15:31
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/W32TeX) (preloaded format=pdflatex 2019.3.13)  16 JUL 2019 21:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -718,7 +718,8 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
-) (./report.aux)
+)
+No file report.aux.
 \openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 142.
@@ -798,7 +799,6 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 142.
 LaTeX Info: Redefining \pageref on input line 142.
 LaTeX Info: Redefining \nameref on input line 142.
-(./report.out) (./report.out)
 \@outlinefile=\write4
 \openout4 = `report.out'.
 
@@ -823,360 +823,89 @@ df-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 150.
+\tf@toc=\write5
+\openout5 = `report.toc'.
+
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 161.
 
 (c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 152
-.
-(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
-File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [1
+LaTeX Font Info:    Try loading font information for OT1+lmr on input line 196.
 
-{c:/Users/15082/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
-x.map}]
-
-Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 310.
-
-[2]
-
-Package xcolor Warning: Incompatible color definition on input line 326.
-
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 333.
-
-Package xcolor Warning: Incompatible color definition on input line 345.
-
-
-Package xcolor Warning: Incompatible color definition on input line 345.
-
-
-Package xcolor Warning: Incompatible color definition on input line 358.
-
-
-Package xcolor Warning: Incompatible color definition on input line 362.
-
-
-Package xcolor Warning: Incompatible color definition on input line 362.
-
-[3]
-
-Package xcolor Warning: Incompatible color definition on input line 410.
-
-
-Package xcolor Warning: Incompatible color definition on input line 414.
-
-
-Package xcolor Warning: Incompatible color definition on input line 414.
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ##                                                           
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                               rev_text[] 
- []
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ## 1                                                         
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                             My wife took me here on my birthda
-y for breakfast and it was excellent.  The weather was perfect which made sitti
-ng outside overlooking their grounds an absolute pleasure.  Our waitress was ex
-cellent and our food arrived quickly on the semi-busy Saturday morning.  It loo
-ked like the place fills up pretty quickly so the earlier you get here the bett
-er.\n\nDo yourself a favor and get their Bloody Mary.  It was phenomenal and si
-mply the best I\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 ve ever had.  I\TS1/lmtt/m/n/1
-0 '\T1/lmtt/m/n/10 m pretty sure they only use ingredients from their garden an
-d blend them fresh when you order it.  It was amazing.\n\nWhile EVERYTHING on t
-he menu looks excellent, I had the white truffle scrambled eggs vegetable skill
-et and it was tasty and delicious.  It came with 2 pieces of their griddled bre
-ad with was amazing and it absolutely made the meal complete.  It was the best 
-"toast" I\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 ve ever had.\n\nAnyway, I can\TS1/lm
-tt/m/n/10 '\T1/lmtt/m/n/10 t wait to go back![] 
- []
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ## 2                                                         
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                 I have no idea
- why some people give bad reviews about this place. It goes to show you, you ca
-n please everyone. They are probably griping about something that their own fau
-lt...there are many people like that.\n\nIn any case, my friend and I arrived a
-t about 5:50 PM this past Sunday. It was pretty crowded, more than I thought fo
-r a Sunday evening and thought we would have to wait forever to get a seat but 
-they said we\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 ll be seated when the girl comes 
-back from seating someone else. We were seated at 5:52 and the waiter came and 
-got our drink orders. Everyone was very pleasant from the host that seated us t
-o the waiter to the server. The prices were very good as well. We placed our or
-ders once we decided what we wanted at 6:02. We shared the baked spaghetti calz
-one and the small "Here\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 s The Beef" pizza so w
-e can both try them. The calzone was huge and we got the smallest one (personal
-) and got the small 11" pizza. Both were awesome! My friend liked the pizza bet
-ter and I liked the calzone better. The calzone does have a sweetish sauce but 
-that\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 s how I like my sauce!\n\nWe had to box p
-art of the pizza to take it home and we were out the door by 6:42. So, everythi
-ng was great and not like these bad reviewers. That goes to show you that  you 
-have to try these things yourself because all these bad reviewers have some ser
-ious issues.[] 
- []
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ## 3                                                         
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                          love 
-the gyro plate. Rice is so good and I also dig their candy selection :)[] 
- []
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ## 4                                                         
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                           Rosie, Dakota, and I LOVE Chaparral 
-Dog Park!!! It\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 s very convenient and surrounde
-d by a lot of paths, a desert xeriscape, baseball fields, ballparks, and a lake
- with ducks.\n\nThe Scottsdale Park and Rec Dept. does a wonderful job of keepi
-ng the park clean and shaded.  You can find trash cans and poopy-pick up mitts 
-located all over the park and paths.\n\nThe fenced in area is huge to let the d
-ogs run, play, and sniff![] 
- []
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ## 5                                                         
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                          Gener
-al Manager Scott Petello is a good egg!!! Not to go into detail, but let me ass
-ure you if you have any issues (albeit rare) speak with Scott and treat the guy
- with some respect as you state your case and I\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/1
-0 d be surprised if you don\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 t walk out totally
- satisfied as I just did. Like I always say..... "Mistakes are inevitable, it\T
-S1/lmtt/m/n/10 '\T1/lmtt/m/n/10 s how we recover from them that is important"!!
-!\n\nThanks to Scott and his awesome staff. You\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/1
-0 ve got a customer for life!! .......... :^)[] 
- []
-
-
-Overfull \hbox (10591.96283pt too wide) in paragraph at lines 438--438
-[]\T1/lmtt/m/n/10 ## 6 Quiessence is, simply put, beautiful.  Full windows and 
-earthy wooden walls give a feeling of warmth inside this restaurant perched in 
-the middle of a farm.  The restaurant seemed fairly full even on a Tuesday even
-ing; we had secured reservations just a couple days before.\n\nMy friend and I 
-had sampled sandwiches at the Farm Kitchen earlier that week, and were impresse
-d enough to want to eat at the restaurant.  The crisp, fresh veggies didn\TS1/l
-mtt/m/n/10 '\T1/lmtt/m/n/10 t disappoint: we ordered the salad with orange and 
-grapefruit slices and the crudites to start.  Both were very good; I didn\TS1/l
-mtt/m/n/10 '\T1/lmtt/m/n/10 t even know how much I liked raw radishes and turni
-ps until I tried them with their pesto and aioli sauces.\n\nFor entrees, I orde
-red the lamb and my friend ordered the pork shoulder.  Service started out very
- good, but trailed off quickly.  Waiting for our food took a very long time (a 
-couple seated after us received and finished their entrees before we received o
-ur\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 s), and no one bothered to explain the situ
-ation until the maitre\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 d apologized almost 45 
-minutes later.  Apparently the chef was unhappy with the sauce on my entree, so
- he started anew.  This isn\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 t really a problem
-, but they should have communicated this to us earlier.  For our troubles, they
- comped me the glass of wine I ordered, but they forgot to bring out with my en
-tree  as I had requested.  Also, they didn\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 t o
-ffer us bread, but I will echo the lady who whispered this to us on her way out
-: ask for the bread.  We received warm foccacia, apple walnut, and pomegranate 
-slices of wonder with honey and butter.  YUM.\n\nThe entrees were both solid, b
-ut didn\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 t quite live up to the innovation and 
-freshness of the vegetables.  My lamb\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 s sauce 
-was delicious, but the meat was tough.  Maybe the vegetarian entrees are the wa
-y to go?  But our dessert, the gingerbread pear cake, was yet another winner.\n
-\nIf the entrees were tad more inspired, or the service weren\TS1/lmtt/m/n/10 '
-\T1/lmtt/m/n/10 t so spotty, this place definitely would have warranted five st
-ars.  If I return, I\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 d like to try the 75$ tas
-ting menu.  Our bill came out to about 100$ for two people, including tip, no d
-rinks.[] 
- []
-
-[4]
-
-Package xcolor Warning: Incompatible color definition on input line 449.
-
-
-Package xcolor Warning: Incompatible color definition on input line 453.
-
-
-Package xcolor Warning: Incompatible color definition on input line 453.
-
-
-Package xcolor Warning: Incompatible color definition on input line 481.
-
-
-Package xcolor Warning: Incompatible color definition on input line 485.
-
-
-Package xcolor Warning: Incompatible color definition on input line 485.
-
-[5] [6]
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 580.
-
-(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
+File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
+LaTeX Font Info:    Try loading font information for OML+lmm on input line 196.
 
-Package xcolor Warning: Incompatible color definition on input line 628.
+(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
+File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 196
+.
+(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
+File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Try loading font information for OMX+lmex on input line 196
+.
+(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
+File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 196.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 196.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 196.
+LaTeX Font Info:    Try loading font information for U+msa on input line 196.
+(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 196.
+(c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Overfull \hbox (30.00308pt too wide) in paragraph at lines 212--212
+[]\T1/lmr/m/n/10 usAsSV36QmUej8-- 
+ []
 
-[7]
 
-Package xcolor Warning: Incompatible color definition on input line 643.
-
-
-Package xcolor Warning: Incompatible color definition on input line 643.
+Overfull \hbox (82.94757pt too wide) in paragraph at lines 212--212
+[]\T1/lmr/m/n/10 PzOqRohWw7F7YEPBz6AubA|  
+ []
 
 
-Package xcolor Warning: Incompatible color definition on input line 653.
+Overfull \hbox (63.87843pt too wide) in paragraph at lines 212--212
+[]\T1/lmr/m/n/10 qarobAbxGSHI7ygf1f7a_Q|  
+ []
 
 
-Package xcolor Warning: Incompatible color definition on input line 665.
+Overfull \hbox (70.43515pt too wide) in paragraph at lines 212--212
+[]\T1/lmr/m/n/10 JxVGJ9Nly2FFIs_WpJvkug|  
+ []
 
 
-Package xcolor Warning: Incompatible color definition on input line 665.
+Overfull \hbox (73.22609pt too wide) in paragraph at lines 212--212
+[]\T1/lmr/m/n/10 Jj7bcQ6NDfKoz4TXwvYfMg|  
+ []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 690.
-[8]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 690.
-(./report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 690.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 690.
-Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 2C8E7AA0D30C949EEE4AF6CEB64466E2;2222.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 690.
- ) 
+
+Overfull \hbox (61.47632pt too wide) in paragraph at lines 212--212
+[]\T1/lmr/m/n/10 JHp5mJvYe6UtM_QsklR- 
+ []
+
+! Missing # inserted in alignment preamble.
+<to be read again> 
+                   \cr 
+l.234 \end{tabu}
+                 
 Here is how much of TeX's memory you used:
- 12557 strings out of 494562
- 178426 string characters out of 6176064
- 356874 words of memory out of 5000000
- 15995 multiletter control sequences out of 15000+600000
- 31698 words of font info for 30 fonts, out of 8000000 for 9000
+ 12505 strings out of 494562
+ 178200 string characters out of 6176064
+ 263248 words of memory out of 5000000
+ 15973 multiletter control sequences out of 15000+600000
+ 42339 words of font info for 41 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 28i,6n,35p,2120b,449s stack positions out of 5000i,500n,10000p,200000b,80000s
-{c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.
-enc}{c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec
-.enc}<c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/l
-mbx10.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public
-/lm/lmbx12.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/p
-ublic/lm/lmr10.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/typ
-e1/public/lm/lmr17.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts
-/type1/public/lm/lmri12.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/
-fonts/type1/public/lm/lmtk10.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-
-dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/t
-exmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on report.pdf (8 pages, 224805 bytes).
-PDF statistics:
- 187 PDF objects out of 1000 (max. 8388607)
- 167 compressed objects within 2 object streams
- 45 named destinations out of 1000 (max. 500000)
- 145 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 28i,15n,35p,284b,483s stack positions out of 5000i,500n,10000p,200000b,80000s
 
+!  ==> Fatal error occurred, no output PDF file produced!

@@ -17,3 +17,6 @@ sparklyr
 tidyr
 jsonlite
 stringr
+tibble
+forcats
+purrr
