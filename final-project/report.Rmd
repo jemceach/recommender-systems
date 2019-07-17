@@ -194,7 +194,7 @@ p1@data@x[p1@data@x[] > 5] <- 5
 IB_acc <- calcPredictionAccuracy(p1, getData(evalu, "unknown"))
 ```
 
-### Results
+### Performance
 
 After our analysis we see that User-based CF outperforms Item-based CF in all error metrics. Considering the size of our data set the RMSE is relatively low. 
 
@@ -305,9 +305,9 @@ als_metrics <-als_metrics %>% rename(rmse = als_rmse_train, mse = als_mse_train,
 cbind(type, als_metrics) %>% kable(caption="ALS Performance") %>% kable_styling()
 ```
 
-### Recommend
+### Recommendations
 
-The `ml_recommend` function allows us to see the top *n* user/item recommendations for each user/item. Below, we use this function and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
+The `ml_recommend` function allows us to see the top *n* user recommendations for each user/item. Below, we use this function and filtered our recommendations to show the top 10 restaurant recommendations for a selected user. 
 
 ```{r als-recommend}
 als_user_recommend<-ml_recommend(als_fit, type="users", n=10)
@@ -345,7 +345,6 @@ We would recommend for future attempts performing natural language processing on
 # References
 
 * [**Data Overview**: ](https://www.kaggle.com/c/yelp-recsys-2013/overview) Kagle Yelp Challenge 2013
-* [**AR Not supported for binaryRatingMatrix**](https://github.com/mhahsler/recommenderlab/issues/29)
-* [**Accuracy Code**](https://github.com/mhahsler/recommenderlab/blob/master/R/calcPredictionAccuracy.R)
-* [**Precision vs Recall acceptable Limits**](https://stats.stackexchange.com/questions/323154/precision-vs-recall-acceptable-limits)
-* [**Recommenderlab Package Vignette**](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf)
+* [**Accuracy Code** :](https://github.com/mhahsler/recommenderlab/blob/master/R/calcPredictionAccuracy.R)
+*  [**Sparklyr**: ](https://spark.rstudio.com/reference/ml_als/)
+* [**Recommenderlab Package Vignette**: ](https://cran.r-project.org/web/packages/recommenderlab/vignettes/recommenderlab.pdf)
